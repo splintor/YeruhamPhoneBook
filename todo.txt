@@ -6,3 +6,4 @@ Change text content color to be more "live"
 Make sure phone and e-mails are clickable in list view
 Only show list when searching something (maybe under 30 results?)
 Vertically align app title
+Update data from site
