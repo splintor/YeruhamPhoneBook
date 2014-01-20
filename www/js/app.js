@@ -12,4 +12,10 @@ config(['$routeProvider', function ($routeProvider) {
     $routeProvider.when('/pages/:pageName', {templateUrl: 'partials/page-detail.html', controller: 'PageDetailCtrl'});
     $routeProvider.otherwise({redirectTo: '/pages'});
     //$routeProvider.otherwise({redirectTo: '/welcome'});
-}]);
+}]).
+filter("pagesFilter", function($filter) {
+    return function(pages, search) {
+    	var result = search ? $filter('filter')(pages, search) : [];
+    	return result.length < 20 ? result : [];
+    }
+});;

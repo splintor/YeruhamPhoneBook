@@ -1,9 +1,6 @@
 Find how to show HTML content
-Hide Chevron, and make only clicking title open a page
 Flip back button
-Make list items with variable size
-Change text content color to be more "live"
 Make sure phone and e-mails are clickable in list view
-Only show list when searching something (maybe under 30 results?)
-Vertically align app title
 Update data from site
+Animate results as they are filtered - http://docs.angularjs.org/api/ngAnimate.$animate
+Sort results better, putting items with searched items in their title first

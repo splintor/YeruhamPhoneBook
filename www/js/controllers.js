@@ -3,6 +3,7 @@
 angular.module('myApp.controllers', [])
     .controller('MainCtrl', ['$scope', '$rootScope', '$window', '$location', function ($scope, $rootScope, $window, $location) {
         $scope.slide = '';
+        $scope.orderProp = 'title';
         $rootScope.back = function() {
           $scope.slide = 'slide-right';
           $window.history.back();

@@ -3,6 +3,7 @@
 angular.module('myApp.controllers', [])
     .controller('MainCtrl', ['$scope', '$rootScope', '$window', '$location', function ($scope, $rootScope, $window, $location) {
         $scope.slide = '';
+        $scope.orderProp = 'title';
         $rootScope.back = function() {
           $scope.slide = 'slide-right';
           $window.history.back();
@@ -16,5 +17,5 @@ angular.module('myApp.controllers', [])
         $scope.pages = Page.query();
     }])
     .controller('PageDetailCtrl', ['$scope', '$routeParams', 'Page', function ($scope, $routeParams, Page) {
-        $scope.page = Page.get({pageName: $routeParams.pageName});
+        $scope.page = Page.get({name: $routeParams.pageName});
     }])

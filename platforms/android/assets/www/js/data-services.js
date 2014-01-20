@@ -25,7 +25,7 @@
                         return pages;
                     },
                     get: function (page) {
-                        return findByName(parseInt(page.name));
+                        return findByName(page.name);
                     }
                 }
 
