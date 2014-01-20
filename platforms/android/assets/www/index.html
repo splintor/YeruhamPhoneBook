@@ -17,27 +17,25 @@
     specific language governing permissions and limitations
     under the License.
 -->
-<html>
+<html ng-app="myApp">
     <head>
-        <meta charset="utf-8" />
+        <meta charset="utf-8">
         <title>ספר הטלפונים של ירוחם</title>
-        <link href="css/main.css" rel="stylesheet" type="text/css" />
-    </head>
-    <body>
-        <div class="app">
-            <header data-role="header">
-                <div data-role="navbar">
-                    <span data-role="view-title"><a href="https://sites.google.com/site/yeruchamphonebook/" target="_system">ספר הטלפונים של ירוחם</a></span>
-                </div>
-            </header>
-            <form>
-                <input type="search" class="tlt" name="searchText" id="searchText" autocomplete="on" autofocus="autofocus" placeholder="חפש שם או מוסד" />
-            </form>
-        </div>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <link href="topcoat/css/topcoat-mobile-light.min.css" rel="stylesheet">
+        <link href="css/styles.css" rel="stylesheet">
         <script type="text/javascript" src="phonegap.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>
-        <script type="text/javascript">
-            app.initialize();
-        </script>
+        <script src="lib/angular.min.js"></script>
+        <script src="lib/angular-touch.min.js"></script>
+        <script src="lib/angular-resource.min.js"></script>
+        <script src="lib/angular-animate.min.js"></script>
+        <script src="lib/angular-route.min.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/controllers.js"></script>
+        <script src="js/currentData.js"></script>
+        <script src="js/data-services.js"></script>
+    </head>
+    <body ng-controller="MainCtrl">
+        <div ng-view ng-class="slide"></div>
     </body>
 </html>
