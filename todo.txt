@@ -1,6 +1,7 @@
+Sort results better, putting items with searched items in their title first
 Find how to show HTML content
 Flip back button
 Make sure phone and e-mails are clickable in list view
 Update data from site
 Animate results as they are filtered - http://docs.angularjs.org/api/ngAnimate.$animate
-Sort results better, putting items with searched items in their title first
+Show keyboard when application opens
