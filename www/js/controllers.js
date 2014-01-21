@@ -7,26 +7,30 @@ angular.module('myApp.controllers', [])
           $scope.slide = 'slide-right';
           $window.history.back();
         }
-        $rootScope.go = function(path){
+        $rootScope.go = function(path, currentSearch){
+          $rootScope.rememberedSearch = currentSearch;
           $scope.slide = 'slide-left';
           $location.url(path);
         }
     }])
-    .controller('PageListCtrl', ['$scope', 'Page', function ($scope, Page) {
+    .controller('PageListCtrl', ['$scope', '$rootScope', 'Page', function ($scope, $rootScope, Page) {
         $scope.pages = Page.query();
+        $scope.search = $rootScope.rememberedSearch;
         var pad = "00000"
-        $scope.padNum = function(n) {
+        var padNum = function(n) {
             var s = '' + n;
             return pad.substring(0, pad.length - s.length) + s;
         }
+        
+        $scope.trimText = function(t, n) { return t.length > n ? t.substring(0, n) + "..." : t; }
         $scope.orderFunc = function(page) { 
-            var search = $scope.$rootScope.search;
+            var search = $scope.search;
             if(typeof search != 'string' || search == '') return page.title;
             search = search.toLowerCase();
             var titleIndex =  page.title.toLowerCase().indexOf(search); 
-            if(titleIndex > -1) return "A" + $scope.padNum(titleIndex) + page.title;
+            if(titleIndex > -1) return "A" + padNum(titleIndex) + page.title;
             var textIndex =  page.text.toLowerCase().indexOf(search); 
-            if(textIndex > -1) return "B" + $scope.padNum(textIndex) + page.title;
+            if(textIndex > -1) return "B" + padNum(textIndex) + page.title;
             return "C" + page.title;
         }
     }])

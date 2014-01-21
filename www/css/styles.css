@@ -27,7 +27,6 @@ body { direction: rtl; }
 }
 
 .back-button {
-    top: 10px;
     position: absolute;
 }
 

@@ -1,4 +1,3 @@
-Flip back button
 Make sure phone and e-mails are clickable in list view
 Update data from site
 Animate results as they are filtered - http://docs.angularjs.org/api/ngAnimate.$animate
