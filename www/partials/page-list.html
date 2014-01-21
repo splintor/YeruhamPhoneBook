@@ -4,11 +4,11 @@
     </div>
 </div>
 <div class="search-bar">
-    <input ng-model="search" type="search" class="topcoat-search-input search-key" autofocus="autofocus">
+    <input ng-model="$rootScope.search" type="search" class="topcoat-search-input search-key" autofocus="autofocus">
 </div>
 <div class="topcoat-list__container scroller" style="top:118px;">
     <ul class="topcoat-list list">
-        <li ng-repeat="page in pages | pagesFilter:search | orderBy:orderProp" class="topcoat-list__item">
+        <li ng-repeat="page in pages | pagesFilter:$rootScope.search | orderBy:orderFunc" class="topcoat-list__item">
             <p>
                 <a ng-click="go('/pages/' + page.name)">{{page.title}}</a>
             </p>
