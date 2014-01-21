@@ -4,6 +4,7 @@ angular.module('myApp', [
     'ngTouch',
     'ngRoute',
     'ngAnimate',
+    'ngSanitize',
     'myApp.controllers',
     'myApp.dataServices'
 ]).

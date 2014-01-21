@@ -21,6 +21,11 @@ body { direction: rtl; }
     padding: 0 15px !important;
 }
 
+.details .scroller
+{
+    padding: 10px;
+}
+
 .back-button {
     top: 10px;
     position: absolute;
@@ -30,7 +35,6 @@ body { direction: rtl; }
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     position: absolute;
-    top: 168px;
     bottom: 0px;
     left: 0px;
     right: 0px;

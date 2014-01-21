@@ -1,4 +1,3 @@
-Find how to show HTML content
 Flip back button
 Make sure phone and e-mails are clickable in list view
 Update data from site
