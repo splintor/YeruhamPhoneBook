@@ -1,4 +1,3 @@
 Animate results as they are filtered - http://docs.angularjs.org/api/ngAnimate.$animate
 Show keyboard when application opens
-Add link to the site
 Update data from site
