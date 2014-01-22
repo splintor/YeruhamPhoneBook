@@ -21,8 +21,8 @@ filter("pagesFilter", function($filter) {
     	var searchFunc = function(value) {
     		return value.title.toLowerCase().indexOf(lowerCaseSearch) > -1 ||
     			   value.text.toLowerCase().indexOf(lowerCaseSearch) > -1;
-    	}
-    	var result = $filter('filter')(pages, searchFunc);
+    	};
+        var result = $filter('filter')(pages, searchFunc);
     	return result.length < 20 ? result : [];
-    }
+    };
 });

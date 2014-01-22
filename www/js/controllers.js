@@ -6,13 +6,13 @@ angular.module('myApp.controllers', [])
         $rootScope.back = function() {
           $scope.slide = 'slide-right';
           $window.history.back();
-        }
+        };
         $rootScope.go = function(path, currentSearch){
           $rootScope.rememberedSearch = currentSearch;
           $scope.slide = 'slide-left';
           $location.url(path);
-        }
-         $rootScope.linkify = function(t, onlyNumbers) {
+        };
+        $rootScope.linkify = function(t, onlyNumbers) {
             // taken from http://stackoverflow.com/a/3890175/46635
 
             if(!onlyNumbers)
@@ -35,34 +35,32 @@ angular.module('myApp.controllers', [])
             t = t.replace(replacePattern4, '<a href="tel:$1">$1</a>');
 
             return t;            
-         }
+         };
     }])
-    .controller('PageListCtrl', ['$scope', '$rootScope', 'Page', function ($scope, $rootScope, Page) {
-        $scope.pages = Page.query();
+    .controller('PageListCtrl', ['$scope', '$rootScope', 'PageTable', function ($scope, $rootScope, pageTable) {
+        $scope.pages = pageTable.getAllPages();
         $scope.search = $rootScope.rememberedSearch;
         $scope.linkify = $rootScope.linkify;
-        var pad = "00000"
+        var pad = "00000";
         var padNum = function(n) {
             var s = '' + n;
             return pad.substring(0, pad.length - s.length) + s;
-        }
-        
+        };
         $scope.trimText = function(t, n) { 
             return t.length > n ? t.substring(0, n) + "..." : t;
-        }
-
-        $scope.orderFunc = function(page) { 
+        };
+        $scope.orderFunc = function(p) { 
             var search = $scope.search;
-            if(typeof search != 'string' || search == '') return page.title;
+            if(typeof search != 'string' || search == '') return p.title;
             search = search.toLowerCase();
-            var titleIndex =  page.title.toLowerCase().indexOf(search); 
-            if(titleIndex > -1) return "A" + padNum(titleIndex) + page.title;
-            var textIndex =  page.text.toLowerCase().indexOf(search); 
-            if(textIndex > -1) return "B" + padNum(textIndex) + page.title;
-            return "C" + page.title;
-        }
+            var titleIndex =  p.title.toLowerCase().indexOf(search); 
+            if(titleIndex > -1) return "A" + padNum(titleIndex) + p.title;
+            var textIndex =  p.text.toLowerCase().indexOf(search); 
+            if(textIndex > -1) return "B" + padNum(textIndex) + p.title;
+            return "C" + p.title;
+        };
     }])
-    .controller('PageDetailCtrl', ['$scope', '$routeParams', '$rootScope', 'Page', function ($scope, $routeParams, $rootScope, Page) {
-        $scope.page = Page.get({name: $routeParams.pageName});
+    .controller('PageDetailCtrl', ['$scope', '$routeParams', '$rootScope', 'PageTable', function ($scope, $routeParams, $rootScope, pageTable) {
+        $scope.page = pageTable.getPage({ name: $routeParams.pageName });
         $scope.linkify = $rootScope.linkify;
-    }])
+    }]);

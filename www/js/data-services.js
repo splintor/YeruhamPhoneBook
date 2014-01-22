@@ -18,13 +18,13 @@
         };
 
     angular.module('myApp.dataServices', [])
-        .factory('Page', [
+        .factory('PageTable', [
             function () {
                 return {
-                    query: function () {
+                    getAllPages: function () {
                         return pages;
                     },
-                    get: function (page) {
+                    getPage: function (page) {
                         return findByName(page.name);
                     }
                 }
