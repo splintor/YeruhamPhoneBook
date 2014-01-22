@@ -18,11 +18,24 @@ body { direction: rtl; }
 }
 
 .topcoat-list__item {
-    padding: 0 15px !important;
+    padding: 0px 15px !important;
+}
+
+.topcoat-navigation-bar {
+    padding: 0px !important;
+    text-align: center;
+}
+
+.right {
+    float: right;
+}
+
+.details .scroller
+{
+    padding: 10px;
 }
 
 .back-button {
-    top: 10px;
     position: absolute;
 }
 
@@ -30,7 +43,6 @@ body { direction: rtl; }
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     position: absolute;
-    top: 168px;
     bottom: 0px;
     left: 0px;
     right: 0px;
@@ -59,7 +71,7 @@ body { direction: rtl; }
     width: 100%;
 }
 
-a {
+h1 a {
     text-decoration: none;
     color: inherit;
     -webkit-touch-callout: none;
