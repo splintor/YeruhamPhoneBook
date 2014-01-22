@@ -12,17 +12,45 @@ angular.module('myApp.controllers', [])
           $scope.slide = 'slide-left';
           $location.url(path);
         }
+         $rootScope.linkify = function(t, onlyNumbers) {
+            // taken from http://stackoverflow.com/a/3890175/46635
+
+            if(!onlyNumbers)
+            {
+                //URLs starting with http://, https://, or ftp://
+                var replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+                t = t.replace(replacePattern1, '<a href="$1" target="_blank">$1</a>');
+
+                //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+                var replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+                t = t.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+                //Change email addresses to mailto: links.
+                var replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+                t = t.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
+            }
+
+            //Change phone numbers to tel:: links.
+            var replacePattern4 = /(\b[0-9][0-9\-\_\.]{5,10}\b)/gim;
+            t = t.replace(replacePattern4, '<a href="tel:$1">$1</a>');
+
+            return t;            
+         }
     }])
     .controller('PageListCtrl', ['$scope', '$rootScope', 'Page', function ($scope, $rootScope, Page) {
         $scope.pages = Page.query();
         $scope.search = $rootScope.rememberedSearch;
+        $scope.linkify = $rootScope.linkify;
         var pad = "00000"
         var padNum = function(n) {
             var s = '' + n;
             return pad.substring(0, pad.length - s.length) + s;
         }
         
-        $scope.trimText = function(t, n) { return t.length > n ? t.substring(0, n) + "..." : t; }
+        $scope.trimText = function(t, n) { 
+            return t.length > n ? t.substring(0, n) + "..." : t;
+        }
+
         $scope.orderFunc = function(page) { 
             var search = $scope.search;
             if(typeof search != 'string' || search == '') return page.title;
@@ -34,6 +62,7 @@ angular.module('myApp.controllers', [])
             return "C" + page.title;
         }
     }])
-    .controller('PageDetailCtrl', ['$scope', '$routeParams', 'Page', function ($scope, $routeParams, Page) {
+    .controller('PageDetailCtrl', ['$scope', '$routeParams', '$rootScope', 'Page', function ($scope, $routeParams, $rootScope, Page) {
         $scope.page = Page.get({name: $routeParams.pageName});
+        $scope.linkify = $rootScope.linkify;
     }])

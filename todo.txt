@@ -1,4 +1,3 @@
-Make sure phone and e-mails are clickable in list view
 Animate results as they are filtered - http://docs.angularjs.org/api/ngAnimate.$animate
 Show keyboard when application opens
 Add link to the site
