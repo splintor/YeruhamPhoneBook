@@ -12,7 +12,7 @@
             <p>
                 <a ng-click="go('/pages/' + page.name, search)">{{page.title}}</a>
             </p>
-            <p ng-bind-html="linkify(trimText(page.text, 300))"></p>
+            <p ng-bind-html="linkify(trimText(page.text, 150))"></p>
         </li>
     </ul>
 </div>
