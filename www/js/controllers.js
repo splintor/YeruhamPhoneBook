@@ -31,7 +31,7 @@ angular.module('myApp.controllers', [])
             }
 
             //Change phone numbers to tel:: links.
-            var replacePattern4 = /(\b[0-9][0-9\-\_\.]{5,10}\b)/gim;
+            var replacePattern4 = /(\b[0-9][0-9\-\_\.]{5,11}\b)/gim;
             t = t.replace(replacePattern4, '<a href="tel:$1">$1</a>');
 
             return t;            
