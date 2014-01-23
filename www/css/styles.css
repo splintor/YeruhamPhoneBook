@@ -26,8 +26,8 @@ body { direction: rtl; }
     text-align: center;
 }
 
-.right {
-    float: right;
+.details {
+    font-size: 1.2em;
 }
 
 .details .scroller
@@ -36,7 +36,7 @@ body { direction: rtl; }
 }
 
 .back-button {
-    position: absolute;
+    vertical-align: middle;
 }
 
 .scroller {
