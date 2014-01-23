@@ -9,10 +9,8 @@
 <div class="topcoat-list__container scroller" style="top:118px;">
     <ul class="topcoat-list list">
         <li ng-repeat="page in pages | pagesFilter:search | orderBy:orderFunc" class="topcoat-list__item">
-            <span ng-click="go('/pages/' + page.name, search, $event)">
-                <p>{{page.title}}</p>
-                <p ng-bind-html="linkify(trimText(page.text, 150))"></p>
-            </span>
+            <p><a ng-click="go('/pages/' + page.name, search)">{{page.title}}</a></p>
+            <p ng-bind-html="linkify(trimText(page.text, 150))"></p>
         </li>
     </ul>
 </div>
