@@ -56,6 +56,9 @@
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="..\todo.txt">
+      <Link>todo.txt</Link>
+    </Content>
     <Content Include="config.xml" />
     <Content Include="css\images\back_light.svg" />
     <Content Include="css\images\call.svg" />

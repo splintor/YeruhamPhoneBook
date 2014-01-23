@@ -18,16 +18,16 @@ body { direction: rtl; }
 }
 
 .topcoat-list__item {
-    padding: 0px 15px !important;
+    padding: 0 15px !important;
 }
 
 .topcoat-navigation-bar {
-    padding: 0px !important;
+    padding: 0 !important;
     text-align: center;
 }
 
-.right {
-    float: right;
+.details {
+    font-size: 1.2em;
 }
 
 .details .scroller
@@ -36,16 +36,16 @@ body { direction: rtl; }
 }
 
 .back-button {
-    position: absolute;
+    vertical-align: middle;
 }
 
 .scroller {
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     position: absolute;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .topcoat-icon--back {
@@ -90,14 +90,14 @@ h1 a {
 }
 
 .details h1 {
-    padding: 12px 0px 4px 0px;
-    margin: 0px 0px 0px 0px;
+    padding: 12px 0 4px 0;
+    margin: 0;
     font-size: 1.2rem;
 }
 
 .details h2 {
-    padding: 0px 0px 0px 0px;
-    margin: 0px 0px 0px 0px;
+    padding: 0;
+    margin: 0;
     font-size: 1.1rem;
     font-weight: normal;
     color: #888;
@@ -110,29 +110,21 @@ h1 a {
 .list > li {
     position: relative;
     clear: both;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }
 
 .list > li:nth-of-type(1) {
     border-top: none;
 }
 
-.list > li > a {
-    margin: 0px;
-    display: block;
-    height: 57px;
-    padding: 4px;
-}
-
-
-.list > li > p:nth-of-type(1) {
-    margin: 8px 0px 6px 0px;
+.list > li p:nth-of-type(1) {
+    margin: 8px 0 6px 0;
     font-weight: bold;
 }
 
 .list > li p:nth-of-type(2) {
-    margin: 0px 0px 4px 0px;
+    margin: 0 0 4px 0;
     color: #222;
 }
 
@@ -147,71 +139,9 @@ h1 a {
     background-color: #d6d6d6;
 }
 
-.actions > li > a {
-    padding-left: 12px;
-}
-
-.action-icon {
-    position: absolute !important;
-    top: 18px;
-    right: 20px !important;
-    width: 28px !important;
-    height: 28px;
-}
-
-.actions li p:nth-of-type(1) {
-    color:  #5DC1FF;
-    font-size: 0.9em;
-    font-weight: lighter;
-}
-
-.actions li p:nth-of-type(2) {
-    color: inherit;
-}
-
 ul {
     clear:both;
     border-top: none !important;
-}
-
-.icon-call {
-    background: transparent url(images/call.svg);
-    background-repeat: no-repeat;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    background-size: cover;
-}
-
-.icon-sms {
-    background: transparent url(images/chat.svg);
-    background-repeat: no-repeat;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    background-size: cover;
-}
-
-.icon-mail {
-    background: transparent url(images/email.svg);
-    background-repeat: no-repeat;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    background-size: cover;
-}
-
-.icon-manager {
-    background: transparent url(images/next.svg);
-    background-repeat: no-repeat;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    background-size: cover;
-}
-
-.icon-reports {
-    background: transparent url(images/next.svg);
-    background-repeat: no-repeat;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    background-size: cover;
 }
 
 .chevron {
@@ -238,7 +168,6 @@ ul {
     -webkit-transition: .25s ease-in-out;
     transition:  .25s ease-in-out;
 }
-
 
 .slide-left.ng-enter {
     z-index: 101;
