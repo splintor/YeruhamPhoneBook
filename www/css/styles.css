@@ -118,20 +118,12 @@ h1 a {
     border-top: none;
 }
 
-.list > li > a {
-    margin: 0px;
-    display: block;
-    height: 57px;
-    padding: 4px;
-}
-
-
-.list > li > p:nth-of-type(1) {
+.list > li span p:nth-of-type(1) {
     margin: 8px 0px 6px 0px;
     font-weight: bold;
 }
 
-.list > li p:nth-of-type(2) {
+.list > li span p:nth-of-type(2) {
     margin: 0px 0px 4px 0px;
     color: #222;
 }
