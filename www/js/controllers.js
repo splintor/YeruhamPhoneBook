@@ -5,13 +5,13 @@ angular.module('myApp.controllers', [])
         '$scope', '$rootScope', '$window', '$location', function($scope, $rootScope, $window, $location) {
             $scope.slide = '';
             $rootScope.back = function() {
-                $scope.slide = 'slide-right';
+                $scope.slide = 'slide-left';
                 $window.history.back();
             };
             $rootScope.go = function(path, currentSearch, $event) {
                 if ($event && $event.target && $event.target.href) return; // ignore if a link was clicked
                 $rootScope.rememberedSearch = currentSearch;
-                $scope.slide = 'slide-left';
+                $scope.slide = 'slide-right';
                 $location.url(path);
             };
             $rootScope.linkify = function(t, onlyNumbers) {
