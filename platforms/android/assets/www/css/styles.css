@@ -121,6 +121,9 @@ h1 a {
 .list > li p:nth-of-type(1) {
     margin: 8px 0 6px 0;
     font-weight: bold;
+    /* Android bug seems to cause Hebrew text not to be displayed as bold, so we are making it larger and blue, to make it clearer that this is a clickable header */
+    font-size: 1.1em;
+    color: blue;
 }
 
 .list > li p:nth-of-type(2) {
