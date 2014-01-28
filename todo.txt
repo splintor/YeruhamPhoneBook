@@ -10,4 +10,3 @@ Fix slide animation (on android)
 Update data from site
 Show text and image when no search is entered, and when there are no results
 Check if we can remove permissions
-Change results header color to blue
