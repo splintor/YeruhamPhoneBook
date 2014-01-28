@@ -1,10 +1,10 @@
 Show keyboard when application opens
 Change Search icon to Cancel button when typing
-Check why in-side links don't work in results list
-Change in-site links to open in the application
 Try to fix list items to open (on the phone)
 Animate results as they are filtered
 Fix slide animation (on android)
 Update data from site
-Show text and image when no search is entered, and when there are no results
 Add android menu to send feedback - http://stackoverflow.com/questions/8676211/phonegap-menus-and-sub-menus
+
+? Show text and image when no search is entered, and when there are no results
+? Change in-site links to open in the application
