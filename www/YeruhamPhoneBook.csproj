@@ -133,7 +133,6 @@
     <Content Include="res\screen\windows-phone\screen-portrait.jpg" />
     <Content Include="topcoat\css\topcoat-mobile-light.min.css" />
     <Content Include="topcoat\font\LICENSE.txt" />
-    <Content Include="topcoat\img\avatar.png" />
     <Content Include="topcoat\img\bg_dark.png" />
     <Content Include="topcoat\img\breadcrumb.png" />
     <Content Include="topcoat\img\checkbox_checked.png" />
@@ -145,7 +144,6 @@
     <Content Include="topcoat\img\dark-combo-box-bg2x.png" />
     <Content Include="topcoat\img\dark-grips.png" />
     <Content Include="topcoat\img\dark-sprites2x.png" />
-    <Content Include="topcoat\img\dialog-zone-bg.png" />
     <Content Include="topcoat\img\drop-down-triangle-dark.png" />
     <Content Include="topcoat\img\drop-down-triangle.png" />
     <Content Include="topcoat\img\hamburger_bw.svg" />
