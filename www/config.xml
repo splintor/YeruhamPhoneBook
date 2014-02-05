@@ -8,6 +8,9 @@
         שמוליק פלינט
     </author>
     <feature name="http://api.phonegap.com/1.0/device" />
+    <feature name="SoftKeyboardPlugin">
+        <param name="android-package" value="net.same2u.phonegap.plugin.SoftKeyboard" />
+    </feature>
     <preference name="permissions" value="none" />
     <preference name="orientation" value="default" />
     <preference name="target-device" value="universal" />

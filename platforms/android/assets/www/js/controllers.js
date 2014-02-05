@@ -40,7 +40,7 @@ angular.module('myApp.controllers', [])
         }
     ])
     .controller('PageListCtrl', [
-        '$scope', '$rootScope', 'PageTable', '$timeout', function($scope, $rootScope, pageTable, $timeout) {
+        '$scope', '$rootScope', 'PageTable', '$timeout', function ($scope, $rootScope, pageTable, $timeout) {
             $scope.pages = pageTable.getAllPages();
             $scope.search = $rootScope.rememberedSearch;
             $scope.linkify = $rootScope.linkify;
@@ -64,8 +64,16 @@ angular.module('myApp.controllers', [])
             };
             $scope.clearSearch = function() {
                 $scope.search = '';
+                $timeout(function() { $scope.searchFocus = true; }, 0);
+                $timeout(function() { $scope.searchFocus = true; }, 200);
                 $timeout(function() { $scope.searchFocus = true; }, 400);
             };
+            $scope.showKeyboard = function() {
+                if (plugins && plugins.softKeyboard) {
+                    plugins.softKeyboard.show(function() {}, function(errDescr) { $scope.search = "Error occured: " + errDescr; });
+                }
+            };
+            $timeout($scope.showKeyboard);
         }
     ])
     .controller('PageDetailCtrl', [

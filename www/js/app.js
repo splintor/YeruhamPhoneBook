@@ -43,6 +43,7 @@ angular.module('myApp', [
             scope.$watch(attrs.focusOn, function (value) {
                 if (value === true) {
                     element[0].focus();
+                    scope.showKeyboard();
                     scope[attrs.focusOn] = false;
                 }
             });
