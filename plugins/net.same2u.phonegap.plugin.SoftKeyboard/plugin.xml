@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="net.same2u.phonegap.plugin.SoftKeyboard"
+    version="0.0.1">
+
+    <name>Soft-Keyboard Display Control for Android</name>
+
+  <description>
+    Hides or shows the soft (on-screen) keyboard on demand.
+  </description>
+
+  <!-- 
+    !! This file, though required by the app, won't be reachable by it, because it gets put beneath assets/www/, where the app - which lives in assets/Application/build/ - can't reach it.
+    !! Is there a good reason to still have this here?
+  -->  
+  <asset src="www/softkeyboard.js" target="softkeyboard.js" />
+
+  <engines>
+    <engine name="cordova" version=">=2.0.0" />
+  </engines>
+
+  <platform name="android">
+
+    <config-file target="res/xml/config.xml" parent="plugins">
+      <plugin name="SoftKeyboardPlugin" value="net.same2u.phonegap.plugin.SoftKeyboard" onload="true"/>
+    </config-file>
+
+    <source-file src="src/android/net/same2u/phonegap/plugin/SoftKeyboard.java" target-dir="src/net/same2u/phonegap/plugin/" />
+
+  </platform>
+
+</plugin>

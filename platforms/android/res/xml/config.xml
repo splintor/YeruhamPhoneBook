@@ -10,6 +10,9 @@
     <feature name="App">
         <param name="android-package" value="org.apache.cordova.App" />
     </feature>
+    <plugins>
+        <plugin name="SoftKeyboardPlugin" onload="true" value="net.same2u.phonegap.plugin.SoftKeyboard" />
+    </plugins>
     <name>ספר הטלפונים של ירוחם</name>
     <description>
         אפליקציה לגישה נוחה לאתר ספר הטחפונים של ירוחם
@@ -18,6 +21,9 @@
         שמוליק פלינט
     </author>
     <feature name="http://api.phonegap.com/1.0/device" />
+    <feature name="SoftKeyboardPlugin">
+        <param name="android-package" value="net.same2u.phonegap.plugin.SoftKeyboard" />
+    </feature>
     <preference name="permissions" value="none" />
     <preference name="orientation" value="default" />
     <preference name="target-device" value="universal" />
@@ -33,6 +39,7 @@
     <preference name="disable-cursor" value="false" />
     <preference name="android-minSdkVersion" value="7" />
     <preference name="android-installLocation" value="auto" />
+    <preference name="KeyboardDisplayRequiresUserAction" value="false" />
     <icon src="icon.png" />
     <icon gap:density="ldpi" gap:platform="android" src="res/icon/android/icon-36-ldpi.png" />
     <icon gap:density="mdpi" gap:platform="android" src="res/icon/android/icon-48-mdpi.png" />
