@@ -4,7 +4,9 @@
     </div>
 </div>
 <div class="search-bar">
-    <input ng-model="search" type="search" class="topcoat-search-input" autofocus="autofocus">
+    <input ng-model="search" type="search" class="topcoat-search-input" ng-class="search.length > 0 ? 'non-empty-search' : null"
+           autofocus="autofocus" focus-on="searchFocus">
+    <div class="cancel-button" ng-show="search.length > 0" ng-click="clearSearch()">&times;</div>
 </div>
 <div class="topcoat-list__container scroller" style="top:118px;">
     <ul class="topcoat-list list">

@@ -40,7 +40,7 @@ angular.module('myApp.controllers', [])
         }
     ])
     .controller('PageListCtrl', [
-        '$scope', '$rootScope', 'PageTable', function($scope, $rootScope, pageTable) {
+        '$scope', '$rootScope', 'PageTable', '$timeout', function($scope, $rootScope, pageTable, $timeout) {
             $scope.pages = pageTable.getAllPages();
             $scope.search = $rootScope.rememberedSearch;
             $scope.linkify = $rootScope.linkify;
@@ -61,6 +61,10 @@ angular.module('myApp.controllers', [])
                 var textIndex = p.text.toLowerCase().indexOf(search);
                 if (textIndex > -1) return "B" + padNum(textIndex) + p.title;
                 return "C" + p.title;
+            };
+            $scope.clearSearch = function() {
+                $scope.search = '';
+                $timeout(function() { $scope.searchFocus = true; }, 400);
             };
         }
     ])
