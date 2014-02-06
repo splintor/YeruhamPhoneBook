@@ -74,6 +74,7 @@ angular.module('myApp.controllers', [])
                 }
             };
             $timeout($scope.showKeyboard);
+            $timeout($scope.showKeyboard, 200);
         }
     ])
     .controller('PageDetailCtrl', [
