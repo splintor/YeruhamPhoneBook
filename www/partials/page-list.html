@@ -8,7 +8,7 @@
            autofocus="autofocus" focus-on="searchFocus">
     <div class="cancel-button" ng-show="search.length > 0" ng-click="clearSearch()">&times;</div>
 </div>
-<div class="topcoat-list__container scroller" style="top:118px;">
+<div class="topcoat-list__container scroller" style="top:118px;" ng-if="search.length > 0">
     <ul class="topcoat-list list">
         <li ng-repeat="page in pages | pagesFilter:search | orderBy:orderFunc" class="topcoat-list__item">
             <p><a ng-click="go('/pages/' + page.name, search)">{{page.title}}</a></p>
@@ -17,11 +17,11 @@
     </ul>
 </div>
 
-<div class="logo" ng-if="(search + '').length == 0">
-    <div>
-        <img src="icon.png" />
-    </div>
-    <div>
-        לתגובות והצעות <a href="mailto:splintor@gmail.com">לחץ כאן</a>
-    </div>
-</div>
+<h3 class="logo" ng-if="search == null || search.length == 0">
+        <div>
+            <!-- ReSharper disable Html.PathError -->
+            <img src="css/images/round_irus.png" alt="ספר הטלפונים של ירוחם" />
+            <!-- ReSharper restore Html.PathError -->
+        </div>
+        לתגובות והצעות<br /> <a href="mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם">לחץ כאן</a>
+</h3>
