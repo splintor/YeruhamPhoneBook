@@ -21,6 +21,16 @@ body { direction: rtl; }
     height: 3rem;
 }
 
+.logo {
+    margin: 10px 0 0 0;
+    padding: 0;
+    text-align: center;
+}
+
+.logo h3 {
+    margn: 7px 0;
+}
+
 .non-empty-search {
     background-image: none;
 }
