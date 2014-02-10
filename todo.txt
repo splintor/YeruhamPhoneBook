@@ -1,5 +1,4 @@
 Try to fix list items to open when click anywhere on the item and not only on title link (on the phone)
-Show Irus icon on start page
 
 ? Make list item header in background color (since hebrew text don't get bold on android)
 ? Add android menu to send feedback - http://stackoverflow.com/questions/8676211/phonegap-menus-and-sub-menus
