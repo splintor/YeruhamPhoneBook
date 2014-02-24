@@ -15,8 +15,16 @@ angular.module('myApp', [
     //$routeProvider.otherwise({redirectTo: '/welcome'});
 }])
 .filter("pagesFilter", function($filter) {
-    return function(pages, search) {
-        if(typeof search != 'string' || search == '') return [];
+    return function (pages, $scope) {
+        if ($scope.resultsOverflowTimeout) {
+            $scope.$timeout.cancel($scope.resultsOverflowTimeout);
+        }
+
+        var search = $scope.search;
+        if (typeof search != 'string' || search == '') {
+            $scope.resultsOverflow = -1;
+            return [];
+        }
         var parseToWords = function (value) {
             var pos = value.indexOf('"');
             if (pos == -1) return value.split(" ");
@@ -34,7 +42,21 @@ angular.module('myApp', [
             return searchWords.length > 0 && searchWords.every(function(word) { return matchWord(page, word); });
         };
         var result = $filter('filter')(pages, searchFunc);
-        return result.length < 20 ? result : [];
+        if (result.length > 40) {
+            var resultsOverflow = result.length;
+            if ($scope.resultsOverflow > 0) { // we already show overflow message, so immedately update it
+                $scope.resultsOverflow = resultsOverflow;
+            } else { // only show overflow message after two seconds the user hasn't types, to reduce noise.
+                $scope.resultsOverflowTimeout = $scope.$timeout(function() {
+                    $scope.resultsOverflow = resultsOverflow;
+                }, 2000);
+            }
+
+            return [];
+        }
+
+        $scope.resultsOverflow = result.length == 0 ? 0 : -1;
+        return result;
     };
 })
 .directive('focusOn', function () {

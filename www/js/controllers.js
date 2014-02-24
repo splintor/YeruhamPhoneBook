@@ -44,6 +44,8 @@ angular.module('myApp.controllers', [])
             $scope.pages = pageTable.getAllPages();
             $scope.search = $rootScope.rememberedSearch;
             $scope.linkify = $rootScope.linkify;
+            $scope.resultsOverflow = -1;
+            $scope.$timeout = $timeout;
             var pad = "00000";
             var padNum = function(n) {
                 var s = '' + n;

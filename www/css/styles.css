@@ -21,6 +21,10 @@ body { direction: rtl; }
     height: 3rem;
 }
 
+.not-found-search { color: red; }
+
+.too-much-results .results-count { color: teal; }
+
 .logo {
     margin: 10px 0 0 0;
     padding: 0;
