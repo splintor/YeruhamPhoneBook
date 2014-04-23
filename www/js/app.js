@@ -47,6 +47,7 @@ angular.module('myApp', [
             if ($scope.resultsOverflow > 0) { // we already show overflow message, so immedately update it
                 $scope.resultsOverflow = resultsOverflow;
             } else { // only show overflow message after two seconds the user hasn't types, to reduce noise.
+                $scope.resultsOverflow = -2;
                 $scope.resultsOverflowTimeout = $scope.$timeout(function() {
                     $scope.resultsOverflow = resultsOverflow;
                 }, 2000);
