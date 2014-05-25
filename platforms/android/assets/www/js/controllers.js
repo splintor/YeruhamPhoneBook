@@ -44,6 +44,11 @@ angular.module('myApp.controllers', [])
             $scope.pages = pageTable.getAllPages();
             $scope.search = $rootScope.rememberedSearch;
             $scope.linkify = $rootScope.linkify;
+            // resultsOverflow can be one of the following values:
+            //   -2 means waiting for timeout to update
+            //   -1 means there was no overflow
+            //   0 means search was not found
+            //   Positive number means the overflow number of results
             $scope.resultsOverflow = -1;
             $scope.$timeout = $timeout;
             var pad = "00000";
