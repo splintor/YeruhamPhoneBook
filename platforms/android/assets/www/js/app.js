@@ -25,6 +25,9 @@ angular.module('myApp', [
             $scope.resultsOverflow = -1;
             return [];
         }
+
+        $scope.updatedPagesCount = 0; // reset update pages count when searching
+
         var parseToWords = function (value) {
             var pos = value.indexOf('"');
             if (pos == -1) return value.split(" ");

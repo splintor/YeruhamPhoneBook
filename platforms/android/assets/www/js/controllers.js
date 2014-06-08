@@ -44,6 +44,27 @@ angular.module('myApp.controllers', [])
             $scope.pages = pageTable.getAllPages();
             $scope.search = $rootScope.rememberedSearch;
             $scope.linkify = $rootScope.linkify;
+            pageTable.onPagesUpdate = function (updatedPagesCount) {
+                console.log("updatedPagesCount: " + updatedPagesCount);
+                if (updatedPagesCount == null) { // database was loaded, and refresh is needed
+                    $scope.pages = pageTable.getAllPages();
+                } else { // only count was updated
+                    $scope.updatedPagesCount = updatedPagesCount;
+                }
+                if (!$scope.$$phase) {
+                    console.log("Calling $scope.$apply()");
+                    $scope.$apply(); // we might need to apply, as this update can occur within a transaction callback, to which PhoneGap is not aware
+                }
+            }
+
+            $scope.forceUpdate = function () {
+                console.log("forceUpdate");
+                $timeout(function () { $scope.searchFocus = true; }, 0);
+                pageTable.forceUpdate();
+            }
+
+            $scope.resetUpdatesPagesCount = function() { $scope.updatedPagesCount = 0; }
+
             // resultsOverflow can be one of the following values:
             //   -2 means waiting for timeout to update
             //   -1 means there was no overflow
@@ -80,13 +101,14 @@ angular.module('myApp.controllers', [])
                     plugins.softKeyboard.show(function() {}, function(errDescr) { $scope.search = "Error occured: " + errDescr; });
                 }
             };
-            $timeout($scope.showKeyboard);
-            $timeout($scope.showKeyboard, 200);
+
+// ReSharper disable once Html.EventNotResolved
+            document.addEventListener("deviceready", $scope.showKeyboard, false);
         }
     ])
     .controller('PageDetailCtrl', [
         '$scope', '$routeParams', '$rootScope', 'PageTable', function($scope, $routeParams, $rootScope, pageTable) {
-            $scope.page = pageTable.getPage({ name: $routeParams.pageName });
+            $scope.page = pageTable.getPage($routeParams.pageName);
             $scope.linkify = $rootScope.linkify;
         }
     ]);

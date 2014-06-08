@@ -31,8 +31,24 @@ body { direction: rtl; }
     text-align: center;
 }
 
-.logo h3 {
-    margn: 7px 0;
+.update-message {
+    margin: 20px 0 0 0;
+    padding: 0;
+    text-align: center;
+}
+
+.during-update {
+    color: gray;
+}
+
+.updates-were-found {
+    color: purple;
+    margin-top: 7px !important;
+}
+
+.updates-were-not-found {
+    color: gray;
+    margin-top: 7px !important;
 }
 
 .non-empty-search {

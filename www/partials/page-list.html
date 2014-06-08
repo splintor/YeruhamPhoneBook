@@ -25,13 +25,33 @@
     </div>
     <a href="mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם">תגובות והצעות</a>
     <br />
-    יתקבלו בברכה
+    יתקבלו בברכה.
 </h3>
 
-<h3 class="logo not-found" ng-show="search.length > 0 && resultsOverflow == 0">
+<h4 class="logo" ng-show="search.length > 0 && resultsOverflow == 0">
     לא נמצאו תוצאות מתאימות לחיפוש <span class="not-found-search">{{search}}</span>
-</h3>
+</h4>
 
-<h3 class="logo too-much-results" ng-show="search.length > 0 && resultsOverflow > 0">
+<h4 class="logo too-much-results" ng-show="search.length > 0 && resultsOverflow > 0">
     נמצאו <span class="results-count">{{resultsOverflow}}</span> תוצאות מתאימות. יש לצמצם את התוצאות ע"י הוספת עוד מילות חיפוש.
-</h3>
+</h4>
+
+<h4 class="update-message" ng-show="updatedPagesCount != -1">
+    <a href="" ng-click="forceUpdate()">בדוק אם יש עדכונים</a>
+</h4>
+
+<h4 class="update-message during-update" ng-show="updatedPagesCount == -1">
+    <div><img src="css/images/ajax-loader.gif" style="vertical-align: middle" />&nbsp;בודק אם יש עדכונים...</div>
+</h4>
+
+<h4 class="update-message updates-were-found" ng-click="resetUpdatesPagesCount()" ng-show="updatedPagesCount > 1">
+    <span>{{updatedPagesCount}}</span> דפים עודכנו.
+</h4>
+
+<h4 class="update-message updates-were-found" ng-click="resetUpdatesPagesCount()" ng-show="updatedPagesCount == 1">
+    דף אחד עודכן.
+</h4>
+
+<h4 class="update-message updates-were-not-found" ng-click="resetUpdatesPagesCount()" ng-show="updatedPagesCount == -2">
+    לא נמצאו עדכונים.
+</h4>
