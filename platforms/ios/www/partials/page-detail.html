@@ -1,0 +1,15 @@
+<div class="topcoat-navigation-bar">
+    <div class="topcoat-navigation-bar__item right full">
+        <h1 class="topcoat-navigation-bar__title">
+            <a class="topcoat-icon-button--quiet back-button" href="" ng-click="back()">
+                <span class="topcoat-icon topcoat-icon--back"></span>
+            </a>
+            <a ng-href="{{page.url}}">{{page.title}}</a>
+        </h1>
+    </div>
+</div>
+
+<div class='details'>
+    <div class="topcoat-list__container scroller" style="top:47px;" ng-bind-html="linkify(page.html, true)"></div>
+</div>
+                
