@@ -4,7 +4,7 @@
     var logInfo = function(s) { console.log(s); }
     var logError = function (s) {
         console.error(s);
-        alert(s);
+        //alert(s);
     }
 
     var pageTable = {
@@ -128,7 +128,7 @@
                         try {
                             data.pages.forEach(function (page) {
                                 tx.executeSql("DELETE FROM pages WHERE url=?", [page.url]);
-                                addPageToDatabase(tx, page);
+                                if (!page.isDeleted) addPageToDatabase(tx, page);
                             });
                             loadDatabase(database);
                             saveLastUpdateDate(data.maxDate);
