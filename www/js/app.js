@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 angular.module('myApp', [
     'ngTouch',
@@ -12,7 +12,6 @@ angular.module('myApp', [
     $routeProvider.when('/pages', {templateUrl: 'partials/page-list.html', controller: 'PageListCtrl'});
     $routeProvider.when('/pages/:pageName', {templateUrl: 'partials/page-detail.html', controller: 'PageDetailCtrl'});
     $routeProvider.otherwise({redirectTo: '/pages'});
-    //$routeProvider.otherwise({redirectTo: '/welcome'});
 }])
 .filter("pagesFilter", function($filter) {
     return function (pages, $scope) {
@@ -26,17 +25,44 @@ angular.module('myApp', [
             return [];
         }
 
+        if (search == "#כולם") {
+            $scope.resultsOverflow = -1;
+            return pages;
+        }
+        else if (search == "#אודות") {
+            $scope.resultsOverflow = -1;
+            return [window.aboutPage];
+        }
+        else if (search == "#חדשים") {
+            $scope.resultsOverflow = -1;
+            return $scope.updatedPages;
+        }
+
         $scope.updatedPagesCount = 0; // reset update pages count when searching
 
         var parseToWords = function (value) {
             var pos = value.indexOf('"');
-            if (pos == -1) return value.split(" ");
+            if (pos == -1) {
+                var words = value.split(" ");
+                for (var i = 0; i < words.length; ++i) {
+                    var match = words[i].match(/^\#\#(.*)/);
+                    if (match) words.splice(i, 1, new RegExp(match[1]));
+                }
+
+                return words;
+            }
+
             var nextPos = value.indexOf('"', pos + 1);
             if (nextPos == -1) return parseToWords(value.replace(/"/, ""));
             return parseToWords(value.substr(0, pos)).concat(value.substr(pos + 1, nextPos - pos - 1)).concat(parseToWords(value.substr(nextPos + 1)));
         };
         var searchWords = parseToWords(search.toLowerCase());
         var matchWord = function (page, word) {
+            if (page.dummyPage) return false;
+            if (word.exec) { // if word was prefixed with ## and was turned into RegExp
+                return word.exec(page.title) || word.exec(page.text) || word.exec(page.text.replace(/-/g, ""));
+            }
+
             return page.title.toLowerCase().indexOf(word) > -1 ||
                    page.text.toLowerCase().indexOf(word) > -1 ||
                    (word.match(/^[\d-]*$/) && page.text.replace(/-/g, "").indexOf(word.replace(/-/g, "")) > -1);

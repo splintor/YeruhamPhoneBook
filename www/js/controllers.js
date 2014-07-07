@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 angular.module('myApp.controllers', [])
     .controller('MainCtrl', [
@@ -44,11 +44,12 @@ angular.module('myApp.controllers', [])
             $scope.pages = pageTable.getAllPages();
             $scope.search = $rootScope.rememberedSearch;
             $scope.linkify = $rootScope.linkify;
-            pageTable.onPagesUpdate = function (updatedPagesCount) {
+            pageTable.onPagesUpdate = function (updatedPagesCount, updatedPages) {
                 console.log("updatedPagesCount: " + updatedPagesCount);
                 if (updatedPagesCount == null) { // database was loaded, and refresh is needed
                     $scope.pages = pageTable.getAllPages();
                 } else { // only count was updated
+                    $scope.updatedPages = updatedPages;
                     $scope.updatedPagesCount = updatedPagesCount;
                 }
                 if (!$scope.$$phase) {
@@ -64,6 +65,10 @@ angular.module('myApp.controllers', [])
             }
 
             $scope.resetUpdatesPagesCount = function() { $scope.updatedPagesCount = 0; }
+            $scope.openUpdatesPages = function () {
+                resetUpdatesPagesCount();
+                $scope.search = "#חדשים";
+            }
 
             // resultsOverflow can be one of the following values:
             //   -2 means waiting for timeout to update

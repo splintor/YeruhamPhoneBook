@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 (function () {
     var logInfo = function(s) { console.log(s); }
@@ -21,8 +21,9 @@
         onPagesUpdate: null,
     }
 
-    var raiseOnPagesUpdate = function(updatedPagesCount) {
-        if (pageTable.onPagesUpdate) pageTable.onPagesUpdate(updatedPagesCount);
+    var raiseOnPagesUpdate = function (updatedPagesCount, updatedPages) {
+        currentData.updatedPages = updatedPages || [];
+        if (pageTable.onPagesUpdate) pageTable.onPagesUpdate(updatedPagesCount, updatedPages);
     }
 
     var onDatabaseTransactionError = function (tx, error) {
@@ -74,11 +75,30 @@
                     });
                 }
                 currentData.pages = pages;
+                window.aboutPage = getAboutPage();
+                currentData.pages.push(aboutPage);
                 logInfo("currentData.pages.length: " + currentData.pages.length);
                 raiseOnPagesUpdate(null); // force list refresh
             });
         }, onDatabaseTransactionError, callback);
     };
+
+    var getAboutPage = function() {
+        var text = 'נכתב ע"י שמוליק פלינט (splintor@gmail.com). \n' +
+            'גרסה 2.\n' +
+            currentData.pages.length + ' דפים';
+        if (currentData.updatedPages && currentData.updatedPages.length) {
+            text += ', ' + currentData.updatedPages.length + ' חדשים';
+        }
+        text += '.\n';
+        return {
+            name: "about-page",
+            title: "אפליקצית ספר הטלפונים של ירוחם",
+            text: text,
+            html: text.replace(/\n/g, '<br>'),
+            dummyPage: true,
+        };
+    }
 
     window.processDatabaseStartup = function() {
         var deferred = window.deferService.defer();
@@ -104,6 +124,9 @@
 
         processDatabaseStartup();
     };
+
+    window.aboutPage = getAboutPage();
+    currentData.pages.push(aboutPage);
 
     // ReSharper disable once Html.EventNotResolved
     document.addEventListener("deviceready", onDeviceReady, false);
@@ -134,7 +157,7 @@
                             saveLastUpdateDate(data.maxDate);
                             var updatedPagesCount = data.pages.length;
                             if (forceUpdate && updatedPagesCount == 0) updatedPagesCount = -2; // mark as not found
-                            raiseOnPagesUpdate(updatedPagesCount);
+                            raiseOnPagesUpdate(updatedPagesCount, data.pages);
                         } catch (updateEx) {
                             logError("Failed to update data. error: " + updateEx);
                             raiseOnPagesUpdate(0); // clear "loading..." message
