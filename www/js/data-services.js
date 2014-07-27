@@ -10,20 +10,28 @@
     var pageTable = {
         getAllPages: function() { return currentData.pages; },
         getPage: function(name) {
-            for (var i = 0; i < currentData.pages.length; ++i) {
-                var p = currentData.pages[i];
-                if (p.name === name) {
-                    return p;
+            try {
+                for (var i = 0; i < currentData.pages.length; ++i) {
+                    var p = currentData.pages[i];
+                    if (p.name === name) {
+                        return p;
+                    }
                 }
+            } catch (exception) {
+                console.log("An exception has occured in getPage: " + exception);
             }
             return null;
         },
         onPagesUpdate: null,
     }
 
-    var raiseOnPagesUpdate = function (updatedPagesCount, updatedPages) {
-        currentData.updatedPages = updatedPages || [];
-        if (pageTable.onPagesUpdate) pageTable.onPagesUpdate(updatedPagesCount, updatedPages);
+    var raiseOnPagesUpdate = function(updatedPagesCount, updatedPages) {
+        try {
+            currentData.updatedPages = updatedPages || [];
+            if (pageTable.onPagesUpdate) pageTable.onPagesUpdate(updatedPagesCount, updatedPages);
+        } catch (exception) {
+            console.log("An exception has occured in raiseOnPagesUpdate: " + exception);
+        }
     }
 
     var onDatabaseTransactionError = function (tx, error) {
@@ -101,19 +109,24 @@
     }
 
     window.processDatabaseStartup = function() {
-        var deferred = window.deferService.defer();
-        logInfo("In processDatabaseStartup");
-        var database = window.openDatabase("YeruhamPhoneBookDB", "1.0", "Yeruham Phonebook Database", 500000);
-        var autoUpdateCallback = function() { tryToUpdateDatabase(database, false); };
-        if (getLastUpdateDate()) {
-            loadDatabase(database, autoUpdateCallback);
-        } else {
-            initializeDatabase(database, autoUpdateCallback);
+        try {
+            var deferred = window.deferService.defer();
+            logInfo("In processDatabaseStartup");
+            var database = window.openDatabase("YeruhamPhoneBookDB", "1.0", "Yeruham Phonebook Database", 500000);
+            var autoUpdateCallback = function() { tryToUpdateDatabase(database, false); };
+            if (getLastUpdateDate()) {
+                loadDatabase(database, autoUpdateCallback);
+            } else {
+                initializeDatabase(database, autoUpdateCallback);
+            }
+
+            pageTable.forceUpdate = function() { tryToUpdateDatabase(database, true); };
+
+            return deferred.promise;
+        } catch (exception) {
+            console.log("An exception has occured in processDatabaseStartup: " + exception);
+            return null;
         }
-
-        pageTable.forceUpdate = function () { tryToUpdateDatabase(database, true); };
-
-        return deferred.promise;
     }
 
     var onDeviceReady = function () {
@@ -131,25 +144,28 @@
     // ReSharper disable once Html.EventNotResolved
     document.addEventListener("deviceready", onDeviceReady, false);
 
-    var tryToUpdateDatabase = function (database, forceUpdate) {
-        var connectionType = navigator.network ? navigator.network.connection.type : undefined;
-        logInfo("connection type is " + connectionType);
-        if (!forceUpdate && connectionType != Connection.WIFI && connectionType != Connection.ETHERNET) {
-            logInfo("Auto-update only occurs on fast connections (wi-fi or ethernet).");
-            raiseOnPagesUpdate(null); // Make sure the list is refreshed after the database was loaded.
-            return;
-        }
-        var updateURL = "https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=";
+    var tryToUpdateDatabase = function(database, forceUpdate) {
         try {
+            var connectionType = navigator.network ? navigator.network.connection.type : undefined;
+            logInfo("connection type is " + connectionType);
+// ReSharper disable UseOfImplicitGlobalInFunctionScope
+            if (!forceUpdate && connectionType != Connection.WIFI && connectionType != Connection.ETHERNET) {
+// ReSharper restore UseOfImplicitGlobalInFunctionScope
+                logInfo("Auto-update only occurs on fast connections (wi-fi or ethernet).");
+                raiseOnPagesUpdate(null); // Make sure the list is refreshed after the database was loaded.
+                return;
+            }
+
+            var updateURL = "https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=";
             var url = updateURL + new Date(Number(getLastUpdateDate())).toISOString();
             raiseOnPagesUpdate(-1); // loading...
             logInfo("getting updates from " + url);
-            window.httpService.get(url).success(function (data) {
+            window.httpService.get(url).success(function(data) {
                 try {
                     logInfo("Updated page count: " + data.pages.length);
-                    database.transaction(function (tx) {
+                    database.transaction(function(tx) {
                         try {
-                            data.pages.forEach(function (page) {
+                            data.pages.forEach(function(page) {
                                 tx.executeSql("DELETE FROM pages WHERE url=?", [page.url]);
                                 if (!page.isDeleted) addPageToDatabase(tx, page);
                             });
@@ -167,7 +183,7 @@
                     logError("Failed to update database: " + e);
                     raiseOnPagesUpdate(0); // clear "loading..." message
                 };
-            }).error(function (data, status) {
+            }).error(function(data, status) {
                 logError("http get failed.\nstatus: " + data + ",\nstatus: " + status);
                 raiseOnPagesUpdate(0); // clear "loading..." message
             });
@@ -180,12 +196,17 @@
     angular.module('myApp.dataServices', [])
         .factory('PageTable', [
             '$q', '$http', function($q, $http) {
-                window.httpService = $http;
-                window.deferService = $q;
+                try {
+                    window.httpService = $http;
+                    window.deferService = $q;
 
-                if (window.deviceReady) processDatabaseStartup();
+                    if (window.deviceReady) processDatabaseStartup();
 
-                return pageTable;
+                    return pageTable;
+                } catch (exception) {
+                    console.log("An exception has occured in PageDetailCtrl: " + exception);
+                    return null;
+                }
             }
         ]);
 }());
