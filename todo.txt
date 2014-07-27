@@ -1,6 +1,7 @@
 Try to fix list items to open when click anywhere on the item and not only on title link (on the phone)
 
 Block app for only known numbers
+Handle crashes when no Internet (add try..catch to all code)
 
 iOS:
 	Hebrew name & description (also android market?)
