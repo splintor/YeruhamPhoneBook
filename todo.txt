@@ -5,7 +5,6 @@ Block app for only known numbers
 iOS:
 	Hebrew name & description (also android market?)
 	Icon
-	Detect network type
 
 change facebook icon to be internal to the app
 

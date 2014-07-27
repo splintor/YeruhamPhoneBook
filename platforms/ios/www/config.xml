@@ -11,6 +11,9 @@
     <feature name="SoftKeyboardPlugin">
         <param name="android-package" value="net.same2u.phonegap.plugin.SoftKeyboard" />
     </feature>
+    <feature name="NetworkStatus">
+        <param name="ios-package" value="CDVConnection" />
+    </feature>
     <preference name="permissions" value="none" />
     <preference name="orientation" value="default" />
     <preference name="target-device" value="universal" />
