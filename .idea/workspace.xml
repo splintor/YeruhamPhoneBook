@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="90aaa217-7187-4681-9cea-4844d748f037" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/YeruhamPhoneBook.csproj" afterPath="$PROJECT_DIR$/www/YeruhamPhoneBook.csproj" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/js/data-services.js" afterPath="$PROJECT_DIR$/www/js/data-services.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/partials/page-list.html" afterPath="$PROJECT_DIR$/www/partials/page-list.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/css/styles.css" afterPath="$PROJECT_DIR$/www/css/styles.css" />
     </list>
@@ -52,6 +52,13 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/www/js/data-services.js" />
+      </list>
+    </option>
   </component>
   <component name="JsGulpfileManager">
     <detection-done>true</detection-done>
