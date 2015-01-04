@@ -56,3 +56,27 @@
 <h4 class="update-message updates-were-not-found" ng-click="resetUpdatesPagesCount()" ng-show="updatedPagesCount == -2">
     לא נמצאו עדכונים.
 </h4>
+
+<div id="number-validation-backdrop" ng-if="invalidNumber"></div>
+<div id="number-validation-wrapper" ng-if="invalidNumber">
+    <div id="number-validation">
+        <p id="number-validation-message">
+            האפליקציה מיועדת לתושבי ירוחם. <br />
+            בכדי לוודא התאמה, יש להכניס את מספר הטלפון שלך:
+        </p>
+        <input type="tel" id="validatingNumber" ng-model="validationNumber" ng-disabled="validationFailed" />
+        <button ng-click="validateNumber(validationNumber)" ng-disabled="validationFailed" type="submit">המשך</button>
+        <p id="number-validation-fail" ng-show="validationFailed">
+            מספרך עדיין אינו מופיע באפליקציה. יש להוסיף אותו מהמחשב באתר ספר הטלפונים הישובי
+            (או  <a href="mailto:splintor@gmail.com">לשלוח לי מייל</a> עם כל הפרטים) 
+            ואז
+            <a href="" ng-click="forceUpdate()">ללחוץ כאן</a>
+            כדי לעדכן את האפליקציה.
+        </p>
+        <p id="number-validation-data-update">
+            <h4 class="update-message during-update" ng-show="updatedPagesCount == -1">
+                <div><img src="css/images/ajax-loader.gif" style="vertical-align: middle" />&nbsp;בודק אם יש עדכונים...</div>
+            </h4>
+        </p>
+    </div>
+</div>

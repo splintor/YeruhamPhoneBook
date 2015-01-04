@@ -259,3 +259,45 @@ ul {
     -webkit-transform: translateX(100%);
     transform: translateX(100%);
 }
+
+#number-validation-backdrop {
+    background-color: #000;
+    opacity: .5;
+    z-index: 1000;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+#number-validation-wrapper {
+    z-index: 1001;
+    opacity: 1;
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+}
+
+#number-validation {
+    background-color: white;
+    border-radius: 5px;
+    position: relative;
+    width: 80%;
+    margin: auto;
+    padding: 10px;
+}
+
+#number-validation input {
+    border: 1px solid #9daca9;
+    border-radius: 5px;
+    background-color: #EEE;
+    line-height: 16px;
+    height: 16px;
+    padding: 2px;
+}
+
+#number-validation-fail {
+    color: red;
+}
