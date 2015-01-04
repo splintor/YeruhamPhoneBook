@@ -31,7 +31,14 @@ angular.module('myApp', [
                 return pages;
             } else if (search == "#אודות") {
                 $scope.resultsOverflow = -1;
-                return [window.aboutPage];
+                return [$scope.getAboutPage()];
+            } else if (search == "#אימות") {
+                $scope.resultsOverflow = -1;
+                return [$scope.getValidationPage()];
+            } else if (search == "#אימות000") {
+                $scope.resultsOverflow = -1;
+                $scope.clearValidationNumber();
+                return [$scope.getValidationResetPage()];
             } else if (search == "#חדשים") {
                 $scope.resultsOverflow = -1;
                 return $scope.updatedPages;
@@ -44,7 +51,7 @@ angular.module('myApp', [
                 if (pos == -1) {
                     var words = value.split(" ");
                     for (var i = 0; i < words.length; ++i) {
-                        var match = words[i].match(/^\#\#(.*)/);
+                        var match = words[i].match(/^##(.*)/);
                         if (match) words.splice(i, 1, new RegExp(match[1]));
                     }
 
@@ -108,4 +115,4 @@ angular.module('myApp', [
             });
         }
     };
-});;
+});

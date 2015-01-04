@@ -28,18 +28,18 @@ angular.module('myApp.controllers', [])
                         t = t.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
 
                         //Change email addresses to mailto: links.
-                        var replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+                        var replacePattern3 = /(([a-zA-Z0-9\-_\.])+@[a-zA-Z_]+?(\.[a-zA-Z]{2,6})+)/gim;
                         t = t.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
                     }
 
                     //Change phone numbers to tel:: links.
-                    var replacePattern4 = /(\b[0-9][0-9\-\_\.]{5,11}\b)/gim;
+                    var replacePattern4 = /(\b[0-9][0-9\-_\.]{5,11}\b)/gim;
                     t = t.replace(replacePattern4, '<a href="tel:$1">$1</a>');
 
                     return t;
                 };
             } catch (exception) {
-                console.log("An exception has occured in PageDetailCtrl: " + exception);
+                console.log("An exception has occurred in PageDetailCtrl: " + exception);
             }
         }
     ])
@@ -57,23 +57,49 @@ angular.module('myApp.controllers', [])
                         $scope.updatedPages = updatedPages;
                         $scope.updatedPagesCount = updatedPagesCount;
                     }
+
+                    if ($scope.validationFailed) {
+                        $scope.validateNumber();
+                    }
+
                     if (!$scope.$$phase) {
                         console.log("Calling $scope.$apply()");
                         $scope.$apply(); // we might need to apply, as this update can occur within a transaction callback, to which PhoneGap is not aware
                     }
-                }
+                };
+
+                $scope.invalidNumber = !pageTable.validateNumber();
+                $scope.validationNumber = pageTable.validationNumber;
+                $scope.validationFailed = false;
+                $scope.validateNumber = function(number) {
+                    if (pageTable.validateNumber(number)) {
+                        console.log("setting $scope.invalidNumber to false");
+                        $scope.invalidNumber = false;
+                        $scope.validationFailed = false;
+                    } else {
+                        console.log("setting $scope.validationFailed to true");
+                        $scope.validationFailed = true;
+                    }
+                };
+
+                $scope.clearValidationNumber = pageTable.clearValidationNumber;
+
+                $scope.getAboutPage = function() { return pageTable.getAboutPage(); };
+                $scope.getValidationPage = function() { return pageTable.getValidationPage(); };
+                $scope.getValidationResetPage = function() { return pageTable.getValidationResetPage(); };
+                $scope.clearValidationNumber = function() { return pageTable.clearValidationNumber(); };
 
                 $scope.forceUpdate = function() {
                     console.log("forceUpdate");
                     $timeout(function() { $scope.searchFocus = true; }, 0);
                     pageTable.forceUpdate();
-                }
+                };
 
-                $scope.resetUpdatesPagesCount = function() { $scope.updatedPagesCount = 0; }
+                $scope.resetUpdatesPagesCount = function() { $scope.updatedPagesCount = 0; };
                 $scope.openUpdatesPages = function() {
-                    resetUpdatesPagesCount();
+                    $scope.resetUpdatesPagesCount();
                     $scope.search = "#חדשים";
-                }
+                };
 
                 // resultsOverflow can be one of the following values:
                 //   -2 means waiting for timeout to update
@@ -108,24 +134,25 @@ angular.module('myApp.controllers', [])
                 };
                 $scope.showKeyboard = function() {
                     if (plugins && plugins.softKeyboard) {
-                        plugins.softKeyboard.show(function() {}, function(errDescr) { $scope.search = "Error occured: " + errDescr; });
+                        plugins.softKeyboard.show(function() {}, function(error) { $scope.search = "Error occurred: " + error; });
                     }
                 };
 
 // ReSharper disable once Html.EventNotResolved
                 document.addEventListener("deviceready", $scope.showKeyboard, false);
             } catch (exception) {
-                console.log("An exception has occured in PageListCtrl: " + exception);
+                console.log("An exception has occurred in PageListCtrl: " + exception);
             }
         }
     ])
     .controller('PageDetailCtrl', [
         '$scope', '$routeParams', '$rootScope', 'PageTable', function($scope, $routeParams, $rootScope, pageTable) {
             try {
+                //noinspection JSUnresolvedVariable
                 $scope.page = pageTable.getPage($routeParams.pageName);
                 $scope.linkify = $rootScope.linkify;
             } catch (exception) {
-                console.log("An exception has occured in PageDetailCtrl: " + exception);
+                console.log("An exception has occurred in PageDetailCtrl: " + exception);
             }
         }
     ]);

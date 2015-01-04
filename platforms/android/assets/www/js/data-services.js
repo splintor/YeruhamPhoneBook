@@ -1,11 +1,11 @@
 ﻿'use strict';
 
 (function () {
-    var logInfo = function(s) { console.log(s); }
+    var logInfo = function(s) { console.log(s); };
     var logError = function (s) {
         console.error(s);
         //alert(s);
-    }
+    };
 
     var pageTable = {
         getAllPages: function() { return currentData.pages; },
@@ -18,14 +18,102 @@
                     }
                 }
             } catch (exception) {
-                console.log("An exception has occured in getPage: " + exception);
+                console.log("An exception has occurred in getPage: " + exception);
             }
             return null;
         },
-        onPagesUpdate: null,
-    }
+        validateNumber: function (number) {
+            if (!number) {
+                this.validationNumber = getValidationNumber();
+                logInfo("validationNumber set to: " + this.validationNumber);
+                number = this.validationNumber;
+            }
 
-    var raiseOnPagesUpdate = function(updatedPagesCount, updatedPages) {
+            if (!number) {
+                logInfo("Empty validation number");
+                return false;
+            }
+
+            if (!number.replace) {
+                number = number.toString();
+            }
+
+            number = number.replace(/[\D]/g, '');
+
+            if (number.length < 8) {
+                logInfo("Validation number is too short:" + number);
+                return false;
+            }
+            
+            for (var i = 0; i < currentData.pages.length; ++i) {
+                var p = currentData.pages[i];
+                if (p.text.replace(/[-\.]/g, '').indexOf(number) >= 0) {
+                    saveValidationNumber(number);
+                    return true;
+                }
+            }
+            return false;
+        },
+        clearValidationNumber: function() {
+            saveValidationNumber('');
+        },
+        getAboutPage: function() {
+            var current = this.getPage('about-page');
+            if(!current) {
+                var text = 'נכתב ע"י שמוליק פלינט (splintor@gmail.com). \n' +
+                    'גרסה 2.\n' +
+                    currentData.pages.length + ' דפים';
+                if (currentData.updatedPages && currentData.updatedPages.length) {
+                    text += ', ' + currentData.updatedPages.length + ' חדשים';
+                }
+                text += '.\n';
+                current = {
+                    name: 'about-page',
+                    title: "אפליקצית ספר הטלפונים של ירוחם",
+                    text: text,
+                    html: text.replace(/\n/g, '<br>'),
+                    dummyPage: true,
+                };
+                currentData.pages.push(current);
+            }
+            return current;
+        },
+        getValidationPage: function() {
+            var current = this.getPage('validation-page');
+            if(!current) {
+                var text = 'המספר שמשמש לזיהוי הוא:\n' +
+                    '<strong>' + this.validationNumber + '</strong>';
+                current = {
+                    name: 'validation-page',
+                    title: "אפליקצית ספר הטלפונים של ירוחם",
+                    text: text,
+                    html: text.replace(/\n/g, '<br>'),
+                    dummyPage: true,
+                };
+                currentData.pages.push(current);
+            }
+            return current;
+        },
+        getValidationResetPage: function() {
+            var current = this.getPage('validation-reset-page');
+            if(!current) {
+                var text = 'המספר שמשמש לזיהוי אופס.\n';
+                current = {
+                    name: 'validation-reset-page',
+                    title: "אפליקצית ספר הטלפונים של ירוחם",
+                    text: text,
+                    html: text.replace(/\n/g, '<br>'),
+                    dummyPage: true,
+                };
+                currentData.pages.push(current);
+            }
+            return current;
+        },
+
+    onPagesUpdate: null,
+    };
+
+    function raiseOnPagesUpdate(updatedPagesCount, updatedPages) {
         try {
             currentData.updatedPages = updatedPages || [];
             if (pageTable.onPagesUpdate) pageTable.onPagesUpdate(updatedPagesCount, updatedPages);
@@ -33,24 +121,30 @@
             console.log("An exception has occured in raiseOnPagesUpdate: " + exception);
         }
     }
-
-    var onDatabaseTransactionError = function (tx, error) {
-        logError("Database Error: " + error);
+    function onDatabaseTransactionError(tx, error) {
+        logError("Database Error: " + error + ' at ' + tx);
     }
-
-    var saveLastUpdateDate = function (lastUpdateDate) {
+    function saveLastUpdateDate(lastUpdateDate) {
         logInfo("Setting lastUpdateDate to " + lastUpdateDate + " which is " + new Date(Number(lastUpdateDate)));
         window.localStorage.setItem("lastUpdateDate", lastUpdateDate);
     }
 
-    var getLastUpdateDate = function () { return window.localStorage.getItem("lastUpdateDate"); }
-
-    var addPageToDatabase = function(tx, page) {
-        tx.executeSql("INSERT INTO pages (name,title,text,html,url) VALUES (?,?,?,?,?)", [page.name, page.title, page.text, page.html, page.url]);
+    function getLastUpdateDate() {
+        return window.localStorage.getItem("lastUpdateDate");
     }
 
+    window.saveValidationNumber = function (validationNumber) {
+        logInfo("Setting validation number to " + validationNumber);
+        window.localStorage.setItem("validationNumber", validationNumber);
+    };
+
+    window.getValidationNumber = function () { return window.localStorage.getItem("validationNumber"); };
+
+    function addPageToDatabase(tx, page) {
+        tx.executeSql("INSERT INTO pages (name,title,text,html,url) VALUES (?,?,?,?,?)", [page.name, page.title, page.text, page.html, page.url]);
+    }
     // initialize database from currentData
-    var initializeDatabase = function (database, callback) {
+    function initializeDatabase(database, callback) {
         logInfo("initializeDatabase");
         database.transaction(function (tx) {
             tx.executeSql('DROP TABLE IF EXISTS pages');
@@ -64,8 +158,7 @@
             currentData.pages.forEach(function (page) { addPageToDatabase(tx, page); });
             saveLastUpdateDate(currentData.maxDate);
         }, onDatabaseTransactionError, callback);
-    };
-
+    }
     // load currentData from database
     var loadDatabase = function (database, callback) {
         database.transaction(function (tx) {
@@ -83,32 +176,13 @@
                     });
                 }
                 currentData.pages = pages;
-                window.aboutPage = getAboutPage();
-                currentData.pages.push(aboutPage);
                 logInfo("currentData.pages.length: " + currentData.pages.length);
                 raiseOnPagesUpdate(null); // force list refresh
             });
         }, onDatabaseTransactionError, callback);
     };
 
-    var getAboutPage = function() {
-        var text = 'נכתב ע"י שמוליק פלינט (splintor@gmail.com). \n' +
-            'גרסה 2.\n' +
-            currentData.pages.length + ' דפים';
-        if (currentData.updatedPages && currentData.updatedPages.length) {
-            text += ', ' + currentData.updatedPages.length + ' חדשים';
-        }
-        text += '.\n';
-        return {
-            name: "about-page",
-            title: "אפליקצית ספר הטלפונים של ירוחם",
-            text: text,
-            html: text.replace(/\n/g, '<br>'),
-            dummyPage: true,
-        };
-    }
-
-    window.processDatabaseStartup = function() {
+    function processDatabaseStartup() {
         try {
             var deferred = window.deferService.defer();
             logInfo("In processDatabaseStartup");
@@ -124,27 +198,23 @@
 
             return deferred.promise;
         } catch (exception) {
-            console.log("An exception has occured in processDatabaseStartup: " + exception);
+            logError("An exception has occurred in processDatabaseStartup: " + exception);
             return null;
         }
     }
-
-    var onDeviceReady = function () {
+    function onDeviceReady() {
         if (!window.deferService || !window.httpService) {
             window.deviceReady = true; // call us again when services are initialized.
             return;
         }
 
         processDatabaseStartup();
-    };
-
-    window.aboutPage = getAboutPage();
-    currentData.pages.push(aboutPage);
+    }
 
     // ReSharper disable once Html.EventNotResolved
     document.addEventListener("deviceready", onDeviceReady, false);
 
-    var tryToUpdateDatabase = function(database, forceUpdate) {
+    function tryToUpdateDatabase(database, forceUpdate) {
         try {
             var connectionType = navigator.network ? navigator.network.connection.type : undefined;
             logInfo("connection type is " + connectionType);
@@ -182,7 +252,7 @@
                 } catch (e) {
                     logError("Failed to update database: " + e);
                     raiseOnPagesUpdate(0); // clear "loading..." message
-                };
+                }
             }).error(function(data, status) {
                 logError("http get failed.\nstatus: " + data + ",\nstatus: " + status);
                 raiseOnPagesUpdate(0); // clear "loading..." message
@@ -191,8 +261,7 @@
             logError("Failed to call http get. error: " + ex);
             raiseOnPagesUpdate(0); // clear "loading..." message
         }
-    };
-
+    }
     angular.module('myApp.dataServices', [])
         .factory('PageTable', [
             '$q', '$http', function($q, $http) {
@@ -200,7 +269,7 @@
                     window.httpService = $http;
                     window.deferService = $q;
 
-                    if (window.deviceReady) processDatabaseStartup();
+                    if (window.deviceReady) onDeviceReady();
 
                     return pageTable;
                 } catch (exception) {
