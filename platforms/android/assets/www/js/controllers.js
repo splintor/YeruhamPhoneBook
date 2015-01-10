@@ -9,8 +9,13 @@ angular.module('myApp.controllers', [])
                     //$scope.slide = 'slide-left';
                     $window.history.back();
                 };
-                $rootScope.go = function(path, currentSearch, $event) {
-                    if ($event && $event.target && $event.target.href) return; // ignore if a link was clicked
+                $rootScope.go = function (path, currentSearch, $event) {
+                    if ($event && $event.target && $event.target.href) {
+                        $event.target.click();
+                        $event.preventDefault();
+                        $event.stopPropagation();
+                        return;
+                    }
                     $rootScope.rememberedSearch = currentSearch;
                     //$scope.slide = 'slide-right';
                     $location.url(path);
