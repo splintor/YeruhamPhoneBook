@@ -1,21 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="90aaa217-7187-4681-9cea-4844d748f037" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/platforms/android/assets/www/YeruhamPhoneBook.csproj" afterPath="$PROJECT_DIR$/platforms/android/assets/www/YeruhamPhoneBook.csproj" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/platforms/android/assets/www/js/app.js" afterPath="$PROJECT_DIR$/platforms/android/assets/www/js/app.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/js/app.js" afterPath="$PROJECT_DIR$/www/js/app.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/platforms/android/assets/www/js/controllers.js" afterPath="$PROJECT_DIR$/platforms/android/assets/www/js/controllers.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/js/controllers.js" afterPath="$PROJECT_DIR$/www/js/controllers.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/platforms/android/assets/www/js/data-services.js" afterPath="$PROJECT_DIR$/platforms/android/assets/www/js/data-services.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/js/data-services.js" afterPath="$PROJECT_DIR$/www/js/data-services.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/platforms/android/assets/www/partials/page-list.html" afterPath="$PROJECT_DIR$/platforms/android/assets/www/partials/page-list.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/partials/page-list.html" afterPath="$PROJECT_DIR$/www/partials/page-list.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/platforms/android/assets/www/css/styles.css" afterPath="$PROJECT_DIR$/platforms/android/assets/www/css/styles.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/www/css/styles.css" afterPath="$PROJECT_DIR$/www/css/styles.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" id="90aaa217-7187-4681-9cea-4844d748f037" name="Default" comment="" />
     <ignored path="YeruhamPhoneBook.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
