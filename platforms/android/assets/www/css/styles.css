@@ -182,10 +182,6 @@ h1 a {
     margin-right: 8px;
 }
 
-.list li:active {
-    background-color: #d6d6d6;
-}
-
 ul {
     clear:both;
     border-top: none !important;
