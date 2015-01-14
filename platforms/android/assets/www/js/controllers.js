@@ -9,9 +9,25 @@ angular.module('myApp.controllers', [])
                     //$scope.slide = 'slide-left';
                     $window.history.back();
                 };
+
+                $rootScope.fakeClick = function (anchorObj) { // http://stackoverflow.com/a/1421968/46635
+                    try {
+                        if (anchorObj.click) {
+                            anchorObj.click();
+                        } else if (document.createEvent) {
+                            var evt = document.createEvent("MouseEvents");
+                            evt.initMouseEvent("click", true, true, window,
+                                0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                            anchorObj.dispatchEvent(evt);
+                        }
+                    } catch (e) {
+                        console.log("Failed to fake a click: " + e);
+                    } 
+                };
+
                 $rootScope.go = function (path, currentSearch, $event) {
                     if ($event && $event.target && $event.target.href) {
-                        $event.target.click();
+                        $rootScope.fakeClick($event.target);
                         $event.preventDefault();
                         $event.stopPropagation();
                         return;
