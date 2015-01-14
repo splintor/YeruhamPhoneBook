@@ -61,7 +61,7 @@
             var current = this.getPage('about-page');
             if(!current) {
                 var text = 'נכתב ע"י שמוליק פלינט (splintor@gmail.com). \n' +
-                    'גרסה 2.\n' +
+                    'גרסה 2.1.\n' +
                     currentData.pages.length + ' דפים';
                 if (currentData.updatedPages && currentData.updatedPages.length) {
                     text += ', ' + currentData.updatedPages.length + ' חדשים';
