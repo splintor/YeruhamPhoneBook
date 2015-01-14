@@ -1,7 +1,3 @@
-[Fixed - test on phone] Try to fix list items to open when click anywhere on the item and not only on title link (on the phone)
-
-Block app for only known numbers
-
 iOS:
 	[Not sure what I meant - change to English, or somehow handle Hebrew properly. Check Apple and google app stores] Hebrew name & description (also android market?)
 	[Fixed - need David to build] Icon
