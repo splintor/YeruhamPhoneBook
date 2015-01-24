@@ -61,12 +61,28 @@
             var current = this.getPage('about-page');
             if(!current) {
                 var text = 'נכתב ע"י שמוליק פלינט (splintor@gmail.com). \n' +
-                    'גרסה 2.1.\n' +
-                    currentData.pages.length + ' דפים';
+                    'גרסה 2.2.\n' +
+                    'דפים: ' + currentData.pages.length;
                 if (currentData.updatedPages && currentData.updatedPages.length) {
-                    text += ', ' + currentData.updatedPages.length + ' חדשים';
+                    text += ' (מתוכם ' + currentData.updatedPages.length + ' חדשים)';
                 }
                 text += '.\n';
+                var mails = 0;
+                var phones = 0;
+                currentData.pages.forEach(function(page) {
+                    //Change email addresses to mailto: links.
+                    var foundMails = page.text.match(/(([a-zA-Z0-9\-_\.])+@[a-zA-Z_]+?(\.[a-zA-Z]{2,6})+)/gim);
+                    if (foundMails) {
+                        mails += foundMails.length;
+                    }
+
+                    var foundPhones = page.text.match(/(\b[0-9][0-9\-_\.]{5,11}\b)/gim);
+                    if (foundPhones) {
+                        phones += foundPhones.length;
+                    }
+                });
+                text += "מספרי טלפון: " + phones + ".\n";
+                text += "כתובות מייל: " + mails + ".\n";
                 current = {
                     name: 'about-page',
                     title: "אפליקצית ספר הטלפונים של ירוחם",
