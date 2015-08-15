@@ -4,7 +4,8 @@
     <description>
         אפליקציה לגישה נוחה לאתר ספר הטחפונים של ירוחם
     </description>
-    <application android:debuggable=”false”
+
+    <application android:debuggable="false"
                  android:hardwareAccelerated="true"
                  android.icon="icon.png" />
     <author email="splintor@gmail.com" href="https://sites.google.com/site/yeruchamphonebook/">
