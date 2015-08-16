@@ -9,7 +9,7 @@
     </feature>
     <name>ספר הטלפונים של ירוחם</name>
     <description>
-        אפליקציה לגישה נוחה לאתר ספר הטחפונים של ירוחם
+        אפליקציה לגישה נוחה לאתר ספר הטלפונים של ירוחם
     </description>
     <application android.icon="icon.png" android:debuggable="false" android:hardwareAccelerated="true" />
     <author email="splintor@gmail.com" href="https://sites.google.com/site/yeruchamphonebook/">
