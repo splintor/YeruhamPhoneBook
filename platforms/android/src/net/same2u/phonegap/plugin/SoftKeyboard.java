@@ -31,22 +31,23 @@ public class SoftKeyboard extends CordovaPlugin {
 
     @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
-    if (action.equals("show")) {
-            this.showKeyboard();
-            callbackContext.success("done");
-            return true;
-    }
-        else if (action.equals("hide")) {
-            this.hideKeyboard();
-            callbackContext.success();
-            return true;
-        }
-        else if (action.equals("isShowing")) {
-            callbackContext.success(Boolean.toString(this.isKeyboardShowing()));
-            return true;
-        }
-    else {
-      return false;
-    }
+    return true;
+    // if (action.equals("show")) {
+    //         this.showKeyboard();
+    //         callbackContext.success("done");
+    //         return true;
+    // }
+    //     else if (action.equals("hide")) {
+    //         this.hideKeyboard();
+    //         callbackContext.success();
+    //         return true;
+    //     }
+    //     else if (action.equals("isShowing")) {
+    //         callbackContext.success(Boolean.toString(this.isKeyboardShowing()));
+    //         return true;
+    //     }
+    // else {
+    //   return false;
+    // }
   }
 }
