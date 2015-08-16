@@ -274,3 +274,5 @@ IOS/www/
 currentData.js
 .idea/workspace.xml
 .idea/workspace.xml
+
+platforms/android/.gradle/
