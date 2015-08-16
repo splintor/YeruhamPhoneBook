@@ -1,14 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.googlesites.yeruhamphonebook" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
-    <name>Hello Cordova</name>
-    <description>
-        A sample Apache Cordova application that responds to the deviceready event.
-    </description>
-    <content src="index.html" />
+<widget android:versionName="2.0.0" id="com.googlesites.yeruhamphonebook" version="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:gap="http://phonegap.com/ns/1.0">
     <preference name="loglevel" value="DEBUG" />
-    <feature name="App">
-        <param name="android-package" value="org.apache.cordova.App" />
-    </feature>
     <plugins>
         <plugin name="SoftKeyboardPlugin" onload="true" value="net.same2u.phonegap.plugin.SoftKeyboard" />
     </plugins>
@@ -19,13 +11,10 @@
     <description>
         אפליקציה לגישה נוחה לאתר ספר הטחפונים של ירוחם
     </description>
+    <application android.icon="icon.png" android:debuggable="false" android:hardwareAccelerated="true" />
     <author email="splintor@gmail.com" href="https://sites.google.com/site/yeruchamphonebook/">
         שמוליק פלינט
     </author>
-    <feature name="http://api.phonegap.com/1.0/device" />
-    <feature name="SoftKeyboardPlugin">
-        <param name="android-package" value="net.same2u.phonegap.plugin.SoftKeyboard" />
-    </feature>
     <preference name="permissions" value="none" />
     <preference name="orientation" value="default" />
     <preference name="target-device" value="universal" />
@@ -39,7 +28,7 @@
     <preference name="show-splash-screen-spinner" value="true" />
     <preference name="auto-hide-splash-screen" value="true" />
     <preference name="disable-cursor" value="false" />
-    <preference name="android-minSdkVersion" value="7" />
+    <preference name="android-minSdkVersion" value="10" />
     <preference name="android-installLocation" value="auto" />
     <preference name="KeyboardDisplayRequiresUserAction" value="false" />
     <icon src="icon.png" />

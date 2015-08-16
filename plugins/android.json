@@ -1,1 +1,45 @@
-{"prepare_queue":{"installed":[],"uninstalled":[]},"config_munge":{"res/xml/config.xml":{"plugins":{"<plugin name=\"SoftKeyboardPlugin\" onload=\"true\" value=\"net.same2u.phonegap.plugin.SoftKeyboard\" />":1},"/*":{"<feature name=\"NetworkStatus\"><param name=\"android-package\" value=\"org.apache.cordova.networkinformation.NetworkManager\" /></feature>":1}},"AndroidManifest.xml":{"/*":{"<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />":1}}},"installed_plugins":{"net.same2u.phonegap.plugin.SoftKeyboard":{"PACKAGE_NAME":"com.googlesites.yeruhamphonebook"},"org.apache.cordova.network-information":{"PACKAGE_NAME":"com.googlesites.yeruhamphonebook"}},"dependent_plugins":{}}
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {
+            "res/xml/config.xml": {
+                "parents": {
+                    "plugins": [
+                        {
+                            "xml": "<plugin name=\"SoftKeyboardPlugin\" onload=\"true\" value=\"net.same2u.phonegap.plugin.SoftKeyboard\" />",
+                            "count": 1
+                        }
+                    ],
+                    "/*": [
+                        {
+                            "xml": "<feature name=\"NetworkStatus\"><param name=\"android-package\" value=\"org.apache.cordova.networkinformation.NetworkManager\" /></feature>",
+                            "count": 1
+                        }
+                    ]
+                }
+            },
+            "AndroidManifest.xml": {
+                "parents": {
+                    "/*": [
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />",
+                            "count": 1
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "installed_plugins": {
+        "net.same2u.phonegap.plugin.SoftKeyboard": {
+            "PACKAGE_NAME": "com.googlesites.yeruhamphonebook"
+        },
+        "org.apache.cordova.network-information": {
+            "PACKAGE_NAME": "com.googlesites.yeruhamphonebook"
+        }
+    },
+    "dependent_plugins": {}
+}

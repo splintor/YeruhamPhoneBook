@@ -1,1 +1,15 @@
-{"prepare_queue":{"installed":[],"uninstalled":[]},"config_munge":{},"installed_plugins":{"net.same2u.phonegap.plugin.SoftKeyboard":{"PACKAGE_NAME":"com.googlesites.yeruhamphonebook"}},"dependent_plugins":{}}
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "net.same2u.phonegap.plugin.SoftKeyboard": {
+            "PACKAGE_NAME": "com.googlesites.yeruhamphonebook"
+        }
+    },
+    "dependent_plugins": {}
+}

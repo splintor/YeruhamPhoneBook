@@ -1,4 +1,4 @@
-I don't include currentData.js in the GitHub project, so it won't be index by web search engines.
+I don't include currentData.js in the GitHub project, so it won't be indexed by web search engines.
 To get it, open the following URL in a browser (might take a while), and copy the results to currentData.js in this directory:
 
 https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?AllPages

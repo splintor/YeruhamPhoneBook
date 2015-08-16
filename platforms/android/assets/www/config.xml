@@ -1,9 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.googlesites.yeruhamphonebook" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+
+<widget id="com.googlesites.yeruhamphonebook" version="2.0.0" android:versionName="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:gap="http://phonegap.com/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>ספר הטלפונים של ירוחם</name>
     <description>
         אפליקציה לגישה נוחה לאתר ספר הטחפונים של ירוחם
     </description>
+
+    <application android:debuggable="false"
+                 android:hardwareAccelerated="true"
+                 android.icon="icon.png" />
     <author email="splintor@gmail.com" href="https://sites.google.com/site/yeruchamphonebook/">
         שמוליק פלינט
     </author>
@@ -24,7 +29,7 @@
     <preference name="show-splash-screen-spinner" value="true" />
     <preference name="auto-hide-splash-screen" value="true" />
     <preference name="disable-cursor" value="false" />
-    <preference name="android-minSdkVersion" value="7" />
+    <preference name="android-minSdkVersion" value="10" />
     <preference name="android-installLocation" value="auto" />
     <preference name="KeyboardDisplayRequiresUserAction" value="false" />
     <icon src="icon.png" />

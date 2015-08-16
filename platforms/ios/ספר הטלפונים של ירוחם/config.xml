@@ -1,11 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.googlesites.yeruhamphonebook" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
-    <name>Hello Cordova</name>
-    <description>
-        A sample Apache Cordova application that responds to the deviceready event.
-    </description>
-    <access origin="*" />
-    <content src="index.html" />
+<widget android:versionName="2.0.0" id="com.googlesites.yeruhamphonebook" version="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <preference name="AllowInlineMediaPlayback" value="false" />
     <preference name="BackupWebStorage" value="cloud" />
     <preference name="DisallowOverscroll" value="false" />
@@ -13,7 +7,6 @@
     <preference name="KeyboardDisplayRequiresUserAction" value="true" />
     <preference name="MediaPlaybackRequiresUserAction" value="false" />
     <preference name="SuppressesIncrementalRendering" value="false" />
-    <preference name="TopActivityIndicator" value="gray" />
     <preference name="GapBetweenPages" value="0" />
     <preference name="PageLength" value="0" />
     <preference name="PaginationBreakingMode" value="page" />
@@ -25,13 +18,10 @@
     <description>
         אפליקציה לגישה נוחה לאתר ספר הטחפונים של ירוחם
     </description>
+    <application android.icon="icon.png" android:debuggable="false" android:hardwareAccelerated="true" />
     <author email="splintor@gmail.com" href="https://sites.google.com/site/yeruchamphonebook/">
         שמוליק פלינט
     </author>
-    <feature name="http://api.phonegap.com/1.0/device" />
-    <feature name="SoftKeyboardPlugin">
-        <param name="android-package" value="net.same2u.phonegap.plugin.SoftKeyboard" />
-    </feature>
     <preference name="permissions" value="none" />
     <preference name="orientation" value="default" />
     <preference name="target-device" value="universal" />
@@ -50,7 +40,7 @@
     <preference name="KeyboardDisplayRequiresUserAction" value="false" />
     <icon src="icon.png" />
     <icon gap:density="ldpi" gap:platform="android" src="res/icon/android/icon-36-ldpi.png" />
-    <icon gap:density="mdpi" gap:platform="android" src="res/icon/android/icon-48-mdpi.png" />
+    <icon gap:density="mdpi" gap:platform="android" src="res/icon/android/icon-48-mdpi. png" />
     <icon gap:density="hdpi" gap:platform="android" src="res/icon/android/icon-72-hdpi.png" />
     <icon gap:density="xhdpi" gap:platform="android" src="res/icon/android/icon-96-xhdpi.png" />
     <icon gap:platform="blackberry" src="res/icon/blackberry/icon-80.png" />
@@ -72,5 +62,5 @@
     <gap:splash gap:platform="ios" height="1024" src="res/screen/ios/screen-ipad-portrait.png" width="768" />
     <gap:splash gap:platform="ios" height="768" src="res/screen/ios/screen-ipad-landscape.png" width="1024" />
     <gap:splash gap:platform="winphone" src="res/screen/windows-phone/screen-portrait.jpg" />
-    <access origin="http://127.0.0.1*" />
+    <access origin="*" />
 </widget>
