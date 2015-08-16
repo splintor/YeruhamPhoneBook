@@ -8,7 +8,7 @@
     },
     "installed_plugins": {
         "net.same2u.phonegap.plugin.SoftKeyboard": {
-            "PACKAGE_NAME": "com.googlesites.yeruhamphonebook"
+            "PACKAGE_NAME": "com.splintor.yeruhamphonebook"
         }
     },
     "dependent_plugins": {}

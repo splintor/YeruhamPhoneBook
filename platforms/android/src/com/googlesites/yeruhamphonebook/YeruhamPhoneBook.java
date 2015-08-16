@@ -17,12 +17,12 @@
        under the License.
  */
 
-package com.googlesites.yeruhamphonebook;
+package com.splintor.yeruhamphonebook;
 
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class YeruhamPhoneBook extends CordovaActivity 
+public class YeruhamPhoneBook extends CordovaActivity
 {
     @Override
     public void onCreate(Bundle savedInstanceState)
