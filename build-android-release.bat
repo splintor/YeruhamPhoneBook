@@ -1,8 +1,6 @@
-del c:\Projects\YeruhamPhoneBook\platforms\android\build\outputs\apk\YeruhamPhoneBook.apk
+rmdir /s /q c:\Projects\YeruhamPhoneBook\platforms\android\build
 
-del c:\Projects\YeruhamPhoneBook\platforms\android\build\outputs\apk\android-release-unsigned.apk
-
-call c:\Projects\YeruhamPhoneBook\platforms\android\cordova\build.bat --release
+call phonegap build android --release
 
 call %java_home%/bin/jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore "c:\Users\sflint\Documents\Google Drive\splintor.keystore" -storepass datatech c:\Projects\YeruhamPhoneBook\platforms\android\build\outputs\apk\android-release-unsigned.apk splintor
 
