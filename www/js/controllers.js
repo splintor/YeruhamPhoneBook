@@ -57,6 +57,8 @@ angular.module('myApp.controllers', [])
                     var replacePattern4 = /(\b[0-9][0-9\-_\.]{5,11}\b)/gim;
                     t = t.replace(replacePattern4, '<a href="tel:$1">$1</a>');
 
+                    t = t.replace("https://sites.google.com/site/yeruchamphonebook/", '#/pages/');
+
                     return t;
                 };
             } catch (exception) {
