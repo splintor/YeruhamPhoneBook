@@ -1,6 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 
-<widget id="com.splintor.yeruhamphonebook" version="2.0.2" android:versionName="2.0.2" xmlns="http://www.w3.org/ns/widgets" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:gap="http://phonegap.com/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<widget id="com.splintor.yeruhamphonebook"
+        version="2.1.0"
+        android:versionName="2.1.0"
+        xmlns="http://www.w3.org/ns/widgets"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:gap="http://phonegap.com/ns/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android">
     <name>ספר הטלפונים של ירוחם</name>
     <description>
         אפליקציה לגישה נוחה לאתר ספר הטלפונים של ירוחם
@@ -42,7 +48,6 @@
     <icon gap:platform="ios" height="57" src="res/icon/ios/icon-57.png" width="57" />
     <icon gap:platform="ios" height="72" src="res/icon/ios/icon-72.png" width="72" />
     <icon gap:platform="ios" height="114" src="res/icon/ios/icon-57-2x.png" width="114" />
-    <icon gap:platform="ios" height="144" src="res/icon/ios/icon-72-2x.png" width="144" />
     <icon gap:platform="webos" src="res/icon/webos/icon-64.png" />
     <icon gap:platform="winphone" src="res/icon/windows-phone/icon-48.png" />
     <icon gap:platform="winphone" gap:role="background" src="res/icon/windows-phone/icon-173.png" />

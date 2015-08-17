@@ -44,7 +44,7 @@
                 logInfo("Validation number is too short:" + number);
                 return false;
             }
-            
+
             for (var i = 0; i < currentData.pages.length; ++i) {
                 var p = currentData.pages[i];
                 if (p.text.replace(/[-\.]/g, '').indexOf(number) >= 0) {
@@ -61,7 +61,7 @@
             var current = this.getPage('about-page');
             if(!current) {
                 var text = 'נכתב ע"י שמוליק פלינט (splintor@gmail.com). \n' +
-                    'גרסה 2.2.\n' +
+                    'גרסה 2.1.0.\n' +
                     'דפים: ' + currentData.pages.length;
                 if (currentData.updatedPages && currentData.updatedPages.length) {
                     text += ' (מתוכם ' + currentData.updatedPages.length + ' חדשים)';
