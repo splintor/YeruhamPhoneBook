@@ -155,7 +155,7 @@ angular.module('myApp.controllers', [])
                 };
                 $scope.showKeyboard = function() {
                     if (plugins && plugins.softKeyboard) {
-                        plugins.softKeyboard.show(function() {}, function(error) { $scope.search = "Error occurred: " + error; });
+                        plugins.softKeyboard.show(function() {}, function(error) { console.error("Error occurred in plugins.softKeyboard: " + error, error); });
                     }
                 };
 

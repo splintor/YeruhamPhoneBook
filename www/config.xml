@@ -1,6 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 
-<widget id="com.splintor.yeruhamphonebook" version="2.0.0" android:versionName="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:gap="http://phonegap.com/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<widget id="com.splintor.yeruhamphonebook"
+        xmlns="http://www.w3.org/ns/widgets"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:gap="http://phonegap.com/ns/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android">
     <name>ספר הטלפונים של ירוחם</name>
     <description>
         אפליקציה לגישה נוחה לאתר ספר הטלפונים של ירוחם
