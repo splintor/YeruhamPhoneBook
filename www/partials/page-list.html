@@ -64,11 +64,12 @@
             האפליקציה מיועדת לתושבי ירוחם. <br />
             בכדי לוודא התאמה, יש להכניס את מספר הטלפון שלך:
         </p>
-        <input type="tel" id="validatingNumber" ng-model="validationNumber" ng-disabled="validationFailed" />
+        <input type="tel" id="validatingNumber" ng-model="validationNumber" ng-disabled="validationFailed"
+               autofocus="autofocus" focus-on="invalidNumber" />
         <button ng-click="validateNumber(validationNumber)" ng-disabled="validationFailed" type="submit">המשך</button>
         <p id="number-validation-fail" ng-show="validationFailed">
             מספרך עדיין אינו מופיע באפליקציה. יש להוסיף אותו מהמחשב באתר ספר הטלפונים הישובי
-            (או  <a href="mailto:splintor@gmail.com">לשלוח לי מייל</a> עם כל הפרטים) 
+            (או  <a href="mailto:splintor@gmail.com">לשלוח לי מייל</a> עם כל הפרטים)
             ואז
             <a href="" ng-click="forceUpdate()">ללחוץ כאן</a>
             כדי לעדכן את האפליקציה.

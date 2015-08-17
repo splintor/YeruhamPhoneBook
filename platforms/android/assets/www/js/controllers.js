@@ -57,6 +57,8 @@ angular.module('myApp.controllers', [])
                     var replacePattern4 = /(\b[0-9][0-9\-_\.]{5,11}\b)/gim;
                     t = t.replace(replacePattern4, '<a href="tel:$1">$1</a>');
 
+                    t = t.replace("https://sites.google.com/site/yeruchamphonebook/", '#/pages/');
+
                     return t;
                 };
             } catch (exception) {
@@ -161,6 +163,11 @@ angular.module('myApp.controllers', [])
 
 // ReSharper disable once Html.EventNotResolved
                 document.addEventListener("deviceready", $scope.showKeyboard, false);
+                if($scope.invalidNumber) {
+                    $timeout(function() {
+                        $scope.showKeyboard
+                    }, 100);
+                }
             } catch (exception) {
                 console.log("An exception has occurred in PageListCtrl: " + exception);
             }

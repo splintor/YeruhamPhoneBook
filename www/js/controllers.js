@@ -163,6 +163,11 @@ angular.module('myApp.controllers', [])
 
 // ReSharper disable once Html.EventNotResolved
                 document.addEventListener("deviceready", $scope.showKeyboard, false);
+                if($scope.invalidNumber) {
+                    $timeout(function() {
+                        $scope.showKeyboard
+                    }, 100);
+                }
             } catch (exception) {
                 console.log("An exception has occurred in PageListCtrl: " + exception);
             }
