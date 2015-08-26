@@ -57,7 +57,13 @@ angular.module('myApp.controllers', [])
                     var replacePattern4 = /(\b[0-9][0-9\-_\.]{5,11}\b)/gim;
                     t = t.replace(replacePattern4, '<a href="tel:$1">$1</a>');
 
-                    t = t.replace("https://sites.google.com/site/yeruchamphonebook/", '#/pages/');
+                    var facebookIconPattern = /https:\/\/sites\.google\.com\/site\/yeruchamphonebook\/.*facebook-icon.*\.png/
+                    t = t.replace(facebookIconPattern, 'css/images/facebook-icon.png');
+
+                    var twitterIconPattern = /https:\/\/sites\.google\.com\/site\/yeruchamphonebook\/.*twitter-icon.*\.png/
+                    t = t.replace(twitterIconPattern, 'css/images/twitter-icon.png');
+
+                    t = t.replace('https://sites.google.com/site/yeruchamphonebook/', '#/pages/');
 
                     return t;
                 };
