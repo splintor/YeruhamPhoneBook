@@ -235,6 +235,7 @@ pip-log.txt
 Android/bin/
 Android/gen/
 Android/assets/
+platforms/android/assets/
 
 # generated files
 bin/
