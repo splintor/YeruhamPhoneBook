@@ -236,6 +236,8 @@ Android/bin/
 Android/gen/
 Android/assets/
 platforms/android/assets/
+platforms/android/AndroidManifest.xml
+platforms/android/rex/xml/config.xml
 
 # generated files
 bin/
