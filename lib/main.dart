@@ -44,6 +44,8 @@ class _MainState extends State<Main> {
   bool _isUserVerified = false;
   TextEditingController _phoneNumberConroller;
   String _phoneNumber = '';
+  TextEditingController _searchTextConroller;
+  String _searchString = '';
 
   final String getAllDataUrl =
       'https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=1970-01-01T00:00:00.000Z';
@@ -84,10 +86,20 @@ class _MainState extends State<Main> {
       final String pageText = page['text'].replaceAll(RegExp(r'[-\.]'), '');
       if (pageText.contains(number)) {
         _prefs.setString('validationNumber', number);
+        _prefs.setString('validationName', page['name']);
         return true;
       }
     }
     return false;
+  }
+
+  RaisedButton buildRoundedButton({String title, VoidCallback onPressed}) {
+    return RaisedButton(
+        onPressed: onPressed,
+        child: Text(title),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16));
   }
 
   @override
@@ -109,6 +121,10 @@ class _MainState extends State<Main> {
         } else {
           _pages = parseData();
           _isUserVerified = true;
+          _searchTextConroller = TextEditingController();
+          _searchTextConroller.addListener(() {
+            handleSearchChanged(_searchTextConroller.text);
+          });
         }
       });
     });
@@ -119,10 +135,25 @@ class _MainState extends State<Main> {
       await _prefs.setString('phone-number', _phoneNumber);
 
       setState(() {
-        // TO DO: implement real search, including fetching the data on not found
         _isUserVerified = true;
       });
     }
+  }
+
+  void handleSearchChanged(String searchString) {
+    setState(() {
+      _searchString = searchString;
+      print('_searchString: ' + _searchString);
+      // To Do: search text in pages
+    });
+  }
+
+  void sendFeedback() {
+    // TO DO: implement sendFeedback
+  }
+
+  void checkForUpdates() {
+    // TO DO: implement checkForUpdates
   }
 
   @override
@@ -131,22 +162,53 @@ class _MainState extends State<Main> {
     if (_prefs == null || _pages == null) {
       mainWidget = Center(child: const Text('טוען...'));
     } else if (_isUserVerified) {
-      mainWidget = Center(
+      mainWidget = Container(
+        padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Text(
-              'כאן יש להכניס את הדף הראשי',
-              style: Theme.of(context).textTheme.display1,
+            TextField(
+              controller: _searchTextConroller,
+              maxLines: 1,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchString.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchTextConroller.clear();
+                        }),
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(width: 1),
+                    borderRadius: BorderRadius.circular(32.0)),
+              ),
             ),
+            Image.asset(
+              './assets/round_irus.png',
+              scale: .8,
+            ),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  buildRoundedButton(
+                      onPressed: checkForUpdates, title: 'בדוק אם יש עדכונים'),
+                  buildRoundedButton(
+                      onPressed: sendFeedback, title: 'שלח משוב'),
+                ]),
           ],
         ),
       );
     } else {
       mainWidget =
           Column(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-        Padding(
-            padding: const EdgeInsets.all(16),
+        const Padding(
+            padding: EdgeInsets.all(16),
             child: Text(
               'האפליקציה מיועדת לתושבי ירוחם.\n\nבכדי לוודא התאמה, יש להכניס את מספר הטלפון שלך:',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -168,9 +230,9 @@ class _MainState extends State<Main> {
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
         ),
         Container(
-          child: RaisedButton(
+          child: buildRoundedButton(
               onPressed: _phoneNumber.isEmpty ? null : () => checkPhoneNumber(),
-              child: const Text('המשך')),
+              title: 'המשך'),
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
         ),
       ]);
