@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-void main() => runApp(MyApp());
+void main() => runApp(YeruhamPhonebookApp());
 
 const String appTitle = 'ספר הטלפונים של ירוחם';
 const Locale hebrewLocale = Locale('he', 'IL');
 
-class MyApp extends StatelessWidget {
+class YeruhamPhonebookApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
