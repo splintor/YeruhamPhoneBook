@@ -48,12 +48,12 @@ class _MainState extends State<Main> {
 
   final String getAllDataUrl =
       'https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=1970-01-01T00:00:00.000Z';
-  Future<dynamic> fetchData(SharedPreferences prefs) async {
+  Future<dynamic> fetchData() async {
     final http.Response response = await http.get(getAllDataUrl);
 
     if (response.statusCode == 200) {
       // If the call to the server was successful, parse the JSON.
-      prefs.setString('data', response.body);
+      _prefs.setString('data', response.body);
       setState(() {
         _pages = parseData();
       });
@@ -95,14 +95,12 @@ class _MainState extends State<Main> {
   void initState() {
     super.initState();
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
-      if (!prefs.containsKey('data')) {
-        fetchData(prefs);
-      }
       setState(() {
         _prefs = prefs;
-        _pages = parseData();
         _phoneNumber = _prefs.getString('phone-number') ?? '';
         if (_phoneNumber?.isEmpty ?? true) {
+          prefs.remove('data');
+          fetchData();
           _phoneNumberConroller = TextEditingController();
           _phoneNumberConroller.addListener(() {
             setState(() {
@@ -110,6 +108,7 @@ class _MainState extends State<Main> {
             });
           });
         } else {
+          _pages = parseData();
           _isUserVerified = true;
         }
       });
