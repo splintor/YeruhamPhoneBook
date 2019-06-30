@@ -108,7 +108,7 @@ class _MainState extends State<Main> {
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
       setState(() {
         _prefs = prefs;
-        _phoneNumber = _prefs.getString('phone-number') ?? '';
+        _phoneNumber = _prefs.getString('validationNumber') ?? '';
         if (_phoneNumber?.isEmpty ?? true) {
           prefs.remove('data');
           fetchData();
@@ -132,8 +132,6 @@ class _MainState extends State<Main> {
 
   Future<void> checkPhoneNumber() async {
     if (isNumberValid(_phoneNumber)) {
-      await _prefs.setString('phone-number', _phoneNumber);
-
       setState(() {
         _isUserVerified = true;
       });
@@ -143,7 +141,14 @@ class _MainState extends State<Main> {
   void handleSearchChanged(String searchString) {
     setState(() {
       _searchString = searchString;
-      print('_searchString: ' + _searchString);
+      if (_searchString == '___resetValidationNumber') {
+        _prefs.remove('validationNumber');
+        _prefs.remove('validationName');
+        setState(() {
+          _searchTextConroller.clear();
+          _isUserVerified = false;
+        });
+      }
       // To Do: search text in pages
     });
   }
