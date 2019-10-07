@@ -138,6 +138,10 @@ class _MainState extends State<Main> {
     }
   }
 
+  List<String> parseToWords(String s) {
+    return s.split(' ');
+  }
+
   void handleSearchChanged(String searchString) {
     setState(() {
       _searchString = searchString;
