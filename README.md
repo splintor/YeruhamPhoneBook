@@ -9,5 +9,6 @@ A Flutter mobile application to provide easy and fast access to [Yeruham's phone
 - implement send feedback
 - implement check for updates
 - show specific page
+- handle special search strings, like #אודות
 - add page to contacts (https://pub.dev/packages/contacts_plugin)
-- 
+- send BI events
