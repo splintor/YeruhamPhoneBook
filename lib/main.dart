@@ -18,7 +18,7 @@ class YeruhamPhonebookApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
-      home: Main(),
+      home: const Main(),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -32,7 +32,7 @@ class YeruhamPhonebookApp extends StatelessWidget {
 }
 
 class Main extends StatefulWidget {
-  Main({Key key}) : super(key: key);
+  const Main({Key key}) : super(key: key);
 
   @override
   _MainState createState() => _MainState();
@@ -42,9 +42,9 @@ class _MainState extends State<Main> {
   SharedPreferences _prefs;
   dynamic _pages;
   bool _isUserVerified = false;
-  TextEditingController _phoneNumberConroller;
+  TextEditingController _phoneNumberController;
   String _phoneNumber = '';
-  TextEditingController _searchTextConroller;
+  TextEditingController _searchTextController;
   String _searchString = '';
 
   final String getAllDataUrl =
@@ -112,18 +112,18 @@ class _MainState extends State<Main> {
         if (_phoneNumber?.isEmpty ?? true) {
           prefs.remove('data');
           fetchData();
-          _phoneNumberConroller = TextEditingController();
-          _phoneNumberConroller.addListener(() {
+          _phoneNumberController = TextEditingController();
+          _phoneNumberController.addListener(() {
             setState(() {
-              _phoneNumber = _phoneNumberConroller.text;
+              _phoneNumber = _phoneNumberController.text;
             });
           });
         } else {
           _pages = parseData();
           _isUserVerified = true;
-          _searchTextConroller = TextEditingController();
-          _searchTextConroller.addListener(() {
-            handleSearchChanged(_searchTextConroller.text);
+          _searchTextController = TextEditingController();
+          _searchTextController.addListener(() {
+            handleSearchChanged(_searchTextController.text);
           });
         }
       });
@@ -149,7 +149,7 @@ class _MainState extends State<Main> {
         _prefs.remove('validationNumber');
         _prefs.remove('validationName');
         setState(() {
-          _searchTextConroller.clear();
+          _searchTextController.clear();
           _isUserVerified = false;
         });
       }
@@ -177,7 +177,7 @@ class _MainState extends State<Main> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             TextField(
-              controller: _searchTextConroller,
+              controller: _searchTextController,
               maxLines: 1,
               style: const TextStyle(
                 fontSize: 24,
@@ -191,7 +191,7 @@ class _MainState extends State<Main> {
                     : IconButton(
                         icon: const Icon(Icons.clear),
                         onPressed: () {
-                          _searchTextConroller.clear();
+                          _searchTextController.clear();
                         }),
                 border: OutlineInputBorder(
                     borderSide: BorderSide(width: 1),
@@ -224,7 +224,7 @@ class _MainState extends State<Main> {
             )),
         Container(
           child: TextField(
-              controller: _phoneNumberConroller,
+              controller: _phoneNumberController,
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.phone),
@@ -233,7 +233,7 @@ class _MainState extends State<Main> {
                     : IconButton(
                         icon: const Icon(Icons.clear),
                         onPressed: () {
-                          _phoneNumberConroller.clear();
+                          _phoneNumberController.clear();
                         }),
               )),
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
