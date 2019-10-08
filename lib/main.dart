@@ -53,13 +53,11 @@ class _MainState extends State<Main> {
     final http.Response response = await http.get(getAllDataUrl);
 
     if (response.statusCode == 200) {
-      // If the call to the server was successful, parse the JSON.
       _prefs.setString('data', response.body);
       setState(() {
         _pages = parseData();
       });
     } else {
-      // If that call was not successful, throw an error.
       throw Exception('Failed to load data');
     }
   }
@@ -153,16 +151,16 @@ class _MainState extends State<Main> {
           _isUserVerified = false;
         });
       }
-      // To Do: search text in pages
+      // TODO: search text in pages
     });
   }
 
   void sendFeedback() {
-    // TO DO: implement sendFeedback
+    // TODO: implement sendFeedback
   }
 
   void checkForUpdates() {
-    // TO DO: implement checkForUpdates
+    // TODO: implement checkForUpdates
   }
 
   @override
