@@ -151,16 +151,16 @@ class _MainState extends State<Main> {
           _isUserVerified = false;
         });
       }
-      // TODO: search text in pages
+      // TODO(sflint): search text in pages
     });
   }
 
   void sendFeedback() {
-    // TODO: implement sendFeedback
+    // TODO(sflint): implement sendFeedback
   }
 
   void checkForUpdates() {
-    // TODO: implement checkForUpdates
+    // TODO(sflint): implement checkForUpdates
   }
 
   @override
