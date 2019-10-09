@@ -94,12 +94,10 @@ class _MainState extends State<Main> {
     for (final dynamic page in _pages) {
       final String pageText = page['text'].replaceAll(RegExp(r'[-\.]'), '');
       if (pageText.contains(number)) {
-        _prefs.setString('validationNumber', number);
-        _prefs.setString('validationName', page['name']);
-        return true;
+        return page;
       }
     }
-    return false;
+    return null;
   }
 
   RaisedButton buildRoundedButton({String title, VoidCallback onPressed}) {
@@ -141,7 +139,11 @@ class _MainState extends State<Main> {
   }
 
   Future<void> checkPhoneNumber() async {
-    if (isNumberValid(_phoneNumber)) {
+    final dynamic page = getNumberPage(_phoneNumber);
+    if (page != null) {
+      _prefs.setString('validationNumber', normalizedNumber(_phoneNumber));
+      _prefs.setString('validationName', page['name']);
+
       setState(() {
         _isUserVerified = true;
       });
@@ -250,7 +252,7 @@ class _MainState extends State<Main> {
         ),
         Container(
           child: buildRoundedButton(
-              onPressed: _phoneNumber.isEmpty ? null : () => checkPhoneNumber(),
+              onPressed: getNumberPage(_phoneNumber) == null ? null : () => checkPhoneNumber(),
               title: 'המשך'),
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
         ),
