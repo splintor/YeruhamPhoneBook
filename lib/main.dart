@@ -44,7 +44,7 @@ class _MainState extends State<Main> {
   SharedPreferences _prefs;
   dynamic _pages;
   bool _isUserVerified = false;
-  TextEditingController _phoneNumberController;
+  final TextEditingController _phoneNumberController = TextEditingController();
   String _phoneNumber = '';
   TextEditingController _searchTextController;
   String _searchString = '';
@@ -105,6 +105,13 @@ class _MainState extends State<Main> {
   @override
   void initState() {
     super.initState();
+
+    _phoneNumberController.addListener(() {
+      setState(() {
+        _phoneNumber = _phoneNumberController.text;
+      });
+    });
+
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
       setState(() {
         _prefs = prefs;
@@ -112,12 +119,6 @@ class _MainState extends State<Main> {
         if (_phoneNumber?.isEmpty ?? true) {
           prefs.remove('data');
           fetchData();
-          _phoneNumberController = TextEditingController();
-          _phoneNumberController.addListener(() {
-            setState(() {
-              _phoneNumber = _phoneNumberController.text;
-            });
-          });
         } else {
           _pages = parseData();
           _isUserVerified = true;
