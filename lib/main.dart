@@ -131,6 +131,10 @@ class _MainState extends State<Main> {
       });
     });
 
+    _searchTextController.addListener(() {
+      handleSearchChanged(_searchTextController.text);
+    });
+
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
       setState(() {
         _prefs = prefs;
@@ -141,10 +145,6 @@ class _MainState extends State<Main> {
         } else {
           _pages = parseData();
           _isUserVerified = true;
-          _searchTextController = TextEditingController();
-          _searchTextController.addListener(() {
-            handleSearchChanged(_searchTextController.text);
-          });
         }
       });
     });
@@ -163,7 +163,35 @@ class _MainState extends State<Main> {
   }
 
   List<String> parseToWords(String s) {
-    return s.split(' ');
+    final int pos = s.indexOf('"');
+    if (pos == -1) {
+      return s.split(' ');
+    }
+
+    final int nextPos = s.indexOf('"', pos + 1);
+    if (nextPos == -1) {
+      return parseToWords(s.replaceFirst('"', ''));
+    }
+
+    final List<String> words = parseToWords(s.substring(0, pos));
+    words.add(s.substring(pos + 1, nextPos - pos - 1));
+    words.addAll(parseToWords(s.substring(nextPos + 1)));
+    return words;
+  }
+
+  bool isPageMatchWord(Page page, String word) {
+    if (page.dummyPage == true) {
+      return false;
+    }
+
+    if (word.startsWith('##')) {
+      final RegExp re = RegExp(word.substring(2));
+      return page.title.contains(re) || page.text.contains(re) || page.text.replaceAll('-', '').contains(re);
+    }
+
+    return page.title.toLowerCase().contains(word) ||
+        page.text.toLowerCase().contains(word) ||
+        (word.contains(RegExp(r'^[\d-]*$')) && page.text.replaceAll('-', '').contains(word.replaceAll('-', '')));
   }
 
   void handleSearchChanged(String searchString) {
@@ -177,7 +205,12 @@ class _MainState extends State<Main> {
           _isUserVerified = false;
         });
       }
-      // TODO(sflint): search text in pages
+
+      final List<String> searchWords = parseToWords(_searchString.toLowerCase());
+      final Iterable<Page> result = _pages.where((Page page) => searchWords.any((String word) => isPageMatchWord(page, word)));
+
+      print(result.length);
+      // TODO(sflint): display serach results
     });
   }
 
