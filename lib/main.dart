@@ -10,6 +10,22 @@ void main() => runApp(YeruhamPhonebookApp());
 const String appTitle = 'ספר הטלפונים של ירוחם';
 const Locale hebrewLocale = Locale('he', 'IL');
 
+class Page {
+  String name;
+  String title;
+  String text;
+  bool dummyPage;
+
+  static Page fromDynamic(dynamic page) {
+    final Page result = Page();
+    result.name = page['name'];
+    result.title = page['title'];
+    result.text = page['text'];
+    result.dummyPage = page['dummyPage'];
+    return result;
+  }
+}
+
 class YeruhamPhonebookApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -42,16 +58,16 @@ class Main extends StatefulWidget {
 
 class _MainState extends State<Main> {
   SharedPreferences _prefs;
-  dynamic _pages;
+  List<Page> _pages;
   bool _isUserVerified = false;
   final TextEditingController _phoneNumberController = TextEditingController();
   String _phoneNumber = '';
-  TextEditingController _searchTextController;
+  final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
 
   final String getAllDataUrl =
       'https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=1970-01-01T00:00:00.000Z';
-  Future<dynamic> fetchData() async {
+  Future<void> fetchData() async {
     final http.Response response = await http.get(getAllDataUrl);
 
     if (response.statusCode == 200) {
@@ -64,17 +80,19 @@ class _MainState extends State<Main> {
     }
   }
 
-  dynamic parseData() {
+  List<Page> parseData() {
     final String dataString = _prefs.getString('data');
     final dynamic jsonData = json.decode(dataString);
-    return jsonData['pages'];
+    final Iterable<dynamic> dynamicPages = jsonData['pages'];
+    final Iterable<Page> pages = dynamicPages.map<Page>((dynamic page) => Page.fromDynamic(page));
+    return pages.toList(growable: false);
   }
 
   String normalizedNumber(String number) {
     return number.replaceAll(RegExp(r'\D'), '');
   }
 
-  dynamic getNumberPage(String number) {
+  Page getNumberPage(String number) {
     if (number?.isEmpty ?? true) {
       return null;
     }
@@ -91,13 +109,7 @@ class _MainState extends State<Main> {
       return null;
     }
 
-    for (final dynamic page in _pages) {
-      final String pageText = page['text'].replaceAll(RegExp(r'[-\.]'), '');
-      if (pageText.contains(number)) {
-        return page;
-      }
-    }
-    return null;
+    return _pages.firstWhere((Page page) => page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number), orElse: () => null);
   }
 
   RaisedButton buildRoundedButton({String title, VoidCallback onPressed}) {
@@ -139,10 +151,10 @@ class _MainState extends State<Main> {
   }
 
   Future<void> checkPhoneNumber() async {
-    final dynamic page = getNumberPage(_phoneNumber);
+    final Page page = getNumberPage(_phoneNumber);
     if (page != null) {
       _prefs.setString('validationNumber', normalizedNumber(_phoneNumber));
-      _prefs.setString('validationName', page['name']);
+      _prefs.setString('validationName', page.name);
 
       setState(() {
         _isUserVerified = true;
