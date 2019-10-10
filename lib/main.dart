@@ -100,12 +100,10 @@ class _MainState extends State<Main> {
     number = normalizedNumber(number);
 
     if (number.length < 9) {
-      print('Validation number is too short:' + number);
       return null;
     }
 
     if ((number.startsWith('05') || number.startsWith('07')) && number.length < 10) {
-      print('Validation cellular number is too short:' + number);
       return null;
     }
 
@@ -210,7 +208,7 @@ class _MainState extends State<Main> {
       final Iterable<Page> result = _pages.where((Page page) => searchWords.any((String word) => isPageMatchWord(page, word)));
 
       print(result.length);
-      // TODO(sflint): display serach results
+      // TODO(sflint): display search results
     });
   }
 
