@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(YeruhamPhonebookApp());
 
@@ -212,8 +213,13 @@ class _MainState extends State<Main> {
     });
   }
 
-  void sendFeedback() {
-    // TODO(sflint): implement sendFeedback
+  Future<void> sendFeedback() async {
+    const String url = 'mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   void checkForUpdates() {
