@@ -60,14 +60,17 @@ class Main extends StatefulWidget {
 class _MainState extends State<Main> {
   SharedPreferences _prefs;
   List<Page> _pages;
+  List<Page> _searchResults;
   bool _isUserVerified = false;
   final TextEditingController _phoneNumberController = TextEditingController();
   String _phoneNumber = '';
   final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
 
+
   final String getAllDataUrl =
       'https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=1970-01-01T00:00:00.000Z';
+
   Future<void> fetchData() async {
     final http.Response response = await http.get(getAllDataUrl);
 
@@ -85,7 +88,8 @@ class _MainState extends State<Main> {
     final String dataString = _prefs.getString('data');
     final dynamic jsonData = json.decode(dataString);
     final Iterable<dynamic> dynamicPages = jsonData['pages'];
-    final Iterable<Page> pages = dynamicPages.map<Page>((dynamic page) => Page.fromDynamic(page));
+    final Iterable<Page> pages = dynamicPages.map<Page>((dynamic page) =>
+        Page.fromDynamic(page));
     return pages.toList(growable: false);
   }
 
@@ -104,11 +108,14 @@ class _MainState extends State<Main> {
       return null;
     }
 
-    if ((number.startsWith('05') || number.startsWith('07')) && number.length < 10) {
+    if ((number.startsWith('05') || number.startsWith('07')) &&
+        number.length < 10) {
       return null;
     }
 
-    return _pages.firstWhere((Page page) => page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number), orElse: () => null);
+    return _pages.firstWhere((Page page) =>
+        page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number),
+        orElse: () => null);
   }
 
   RaisedButton buildRoundedButton({String title, VoidCallback onPressed}) {
@@ -116,7 +123,7 @@ class _MainState extends State<Main> {
         onPressed: onPressed,
         child: Text(title),
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16));
   }
 
@@ -172,25 +179,31 @@ class _MainState extends State<Main> {
       return parseToWords(s.replaceFirst('"', ''));
     }
 
-    final List<String> words = parseToWords(s.substring(0, pos));
-    words.add(s.substring(pos + 1, nextPos - pos - 1));
-    words.addAll(parseToWords(s.substring(nextPos + 1)));
-    return words;
+    return parseToWords(s.substring(0, pos))
+      ..add(s.substring(pos + 1, nextPos - pos - 1))
+      ..addAll(parseToWords(s.substring(nextPos + 1)));
   }
 
   bool isPageMatchWord(Page page, String word) {
+    word = word.trim();
+    if (word.isEmpty) {
+      return false;
+    }
+
     if (page.dummyPage == true) {
       return false;
     }
 
     if (word.startsWith('##')) {
       final RegExp re = RegExp(word.substring(2));
-      return page.title.contains(re) || page.text.contains(re) || page.text.replaceAll('-', '').contains(re);
+      return page.title.contains(re) || page.text.contains(re) ||
+          page.text.replaceAll('-', '').contains(re);
     }
 
     return page.title.toLowerCase().contains(word) ||
         page.text.toLowerCase().contains(word) ||
-        (word.contains(RegExp(r'^[\d-]*$')) && page.text.replaceAll('-', '').contains(word.replaceAll('-', '')));
+        (word.contains(RegExp(r'^[\d-]*$')) &&
+            page.text.replaceAll('-', '').contains(word.replaceAll('-', '')));
   }
 
   void handleSearchChanged(String searchString) {
@@ -205,10 +218,15 @@ class _MainState extends State<Main> {
         });
       }
 
-      final List<String> searchWords = parseToWords(_searchString.toLowerCase());
-      final Iterable<Page> result = _pages.where((Page page) => searchWords.any((String word) => isPageMatchWord(page, word)));
+      final List<String> searchWords = parseToWords(
+          _searchString.toLowerCase());
+      final Iterable<Page> result = _pages.where((Page page) =>
+          searchWords.any((String word) => isPageMatchWord(page, word)));
 
-      print(result.length);
+      setState(() {
+        _searchResults = result.toList(growable: false);
+      });
+
       // TODO(sflint): display search results
     });
   }
@@ -226,93 +244,142 @@ class _MainState extends State<Main> {
     // TODO(sflint): implement checkForUpdates
   }
 
-  @override
-  Widget build(BuildContext context) {
-    Widget mainWidget;
-    if (_prefs == null || _pages == null) {
-      mainWidget = Center(child: const Text('טוען...'));
-    } else if (_isUserVerified) {
-      mainWidget = Container(
-        padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            TextField(
-              controller: _searchTextController,
-              maxLines: 1,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchString.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchTextController.clear();
-                        }),
-                border: OutlineInputBorder(
-                    borderSide: BorderSide(width: 1),
-                    borderRadius: BorderRadius.circular(32.0)),
-              ),
-            ),
-            Image.asset(
-              './assets/round_irus.png',
-              scale: .8,
-            ),
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  buildRoundedButton(
-                      onPressed: checkForUpdates, title: 'בדוק אם יש עדכונים'),
-                  buildRoundedButton(
-                      onPressed: sendFeedback, title: 'שלח משוב'),
-                ]),
-          ],
-        ),
+  TextField buildSearchField() {
+    return TextField(
+      controller: _searchTextController,
+      maxLines: 1,
+      autofocus: true,
+      style: const TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+      ),
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: _searchString.isEmpty
+            ? null
+            : IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () {
+              _searchTextController.clear();
+            }),
+        border: OutlineInputBorder(
+            borderSide: BorderSide(width: 1),
+            borderRadius: BorderRadius.circular(32.0)),
+      ),
+    );
+  }
+
+  Widget buildSearchContent() {
+    if (_searchString.isEmpty || _searchResults == null) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Image.asset(
+            './assets/round_irus.png',
+            scale: .8,
+          ),
+          Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                buildRoundedButton(
+                    onPressed: checkForUpdates, title: 'בדוק אם יש עדכונים'),
+                buildRoundedButton(
+                    onPressed: sendFeedback, title: 'שלח משוב'),
+              ]),
+        ],
       );
     } else {
-      mainWidget =
-          Column(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-        const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text(
-              'האפליקציה מיועדת לתושבי ירוחם.\n\nבכדי לוודא התאמה, יש להכניס את מספר הטלפון שלך:',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            )),
-        Container(
-          child: TextField(
-              controller: _phoneNumberController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.phone),
-                suffixIcon: _phoneNumber.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _phoneNumberController.clear();
-                        }),
-              )),
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-        ),
-        Container(
-          child: buildRoundedButton(
-              onPressed: getNumberPage(_phoneNumber) == null ? null : () => checkPhoneNumber(),
-              title: 'המשך'),
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-        ),
-      ]);
+      return ListView(
+        children: _searchResults.map<ListTile>((Page page) =>
+            ListTile(title: Text(page.title))).toList(growable: false),
+      );
     }
+  }
 
+  Widget buildSearchView() {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints viewportConstraints) =>
+            SingleChildScrollView(
+                child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: viewportConstraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                        child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15.0, horizontal: 10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                buildSearchField(),
+                                Expanded(
+                                    child: Container(
+                                        height: 20.0,
+                                        child: buildSearchContent()
+                                    )
+                                )
+                              ],
+                            )
+                        )
+                    )
+                )
+            )
+    );
+  }
+
+  Widget buildValidationView() {
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
+      const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            'האפליקציה מיועדת לתושבי ירוחם.\n\nבכדי לוודא התאמה, יש להכניס את מספר הטלפון שלך:',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          )),
+      Container(
+        child: TextField(
+            controller: _phoneNumberController,
+            keyboardType: TextInputType.phone,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.phone),
+              suffixIcon: _phoneNumber.isEmpty
+                  ? null
+                  : IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _phoneNumberController.clear();
+                  }),
+            )),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+      ),
+      Container(
+        child: buildRoundedButton(
+            onPressed: getNumberPage(_phoneNumber) == null ? null : () =>
+                checkPhoneNumber(),
+            title: 'המשך'),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+      ),
+    ]);
+  }
+
+  Widget buildMainWidget() {
+    if (_prefs == null || _pages == null) {
+      return Center(child: const Text('טוען...'));
+    } else if (_isUserVerified) {
+      return buildSearchView();
+    } else {
+      return buildValidationView();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(appTitle),
       ),
-      body: mainWidget,
+      body: buildMainWidget(),
     );
   }
 }
