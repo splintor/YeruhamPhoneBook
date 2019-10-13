@@ -313,6 +313,7 @@ class _MainState extends State<Main> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 buildSearchField(),
+                                const Padding(padding: EdgeInsets.only(bottom: 10.0)),
                                 Expanded(
                                     child: Container(
                                         height: 20.0,
