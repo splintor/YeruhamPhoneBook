@@ -57,6 +57,92 @@ class Main extends StatefulWidget {
   _MainState createState() => _MainState();
 }
 
+Future<void> openUrl(String url) async {
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw 'Could not launch $url';
+  }
+}
+
+const String urlPattern = r'https?:/\/\\S+';
+const String emailPattern = r'\S+@\S+';
+const String phonePattern = r'[\d-]{9,}';
+final RegExp linkRegExp = RegExp('($urlPattern)|($emailPattern)|($phonePattern)', caseSensitive: false);
+
+WidgetSpan buildLinkComponent(String text, String linkToOpen) => WidgetSpan(
+    child: InkWell(
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.blueAccent,
+          decoration: TextDecoration.underline,
+        ),
+      ),
+      onTap: () => openUrl(linkToOpen),
+    )
+);
+
+List<InlineSpan> linkify(String text) {
+  final List<InlineSpan> list = <InlineSpan>[];
+  final RegExpMatch match = linkRegExp.firstMatch(text);
+  if (match == null) {
+    list.add(TextSpan(text: text));
+    return list;
+  }
+
+  if (match.start > 0) {
+    list.add(TextSpan(text: text.substring(0, match.start)));
+  }
+
+  final String linkText = match.group(0);
+  if (linkText.contains(RegExp(urlPattern, caseSensitive: false))) {
+    list.add(buildLinkComponent(linkText, linkText));
+  }
+  else if (linkText.contains(RegExp(emailPattern, caseSensitive: false))) {
+    list.add(buildLinkComponent(linkText, 'mailto:$linkText'));
+  }
+  else if (linkText.contains(RegExp(phonePattern, caseSensitive: false))) {
+    list.add(buildLinkComponent(linkText, 'tel:$linkText'));
+  } else {
+    throw 'Unexpected match: $linkText';
+  }
+
+  list.addAll(linkify(text.substring(match.start + linkText.length)));
+
+  return list;
+}
+
+class PageItem extends StatelessWidget {
+  const PageItem({ Key key, this.page }) : super(key: key);
+
+  final Page page;
+
+  TextSpan buildLines() {
+    final String text = page.text.replaceAll(RegExp(r'[\r\n]+'), ' ');
+    return TextSpan(children: linkify(text));
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: <Widget>[
+      Text(
+        page.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const Padding(padding: EdgeInsets.only(bottom: 2.0)),
+      Text.rich(buildLines(), maxLines: 5, overflow: TextOverflow.ellipsis,),
+      const Padding(padding: EdgeInsets.only(bottom: 6.0)),
+    ],
+  );
+}
+
 class _MainState extends State<Main> {
   SharedPreferences _prefs;
   List<Page> _pages;
@@ -233,11 +319,7 @@ class _MainState extends State<Main> {
 
   Future<void> sendFeedback() async {
     const String url = 'mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם';
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
+    await openUrl(url);
   }
 
   void checkForUpdates() {
@@ -291,8 +373,7 @@ class _MainState extends State<Main> {
       );
     } else {
       return ListView(
-        children: _searchResults.map<ListTile>((Page page) =>
-            ListTile(title: Text(page.title))).toList(growable: false),
+        children: _searchResults.map<PageItem>((Page page) => PageItem(page: page)).toList(growable: false),
       );
     }
   }
