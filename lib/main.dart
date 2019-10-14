@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+List<Page> pages;
+
 void main() => runApp(YeruhamPhonebookApp());
 
 const String appTitle = 'ספר הטלפונים של ירוחם';
@@ -177,8 +179,16 @@ class PageView extends StatelessWidget {
               mimeType: 'text/html',
               encoding: Encoding.getByName('UTF-8')).toString(),
           navigationDelegate: (NavigationRequest navigation) {
-            print(navigation.url); // TODO(sflint): handle in-app links
-            openUrl(navigation.url);
+            if (navigation.url.startsWith('https://sites.google.com/site/yeruchamphonebook/')) {
+              final Page page = pages.firstWhere((Page p) => p.url == navigation.url);
+              if (page == null) {
+                print('Cannot find page for ${navigation.url}');
+              } else {
+                openPage(page, context);
+              }
+            } else {
+              openUrl(navigation.url);
+            }
             return NavigationDecision.prevent;
           },
         ),
@@ -187,7 +197,6 @@ class PageView extends StatelessWidget {
 
 class _MainState extends State<Main> {
   SharedPreferences _prefs;
-  List<Page> _pages;
   List<Page> _searchResults;
   bool _isUserVerified = false;
   final TextEditingController _phoneNumberController = TextEditingController();
@@ -205,7 +214,7 @@ class _MainState extends State<Main> {
     if (response.statusCode == 200) {
       _prefs.setString('data', response.body);
       setState(() {
-        _pages = parseData();
+        pages = parseData();
       });
     } else {
       throw Exception('Failed to load data');
@@ -241,7 +250,7 @@ class _MainState extends State<Main> {
       return null;
     }
 
-    return _pages.firstWhere((Page page) =>
+    return pages.firstWhere((Page page) =>
         page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number),
         orElse: () => null);
   }
@@ -277,7 +286,7 @@ class _MainState extends State<Main> {
           prefs.remove('data');
           fetchData();
         } else {
-          _pages = parseData();
+          pages = parseData();
           _isUserVerified = true;
         }
       });
@@ -348,7 +357,7 @@ class _MainState extends State<Main> {
 
       final List<String> searchWords = parseToWords(
           _searchString.toLowerCase());
-      final Iterable<Page> result = _pages.where((Page page) =>
+      final Iterable<Page> result = pages.where((Page page) =>
           searchWords.any((String word) => isPageMatchWord(page, word)));
 
       setState(() {
@@ -488,7 +497,7 @@ class _MainState extends State<Main> {
   }
 
   Widget buildMainWidget() {
-    if (_prefs == null || _pages == null) {
+    if (_prefs == null || pages == null) {
       return Center(child: const Text('טוען...'));
     } else if (_isUserVerified) {
       return buildSearchView();
