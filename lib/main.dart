@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() => runApp(YeruhamPhonebookApp());
 
@@ -13,15 +14,19 @@ const Locale hebrewLocale = Locale('he', 'IL');
 
 class Page {
   String name;
+  String url;
   String title;
   String text;
+  String html;
   bool dummyPage;
 
   static Page fromDynamic(dynamic page) {
     final Page result = Page();
     result.name = page['name'];
+    result.url = page['url'];
     result.title = page['title'];
     result.text = page['text'];
+    result.html = page['html'];
     result.dummyPage = page['dummyPage'];
     return result;
   }
@@ -63,6 +68,13 @@ Future<void> openUrl(String url) async {
   } else {
     throw 'Could not launch $url';
   }
+}
+
+void openPage(Page page, BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute<void>(builder: (BuildContext context) => PageView(page)),
+  );
 }
 
 const String urlPattern = r'https?:/\/\\S+';
@@ -124,23 +136,53 @@ class PageItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: <Widget>[
-      Text(
-        page.title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.bold,
+  Widget build(BuildContext context) =>
+      InkWell(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              page.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Padding(padding: EdgeInsets.only(bottom: 2.0)),
+            Text.rich(
+              buildLines(), maxLines: 5, overflow: TextOverflow.ellipsis,),
+            const Padding(padding: EdgeInsets.only(bottom: 6.0)),
+          ],
         ),
-      ),
-      const Padding(padding: EdgeInsets.only(bottom: 2.0)),
-      Text.rich(buildLines(), maxLines: 5, overflow: TextOverflow.ellipsis,),
-      const Padding(padding: EdgeInsets.only(bottom: 6.0)),
-    ],
-  );
+        onTap: () => openPage(page, context),
+      );
+}
+
+class PageView extends StatelessWidget {
+  const PageView(this.page);
+
+  final Page page;
+
+  @override
+  Widget build(BuildContext context) =>
+      Scaffold(
+        appBar: AppBar(
+          title: Text(page.title),
+        ),
+        body: WebView(
+          initialUrl: Uri.dataFromString(
+              page.html.replaceFirst('<table', '<table width="100%"'),
+              mimeType: 'text/html',
+              encoding: Encoding.getByName('UTF-8')).toString(),
+          navigationDelegate: (NavigationRequest navigation) {
+            print(navigation.url); // TODO(sflint): handle in-app links
+            openUrl(navigation.url);
+            return NavigationDecision.prevent;
+          },
+        ),
+      );
 }
 
 class _MainState extends State<Main> {
