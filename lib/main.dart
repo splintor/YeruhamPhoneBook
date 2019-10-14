@@ -343,6 +343,25 @@ class _MainState extends State<Main> {
             page.text.replaceAll('-', '').contains(word.replaceAll('-', '')));
   }
 
+  int compareSearchIndexes(String s1, String s2) {
+    final int index1 = s1.indexOf(_searchString);
+    final int index2 = s2.indexOf(_searchString);
+
+    if (index1 == index2) {
+      return 0;
+    }
+    
+    if (index1 == -1) {
+      return 1;
+    }
+
+    if (index2 == -1) {
+      return -1;
+    }
+
+    return index1.compareTo(index2);
+  }
+
   void handleSearchChanged(String searchString) {
     setState(() {
       _searchString = searchString;
@@ -357,11 +376,25 @@ class _MainState extends State<Main> {
 
       final List<String> searchWords = parseToWords(
           _searchString.toLowerCase());
-      final Iterable<Page> result = pages.where((Page page) =>
-          searchWords.any((String word) => isPageMatchWord(page, word)));
+      final List<Page> result = pages.where((Page page) =>
+          searchWords.any((String word) => isPageMatchWord(page, word))).toList(growable: false);
 
+      result.sort((Page a, Page b) {
+        final int titleCompare = compareSearchIndexes(a.title, b.title);
+        if (titleCompare != 0) {
+          return titleCompare;
+        }
+
+        final int textCompare = compareSearchIndexes(a.text, b.text);
+        if (textCompare != 0) {
+          return textCompare;
+        }
+
+        return a.title.compareTo(b.title);
+      });
+  
       setState(() {
-        _searchResults = result.toList(growable: false);
+        _searchResults = result;
       });
 
       // TODO(sflint): display search results
