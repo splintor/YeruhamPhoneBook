@@ -167,6 +167,16 @@ class PageView extends StatelessWidget {
 
   final Page page;
 
+  String htmlToShow() {
+    return page.html
+        .replaceFirst('<table', '<table width="100%" style="font-size: 1.2em;"')
+        .replaceAllMapped(RegExp(r'([^>\d-])([\d-]{8,})'),
+            (Match match) => match.group(1) +
+            '<a href="tel:${match.group(2).replaceAll('-', '')}">'
+                '${match.group(2)}'
+                '</a>');
+  }
+
   @override
   Widget build(BuildContext context) =>
       Scaffold(
@@ -175,7 +185,7 @@ class PageView extends StatelessWidget {
         ),
         body: WebView(
           initialUrl: Uri.dataFromString(
-              page.html.replaceFirst('<table', '<table width="100%"'),
+              htmlToShow(),
               mimeType: 'text/html',
               encoding: Encoding.getByName('UTF-8')).toString(),
           navigationDelegate: (NavigationRequest navigation) {
