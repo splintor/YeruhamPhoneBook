@@ -173,6 +173,7 @@ class PageView extends StatelessWidget {
   String htmlToShow() {
     return page.html
         .replaceFirst('<table', '<table width="100%" style="font-size: 1.2em;"')
+        .replaceAll('font-size:10pt', '')
         .replaceAllMapped(RegExp(r'([^>\d-])([\d-]{8,})'),
             (Match match) => match.group(1) +
             '<a href="tel:${match.group(2).replaceAll('-', '')}">'
