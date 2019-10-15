@@ -192,10 +192,11 @@ class PageView extends StatelessWidget {
               mimeType: 'text/html',
               encoding: Encoding.getByName('UTF-8')).toString(),
           navigationDelegate: (NavigationRequest navigation) {
-            if (navigation.url.startsWith('https://sites.google.com/site/yeruchamphonebook/')) {
+            final String pageUrlBase = RegExp(r'https:\/\/[^\/]+\/').firstMatch(page.url).group(0);
+            if (navigation.url.startsWith(pageUrlBase)) {
               final Page page = pages.firstWhere((Page p) => p.url == navigation.url);
               if (page == null) {
-                print('Cannot find page for ${navigation.url}');
+                openUrl(navigation.url);
               } else {
                 openPage(page, context);
               }
