@@ -43,9 +43,12 @@ class YeruhamPhonebookApp extends StatelessWidget {
     return MaterialApp(
       title: appTitle,
       theme: ThemeData(
-        primarySwatch: Colors.pink,
-          buttonColor: Colors.pink,
+          primarySwatch: Colors.pink,
           disabledColor: Colors.grey,
+          buttonTheme: ButtonThemeData(
+            buttonColor: Colors.pink,
+            textTheme: ButtonTextTheme.primary,
+          )
       ),
       home: const Main(),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
