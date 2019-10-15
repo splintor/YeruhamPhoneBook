@@ -373,41 +373,38 @@ class _MainState extends State<Main> {
   }
 
   void handleSearchChanged(String searchString) {
-    setState(() {
-      _searchString = searchString;
-      if (_searchString == '___resetValidationNumber') {
-        _prefs.remove('validationNumber');
-        _prefs.remove('validationName');
-        setState(() {
-          _searchTextController.clear();
-          _isUserVerified = false;
-        });
+    _searchString = searchString;
+    if (_searchString == '___resetValidationNumber') {
+      _prefs.remove('validationNumber');
+      _prefs.remove('validationName');
+      setState(() {
+        _searchTextController.clear();
+        _isUserVerified = false;
+      });
+    }
+
+    final List<String> searchWords = parseToWords(
+        _searchString.toLowerCase());
+    final List<Page> result = pages.where((Page page) =>
+        searchWords.any((String word) => isPageMatchWord(page, word))).toList(
+        growable: false);
+
+    result.sort((Page a, Page b) {
+      final int titleCompare = compareSearchIndexes(a.title, b.title);
+      if (titleCompare != 0) {
+        return titleCompare;
       }
 
-      final List<String> searchWords = parseToWords(
-          _searchString.toLowerCase());
-      final List<Page> result = pages.where((Page page) =>
-          searchWords.any((String word) => isPageMatchWord(page, word))).toList(growable: false);
+      final int textCompare = compareSearchIndexes(a.text, b.text);
+      if (textCompare != 0) {
+        return textCompare;
+      }
 
-      result.sort((Page a, Page b) {
-        final int titleCompare = compareSearchIndexes(a.title, b.title);
-        if (titleCompare != 0) {
-          return titleCompare;
-        }
+      return a.title.compareTo(b.title);
+    });
 
-        final int textCompare = compareSearchIndexes(a.text, b.text);
-        if (textCompare != 0) {
-          return textCompare;
-        }
-
-        return a.title.compareTo(b.title);
-      });
-  
-      setState(() {
-        _searchResults = result;
-      });
-
-      // TODO(sflint): display search results
+    setState(() {
+      _searchResults = result;
     });
   }
 
