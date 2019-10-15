@@ -18,23 +18,25 @@ const Duration searchOverflowDuration = Duration(seconds: 2);
 const TextStyle emptyListMessageStyle = TextStyle(fontSize: 22.0);
 
 class Page {
+  Page.fromJson(this.page) :
+    name = page['name'],
+    url = page['url'],
+    title = page['title'],
+    text = page['text'],
+    html = page['html'],
+    isDeleted = page['isDeleted'],
+    dummyPage = page['dummyPage'];
+
+  dynamic toJson() => page;
+
+  dynamic page;
   String name;
   String url;
   String title;
   String text;
   String html;
+  bool isDeleted;
   bool dummyPage;
-
-  static Page fromDynamic(dynamic page) {
-    final Page result = Page();
-    result.name = page['name'];
-    result.url = page['url'];
-    result.title = page['title'];
-    result.text = page['text'];
-    result.html = page['html'];
-    result.dummyPage = page['dummyPage'];
-    return result;
-  }
 }
 
 class YeruhamPhonebookApp extends StatelessWidget {
@@ -222,20 +224,27 @@ class _MainState extends State<Main> {
   String _phoneNumber = '';
   final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
-
-  final String getAllDataUrl =
-      'https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=1970-01-01T00:00:00.000Z';
+  String _statusText = '';
+  bool _statusIsWarning = false;
 
   Future<void> fetchData() async {
-    final http.Response response = await http.get(getAllDataUrl);
+    try {
+      final http.Response response = await http.get(getDataUrl());
 
-    if (response.statusCode == 200) {
-      _prefs.setString('data', response.body);
-      setState(() {
-        pages = parseData();
-      });
-    } else {
-      throw Exception('Failed to load data');
+      if (response.statusCode == 200) {
+        _prefs.setString('data', response.body);
+        setState(() {
+          pages = parseData();
+          setLastUpdateDate(response.body);
+        });
+      } else {
+        updateStatus(
+            'טעינת הנתונים נכשלה.' '\n' 'response.statusCode: ${response
+                .statusCode}', isWarning: true);
+      }
+    } catch (e) {
+      updateStatus(
+          'טעינת הנתונים נכשלה.' '\n' 'Exception: $e', isWarning: true);
     }
   }
 
@@ -243,9 +252,7 @@ class _MainState extends State<Main> {
     final String dataString = _prefs.getString('data');
     final dynamic jsonData = json.decode(dataString);
     final Iterable<dynamic> dynamicPages = jsonData['pages'];
-    final Iterable<Page> pages = dynamicPages.map<Page>((dynamic page) =>
-        Page.fromDynamic(page));
-    return pages.toList(growable: false);
+    return dynamicPages.map((dynamic page) => Page.fromJson(page)).toList();
   }
 
   String normalizedNumber(String number) {
@@ -286,15 +293,12 @@ class _MainState extends State<Main> {
   void initState() {
     super.initState();
 
-    _phoneNumberController.addListener(() {
-      setState(() {
-        _phoneNumber = _phoneNumberController.text;
-      });
-    });
+    _phoneNumberController.addListener(() =>
+        setState(() => _phoneNumber = _phoneNumberController.text)
+    );
 
-    _searchTextController.addListener(() {
-      handleSearchChanged(_searchTextController.text);
-    });
+    _searchTextController.addListener(() =>
+        handleSearchChanged(_searchTextController.text));
 
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
       setState(() {
@@ -306,6 +310,7 @@ class _MainState extends State<Main> {
         } else {
           pages = parseData();
           _isUserVerified = true;
+          checkForUpdates(forceUpdate: false);
         }
       });
     });
@@ -363,7 +368,7 @@ class _MainState extends State<Main> {
     if (index1 == index2) {
       return 0;
     }
-    
+
     if (index1 == -1) {
       return 1;
     }
@@ -376,6 +381,9 @@ class _MainState extends State<Main> {
   }
 
   void handleSearchChanged(String searchString) {
+    if (searchString.isNotEmpty && _statusText.isNotEmpty) {
+      updateStatus('');
+    }
     setState(() => _searchString = searchString);
     if (_searchString == '___resetValidationNumber') {
       _prefs.remove('validationNumber');
@@ -417,7 +425,8 @@ class _MainState extends State<Main> {
           }
 
           _searchOverflowTimer = Timer(
-            searchOverflowDuration, () => setState(() => _searchOverflowTimer = null),
+            searchOverflowDuration, () =>
+              setState(() => _searchOverflowTimer = null),
           );
         });
       }
@@ -431,8 +440,73 @@ class _MainState extends State<Main> {
     await openUrl(url);
   }
 
-  void checkForUpdates() {
-    // TODO(sflint): implement checkForUpdates
+  void updateStatus(String text, {bool isWarning = false}) {
+    setState(() {
+      _statusText = text;
+      _statusIsWarning = isWarning;
+    });
+  }
+
+  int getLastUpdateDate() {
+    try {
+      return _prefs.getInt('lastUpdateDate');
+    } catch(e) {
+      return 0;
+    }
+  }
+
+  String getDataUrl({int lastUpdateDate = 0}) {
+    return 'https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=' +
+        DateTime.fromMillisecondsSinceEpoch(lastUpdateDate).toIso8601String();
+  }
+
+  void setLastUpdateDate(dynamic jsonData) => _prefs.setInt('lastUpdateDate', jsonData['maxDate']);
+
+  String getUpdateStatus(int updatedPagesCount) {
+    switch(updatedPagesCount) {
+      case 0: return 'לא נמצאו עדכונים.';
+      case 1: return 'דף אחד עודכן.';
+      default: return '$updatedPagesCount דפים עודכנו.';
+    }
+  }
+
+  Future<void> checkForUpdates({bool forceUpdate = true}) async {
+    updateStatus('בודק אם יש עדכונים...');
+    try {
+      final http.Response response = await http.get(
+          getDataUrl(lastUpdateDate: getLastUpdateDate())
+      );
+
+      if (response.statusCode == 200) {
+        final dynamic jsonData = json.decode(response.body);
+        final Iterable<dynamic> dynamicPages = jsonData['pages'];
+        final List<Page> updatedPages = dynamicPages.map((dynamic page) =>
+            Page.fromJson(page)).toList(growable: false);
+
+        setState(() {
+          for (Page updatedPage in updatedPages) {
+            pages.removeWhere((Page p) => p.url == updatedPage.url);
+            if (updatedPage.isDeleted != true) {
+              pages.add(updatedPage);
+            }
+          }
+          setLastUpdateDate(jsonData);
+          updateStatus(forceUpdate || updatedPages.isNotEmpty ? getUpdateStatus(
+              updatedPages.length) : '');
+        });
+
+        if (updatedPages.isNotEmpty) {
+          final Map<String, List<Page>> updatedData = <String, List<Page>>{
+            'pages': pages
+          };
+          _prefs.setString('data', jsonEncode(updatedData));
+        }
+      } else {
+        updateStatus('טעינת העדכון נכשלה' '\n' 'response.statusCode: ${response.statusCode}', isWarning: true);
+      }
+    } catch (e) {
+      updateStatus('טעינת העדכון נכשלה' '\n' 'Exception: $e', isWarning: true);
+    }
   }
 
   TextField buildSearchField() {
@@ -465,15 +539,23 @@ class _MainState extends State<Main> {
     if (_searchString.isEmpty || _searchResults == null) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
         children: <Widget>[
+          const Padding(padding: EdgeInsets.only(bottom: 20.0)),
           Image.asset(
             './assets/round_irus.png',
             scale: .8,
           ),
           Center(
             child: Text(_statusText,
+              style: TextStyle(
+                fontSize: 20.0,
+                  color: _statusIsWarning ? Colors.red : Colors.blueAccent
+              ),
+            )
+          ),
           Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 buildRoundedButton(
                     onPressed: checkForUpdates, title: 'בדוק אם יש עדכונים'),
