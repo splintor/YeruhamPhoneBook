@@ -13,6 +13,9 @@ void main() => runApp(YeruhamPhonebookApp());
 
 const String appTitle = 'ספר הטלפונים של ירוחם';
 const Locale hebrewLocale = Locale('he', 'IL');
+const int searchResultsLimit = 40;
+const Duration searchOverflowDuration = Duration(seconds: 2);
+const TextStyle emptyListMessageStyle = TextStyle(fontSize: 22.0);
 
 class Page {
   String name;
@@ -208,6 +211,7 @@ class PageView extends StatelessWidget {
 class _MainState extends State<Main> {
   SharedPreferences _prefs;
   List<Page> _searchResults;
+  Timer _searchOverflowTimer;
   bool _isUserVerified = false;
   final TextEditingController _phoneNumberController = TextEditingController();
   String _phoneNumber = '';
@@ -399,6 +403,21 @@ class _MainState extends State<Main> {
       return a.title.compareTo(b.title);
     });
 
+    if (result.length > searchResultsLimit) {
+      if (_searchOverflowTimer != null || _searchResults == null ||
+          _searchResults.length <= searchResultsLimit) {
+        setState(() {
+          if (_searchOverflowTimer != null) {
+            _searchOverflowTimer.cancel();
+          }
+
+          _searchOverflowTimer = Timer(
+            searchOverflowDuration, () => setState(() => _searchOverflowTimer = null),
+          );
+        });
+      }
+    }
+
     setState(() => _searchResults = result);
   }
 
@@ -456,12 +475,34 @@ class _MainState extends State<Main> {
               ]),
         ],
       );
+    } else if (_searchResults.length > searchResultsLimit) {
+      if (_searchOverflowTimer == null) {
+        return Align(
+          alignment: Alignment.topRight,
+          child: Text.rich(
+              TextSpan(
+                  style: emptyListMessageStyle,
+                  children: <TextSpan>[
+                    const TextSpan(text: 'נמצאו '),
+                    TextSpan(
+                      text: _searchResults.length.toString(),
+                      style: const TextStyle(color: Colors.blueAccent),
+                    ),
+                    const TextSpan(
+                        text: ' תוצאות מתאימות. יש לצמצם את התוצאות ע"י הוספת עוד מילות חיפוש.'),
+                  ]
+              )
+          ),
+        );
+      } else {
+        return null;
+      }
     } else if (_searchResults.isEmpty) {
       return Align(
         alignment: Alignment.topRight,
         child: Text.rich(
             TextSpan(
-                style: const TextStyle(fontSize: 22.0),
+                style: emptyListMessageStyle,
                 children: <TextSpan>[
                   const TextSpan(text: 'לא נמצאו תוצאות מתאימות לחיפוש '),
                   TextSpan(
