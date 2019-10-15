@@ -214,7 +214,6 @@ class _MainState extends State<Main> {
   final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
 
-
   final String getAllDataUrl =
       'https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=1970-01-01T00:00:00.000Z';
 
@@ -332,11 +331,6 @@ class _MainState extends State<Main> {
   }
 
   bool isPageMatchWord(Page page, String word) {
-    word = word.trim();
-    if (word.isEmpty) {
-      return false;
-    }
-
     if (page.dummyPage == true) {
       return false;
     }
@@ -373,7 +367,7 @@ class _MainState extends State<Main> {
   }
 
   void handleSearchChanged(String searchString) {
-    _searchString = searchString;
+    setState(() => _searchString = searchString);
     if (_searchString == '___resetValidationNumber') {
       _prefs.remove('validationNumber');
       _prefs.remove('validationName');
@@ -383,10 +377,12 @@ class _MainState extends State<Main> {
       });
     }
 
-    final List<String> searchWords = parseToWords(
-        _searchString.toLowerCase());
+    final List<String> searchWords = parseToWords(_searchString.toLowerCase())
+        .map((String s) => s.trim())
+        .where((String w) => w.isNotEmpty)
+        .toList(growable: false);
     final List<Page> result = pages.where((Page page) =>
-        searchWords.any((String word) => isPageMatchWord(page, word))).toList(
+        searchWords.every((String word) => isPageMatchWord(page, word))).toList(
         growable: false);
 
     result.sort((Page a, Page b) {
