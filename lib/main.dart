@@ -399,9 +399,7 @@ class _MainState extends State<Main> {
       return a.title.compareTo(b.title);
     });
 
-    setState(() {
-      _searchResults = result;
-    });
+    setState(() => _searchResults = result);
   }
 
   Future<void> sendFeedback() async {
