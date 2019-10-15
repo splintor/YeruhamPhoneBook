@@ -458,6 +458,22 @@ class _MainState extends State<Main> {
               ]),
         ],
       );
+    } else if (_searchResults.isEmpty) {
+      return Align(
+        alignment: Alignment.topRight,
+        child: Text.rich(
+            TextSpan(
+                style: const TextStyle(fontSize: 22.0),
+                children: <TextSpan>[
+                  const TextSpan(text: 'לא נמצאו תוצאות מתאימות לחיפוש '),
+                  TextSpan(
+                    text: _searchString,
+                    style: const TextStyle(color: Colors.blueAccent),
+                  ),
+                ]
+            )
+        ),
+      );
     } else {
       return ListView(
         children: _searchResults.map<PageItem>((Page page) => PageItem(page: page)).toList(growable: false),
