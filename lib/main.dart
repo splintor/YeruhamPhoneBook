@@ -470,6 +470,8 @@ class _MainState extends State<Main> {
             './assets/round_irus.png',
             scale: .8,
           ),
+          Center(
+            child: Text(_statusText,
           Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
