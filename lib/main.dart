@@ -182,7 +182,7 @@ class PageView extends StatelessWidget {
         .replaceAll(RegExp(r"<img src='[^']*twitter[^']*'"), "<img width='36' height='36' src='https://icon-library.net/images/twitter-social-media-icon/twitter-social-media-icon-19.jpg'")
         .replaceAll(RegExp(r"<img src='[^']*facebook[^']*'"), "<img width='40' height='40' src='https://icon-library.net/images/official-facebook-icon/official-facebook-icon-16.jpg'")
         .replaceAll(RegExp(r"alt='https:\/\/www.facebook.com[^']*'"), '')
-        .replaceAllMapped(RegExp(r'([^>\d-])([\d-]{8,})'),
+        .replaceAllMapped(RegExp(r'([^>=\/\d-])([\d-]{8,})'),
             (Match match) => match.group(1) +
             '<a href="tel:${match.group(2).replaceAll('-', '')}">'
                 '${match.group(2)}'
