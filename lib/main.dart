@@ -292,9 +292,10 @@ class _MainState extends State<Main> {
 
       if (response.statusCode == 200) {
         _prefs.setString('data', response.body);
+        final dynamic jsonData = json.decode(response.body);
         setState(() {
-          pages = parseData();
-          setLastUpdateDate(response.body);
+          pages = parseData(jsonData);
+          setLastUpdateDate(jsonData);
         });
       } else {
         updateStatus(
@@ -307,9 +308,7 @@ class _MainState extends State<Main> {
     }
   }
 
-  List<Page> parseData() {
-    final String dataString = _prefs.getString('data');
-    final dynamic jsonData = json.decode(dataString);
+  List<Page> parseData(dynamic jsonData) {
     final Iterable<dynamic> dynamicPages = jsonData['pages'];
     return dynamicPages.map((dynamic page) => Page.fromJson(page)).toList();
   }
@@ -367,7 +366,8 @@ class _MainState extends State<Main> {
           prefs.remove('data');
           fetchData();
         } else {
-          pages = parseData();
+          final String dataString = _prefs.getString('data');
+          pages = parseData(json.decode(dataString));
           _isUserVerified = true;
           checkForUpdates(forceUpdate: false);
         }
