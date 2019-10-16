@@ -172,7 +172,7 @@ class PageItem extends StatelessWidget {
 
   TextSpan buildLines() {
     final String text = page.text.replaceAll(RegExp(r'[\r\n]+'), ' ');
-    return TextSpan(children: linkify(text));
+    return TextSpan(children: linkify(text.length > 350 ? text.substring(0, 350) : text));
   }
 
   @override
