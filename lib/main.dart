@@ -17,6 +17,7 @@ const Locale hebrewLocale = Locale('he', 'IL');
 const int searchResultsLimit = 40;
 const Duration searchOverflowDuration = Duration(seconds: 2);
 const TextStyle emptyListMessageStyle = TextStyle(fontSize: 22.0);
+const String newPagesKeyword = '#חדשים';
 
 class Page {
   Page();
@@ -284,6 +285,7 @@ class _MainState extends State<Main> {
   final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
   String _statusText = '';
+  Function _statusPressHandler;
   bool _statusIsWarning = false;
 
   Future<void> fetchData() async {
@@ -499,10 +501,11 @@ class _MainState extends State<Main> {
     await openUrl(url);
   }
 
-  void updateStatus(String text, {bool isWarning = false}) {
+  void updateStatus(String text, {bool isWarning = false, void Function() onPress}) {
     setState(() {
       _statusText = text;
       _statusIsWarning = isWarning;
+      _statusPressHandler = onPress;
     });
   }
 
@@ -539,19 +542,25 @@ class _MainState extends State<Main> {
       if (response.statusCode == 200) {
         final dynamic jsonData = json.decode(response.body);
         final Iterable<dynamic> dynamicPages = jsonData['pages'];
-        final List<Page> updatedPages = dynamicPages.map((dynamic page) =>
+        final List<Page> receivedPages = dynamicPages.map((dynamic page) =>
             Page.fromJson(page)).toList(growable: false);
+        final List<Page> updatedPages = <Page>[];
 
         setState(() {
-          for (Page updatedPage in updatedPages) {
+          for (Page updatedPage in receivedPages) {
             pages.removeWhere((Page p) => p.url == updatedPage.url);
             if (updatedPage.isDeleted != true) {
               pages.add(updatedPage);
+              updatedPages.add(updatedPage);
             }
           }
           setLastUpdateDate(jsonData);
           updateStatus(forceUpdate || updatedPages.isNotEmpty ? getUpdateStatus(
-              updatedPages.length) : '');
+              updatedPages.length) : '',
+              onPress: updatedPages.isEmpty ? null : () => setState(() {
+                _searchString = newPagesKeyword;
+                _searchResults = updatedPages;
+              }));
         });
 
         if (updatedPages.isNotEmpty) {
@@ -606,12 +615,15 @@ class _MainState extends State<Main> {
             scale: .8,
           ),
           Center(
-            child: Text(_statusText,
-              style: TextStyle(
-                fontSize: 20.0,
-                  color: _statusIsWarning ? Colors.red : Colors.blueAccent
-              ),
-            )
+            child: InkWell(
+                onTap: _statusPressHandler,
+                child: Text(_statusText,
+                  style: TextStyle(
+                      fontSize: 20.0,
+                      color: _statusIsWarning ? Colors.red : Colors.blueAccent
+                  ),
+                )
+            ),
           ),
           Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -623,7 +635,7 @@ class _MainState extends State<Main> {
               ]),
         ],
       );
-    } else if (_searchResults.length > searchResultsLimit) {
+    } else if (_searchResults.length > searchResultsLimit && _searchString != newPagesKeyword) {
       if (_searchOverflowTimer == null) {
         return Align(
           alignment: Alignment.topRight,
