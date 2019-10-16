@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+const String appVersion = '3.0';
 List<Page> pages;
 
 void main() => runApp(YeruhamPhonebookApp());
@@ -18,6 +19,7 @@ const Duration searchOverflowDuration = Duration(seconds: 2);
 const TextStyle emptyListMessageStyle = TextStyle(fontSize: 22.0);
 
 class Page {
+  Page();
   Page.fromJson(this.page) :
     name = page['name'],
     url = page['url'],
@@ -87,6 +89,34 @@ void openPage(Page page, BuildContext context) {
   );
 }
 
+Page getAboutPage() {
+  int mails = 0;
+  int phones = 0;
+  for(Page page in pages) {
+    mails += RegExp(r'\S+@\S+')
+        .allMatches(page.text)
+        .length;
+    phones += RegExp(r'[^>=\/\d-][\d-]{8,}')
+        .allMatches(page.text)
+        .length;
+  }
+
+  return Page()
+    ..title = 'אפליקצית ספר הטלפונים של ירוחם'
+    ..html = '''<table><tbody><tr><td><div dir='rtl'>
+        האפליקציה נכתבה ב<a href="https://github.com/splintor/YeruhamPhoneBook">קוד פתוח</a>
+         על-ידי שמוליק פלינט
+        (<a href="mailto:splintor@gmail.com">splintor@gmail.com</a>)
+       בעזרת 
+        <a href="https://flutter.dev/">Flutter</a>.<br><br>
+        זוהי גרסה <b>$appVersion</b><br><br>
+        ספר הטלפונים כולל
+        <b>${pages.length}</b>
+        דפים.<br><br>
+        מספרי טלפון: $phones<br><br>
+        כתובות מייל: $mails<br><br>
+        </td></tr></tbody>''';
+}
 const String urlPattern = r'https?:/\/\\S+';
 const String emailPattern = r'\S+@\S+';
 const String phonePattern = r'[\d-]{9,}';
@@ -187,6 +217,17 @@ class PageView extends StatelessWidget {
             '<a href="tel:${match.group(2).replaceAll('-', '')}">'
                 '${match.group(2)}'
                 '</a>');
+
+  void onMenuSelected(String itemValue) {
+    switch(itemValue) {
+      case 'copyPageUrl':
+        Clipboard.setData(ClipboardData(text: page.url));
+        return;
+
+      case 'openPageInBrowser':
+        openUrl(page.url);
+        return;
+    }
   }
 
   @override
@@ -194,6 +235,21 @@ class PageView extends StatelessWidget {
       Scaffold(
         appBar: AppBar(
           title: Text(page.title),
+        actions: page.url == null ? null : <Widget>[
+          PopupMenuButton<String>(
+              onSelected: onMenuSelected,
+              itemBuilder: (BuildContext context) =>
+              <PopupMenuItem<String>>[
+                PopupMenuItem<String>(
+                  value: 'copyPageUrl',
+                  child: const Text('העתק את כתובת הדף'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'openPageInBrowser',
+                  child: const Text('פתח דף בדפדפן'),
+                ),
+              ]),
+        ],
         ),
         body: WebView(
           initialUrl: Uri.dataFromString(
@@ -201,8 +257,8 @@ class PageView extends StatelessWidget {
               mimeType: 'text/html',
               encoding: Encoding.getByName('UTF-8')).toString(),
           navigationDelegate: (NavigationRequest navigation) {
-            final String pageUrlBase = RegExp(r'https:\/\/[^\/]+\/').firstMatch(page.url).group(0);
-            if (navigation.url.startsWith(pageUrlBase)) {
+            final String pageUrlBase = RegExp(r'https:\/\/[^\/]+\/').firstMatch(page.url ?? '')?.group(0);
+            if (pageUrlBase != null && navigation.url.startsWith(pageUrlBase)) {
               final Page page = pages.firstWhere((Page p) => p.url == navigation.url);
               if (page == null) {
                 openUrl(navigation.url);
@@ -689,11 +745,38 @@ class _MainState extends State<Main> {
     }
   }
 
+  void onMenuSelected(String itemValue) {
+    switch(itemValue) {
+      case 'about':
+        openPage(getAboutPage(), context);
+        return;
+
+      case 'openInBrowser':
+        openUrl('https://sites.google.com/site/yeruchamphonebook/');
+        return;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(appTitle),
+        actions: <Widget>[
+          PopupMenuButton<String>(
+            onSelected: onMenuSelected,
+              itemBuilder: (BuildContext context) =>
+              <PopupMenuItem<String>>[
+                PopupMenuItem<String>(
+                  value: 'about',
+                  child: const Text('אודות'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'openInBrowser',
+                  child: const Text('פתח בדפדפן'),
+                ),
+              ]),
+        ],
       ),
       body: buildMainWidget(),
     );
