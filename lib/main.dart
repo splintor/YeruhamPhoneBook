@@ -211,6 +211,9 @@ class PageView extends StatelessWidget {
     return page.html
         .replaceFirst('<table', '<table width="100%" style="font-size: 1.2em;"')
         .replaceAll('font-size:10pt', '')
+        .replaceAll('background-color:transparent', '')
+        .replaceAll(RegExp(r" ?style=';*'"), '')
+        .replaceAllMapped(RegExp(r'<span>([^<]*)</span>'), (Match match) => match.group(1))
         .replaceAll(RegExp(r"<img src='[^']*twitter[^']*'"), "<img width='36' height='36' src='https://icon-library.net/images/twitter-social-media-icon/twitter-social-media-icon-19.jpg'")
         .replaceAll(RegExp(r"<img src='[^']*facebook[^']*'"), "<img width='40' height='40' src='https://icon-library.net/images/official-facebook-icon/official-facebook-icon-16.jpg'")
         .replaceAll(RegExp(r"alt='https:\/\/www.facebook.com[^']*'"), '')
