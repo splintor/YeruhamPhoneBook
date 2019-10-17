@@ -23,6 +23,8 @@ dependencies:
     sdk: flutter
   url_launcher: 5.1.1
   webview_flutter: ^0.3.14+1
+  contacts_service: ^0.3.4
+  permission_handler: ^3.2.2
   shared_preferences:
   http:
 
