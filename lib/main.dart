@@ -21,7 +21,7 @@ const String newPagesKeyword = '#חדשים';
 
 class Page {
   Page();
-  Page.fromJson(this.page) :
+  Page.fromMap(this.page) :
     name = page['name'],
     url = page['url'],
     title = page['title'],
@@ -32,7 +32,7 @@ class Page {
 
   dynamic toJson() => page;
 
-  dynamic page;
+  Map<String, dynamic> page;
   String name;
   String url;
   String title;
@@ -296,7 +296,7 @@ class _MainState extends State<Main> {
         _prefs.setString('data', response.body);
         final dynamic jsonData = json.decode(response.body);
         setState(() {
-          pages = parseData(jsonData);
+          pages = parseData(jsonData, growable: false);
           setLastUpdateDate(jsonData);
         });
       } else {
@@ -310,9 +310,9 @@ class _MainState extends State<Main> {
     }
   }
 
-  List<Page> parseData(dynamic jsonData) {
-    final Iterable<dynamic> dynamicPages = jsonData['pages'];
-    return dynamicPages.map((dynamic page) => Page.fromJson(page)).toList();
+  List<Page> parseData(dynamic jsonData, {@required bool growable}) {
+    final List<Map<String, dynamic>> dynamicPages = jsonData['pages'].cast<Map<String, dynamic>>();
+    return dynamicPages.map((Map<String, dynamic> page) => Page.fromMap(page)).toList(growable: growable);
   }
 
   String normalizedNumber(String number) {
@@ -369,7 +369,7 @@ class _MainState extends State<Main> {
           fetchData();
         } else {
           final String dataString = _prefs.getString('data');
-          pages = parseData(json.decode(dataString));
+          pages = parseData(json.decode(dataString), growable: true);
           _isUserVerified = true;
           checkForUpdates(forceUpdate: false);
         }
@@ -541,9 +541,7 @@ class _MainState extends State<Main> {
 
       if (response.statusCode == 200) {
         final dynamic jsonData = json.decode(response.body);
-        final Iterable<dynamic> dynamicPages = jsonData['pages'];
-        final List<Page> receivedPages = dynamicPages.map((dynamic page) =>
-            Page.fromJson(page)).toList(growable: false);
+        final List<Page> receivedPages = parseData(jsonData, growable: false);
         final List<Page> updatedPages = <Page>[];
 
         setState(() {
@@ -557,10 +555,11 @@ class _MainState extends State<Main> {
           setLastUpdateDate(jsonData);
           updateStatus(forceUpdate || updatedPages.isNotEmpty ? getUpdateStatus(
               updatedPages.length) : '',
-              onPress: updatedPages.isEmpty ? null : () => setState(() {
-                _searchString = newPagesKeyword;
-                _searchResults = updatedPages;
-              }));
+              onPress: updatedPages.isEmpty ? null : () =>
+                  setState(() {
+                    _searchString = newPagesKeyword;
+                    _searchResults = updatedPages;
+                  }));
         });
 
         if (updatedPages.isNotEmpty) {
@@ -570,7 +569,8 @@ class _MainState extends State<Main> {
           _prefs.setString('data', jsonEncode(updatedData));
         }
       } else {
-        updateStatus('טעינת העדכון נכשלה' '\n' 'response.statusCode: ${response.statusCode}', isWarning: true);
+        updateStatus('טעינת העדכון נכשלה' '\n' 'response.statusCode: ${response
+            .statusCode}', isWarning: true);
       }
     } catch (e) {
       updateStatus('טעינת העדכון נכשלה' '\n' 'Exception: $e', isWarning: true);
