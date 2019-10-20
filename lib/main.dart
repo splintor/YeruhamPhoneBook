@@ -7,9 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:contacts_service/contacts_service.dart' as contacts_plugin;
+import 'package:native_contact_dialog/native_contact_dialog.dart';
 
 const String appVersion = '3.0';
 List<Page> pages;
+Set<String> contactPhones;
 
 void main() => runApp(YeruhamPhonebookApp());
 
@@ -44,6 +48,21 @@ class Page {
 }
 
 class YeruhamPhonebookApp extends StatelessWidget {
+  YeruhamPhonebookApp() {
+    PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.contacts]).then((Map<PermissionGroup, PermissionStatus> permissionsMap) async {
+      print('permissionsMap[PermissionGroup.contacts]: ${permissionsMap[PermissionGroup.contacts]}');
+      if (permissionsMap[PermissionGroup.contacts] == PermissionStatus.granted) {
+        final Iterable<contacts_plugin.Contact> contacts = await contacts_plugin.ContactsService.getContacts(withThumbnails: false);
+        contactPhones = Set<String>.from(contacts.expand<String>(
+                (contacts_plugin.Contact contact) => contact.phones.map(
+                        (contacts_plugin.Item item) => item.value
+                            .replaceAll(RegExp(r'[- ]'), '')
+                            .replaceAll('+972', '0')
+                )));
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -202,26 +221,152 @@ class PageItem extends StatelessWidget {
       );
 }
 
+class PageDataValue {
+  PageDataValue(RegExpMatch match)
+      : label = match.group(1).trim(),
+        htmlValue = match.group(2),
+        innerText = RegExp(r'>([^<]+)<').firstMatch(match.group(2))?.group(1)?.trim() ?? match.group(2).trim();
+
+  String label;
+  String htmlValue;
+  String innerText;
+
+  bool isPhoneValue() => innerText.contains(RegExp(r'^[\d+-]{8,}$'));
+  String phoneValue() => isPhoneValue() ? innerText.replaceAll(RegExp(r'[\s-+=]'), '') : null;
+  String toUrlPart() => isPhoneValue() ? phoneValue() : innerText;
+}
+
+class PageHTMLProcessor {
+  PageHTMLProcessor(this.page)
+      : html = page.html
+      .replaceFirst('<table', '<table width="100%" style="font-size: 1.2em;"')
+      .replaceAll('font-size:10pt', '')
+      .replaceAll('background-color:transparent', '')
+      .replaceAll(RegExp(r" ?style=';*'"), '')
+      .replaceAll(RegExp(r'[\u2000-\u2BFF]'), '')
+      .replaceAllMapped(
+      RegExp(r'<span>([^<]*)</span>'), (Match match) => match.group(1))
+      .replaceAll(RegExp(r"<img src='[^']*twitter[^']*'"),
+      "<img width='36' height='36' src='https://icon-library.net/images/twitter-social-media-icon/twitter-social-media-icon-19.jpg'")
+      .replaceAll(RegExp(r"<img src='[^']*facebook[^']*'"),
+      "<img width='40' height='40' src='https://icon-library.net/images/official-facebook-icon/official-facebook-icon-16.jpg'")
+      .replaceAll(RegExp(r"alt='https:\/\/www.facebook.com[^']*'"), '')
+      .replaceAllMapped(RegExp(r'([\d-+]{8,})([^"])'),
+          (Match match) => '<a href="tel:${match.group(1).replaceAll(
+          RegExp(r'[-+]+'), '')}">${match.group(1)}</a>${match.group(2)}') {
+    dataValues = RegExp(r'<div[^>]*>([^<:]*):\s*(((?!</div>).)+)')
+        .allMatches(html.replaceAll('<br/>', ''))
+        .map((RegExpMatch match) => PageDataValue(match))
+        .toList(growable: false);
+
+    phoneValues = dataValues.where((PageDataValue v) =>
+        v.isPhoneValue()).toList(growable: false);
+    mailValues = dataValues.where((PageDataValue v) =>
+        v.label.contains(RegExp(r'(mail|מייל)'))).toList(growable: false);
+
+    getValueForLabel('נייד', mustBePhone: true);
+
+    final PageDataValue homeValue = getValueForLabel(
+        'טלפון', mustBePhone: true);
+    for (PageDataValue v in phoneValues) {
+      if (!inContact(v.phoneValue())) {
+        appendAddContactLink(v,
+            givenName: v.label.contains(RegExp(r'^(טלפון|נייד|בית)$'))
+                ? null
+                : v.label, homePhone: homeValue);
+      }
+    }
+  }
+
+  Page page;
+  String html;
+  List<PageDataValue> dataValues;
+  List<PageDataValue> phoneValues;
+  List<PageDataValue> mailValues;
+
+  bool hasLabel(String label) =>
+      dataValues.any((PageDataValue v) => v.label == label);
+
+  PageDataValue getValueForLabel(String label, { bool mustBePhone = false }) {
+    final PageDataValue dataValue = dataValues.firstWhere((PageDataValue v) =>
+    v.label == label, orElse: () => null);
+    if (mustBePhone && dataValue != null && !dataValue.isPhoneValue()) {
+      print('Unexpected phone value: ${dataValue.innerText}');
+    }
+
+    return dataValue;
+  }
+
+  bool inContact(String phoneNumber) =>
+      contactPhones != null && contactPhones.contains(phoneNumber);
+
+  void appendAddContactLink(PageDataValue dataValue,
+      {String givenName, String familyName, PageDataValue homePhone}) {
+    givenName ??= getPageGivenName();
+    familyName ??= getPageFamilyName();
+    String phones = dataValue.toUrlPart();
+    if (homePhone != null && homePhone != dataValue &&
+        !inContact(homePhone.phoneValue())) {
+      phones += ',' + homePhone.toUrlPart();
+    }
+
+    String url = 'action:addUser?givenName=$givenName&familyName=$familyName&phones=$phones';
+    final List<PageDataValue> addressValues = dataValues.where((
+        PageDataValue v) => v.label == 'כתובת').toList(growable: false);
+    if (addressValues.isNotEmpty) {
+      if (addressValues.length > 1) {
+        throw 'More than one address in ${page.title}';
+      }
+
+      url += '&address=${addressValues[0].htmlValue}';
+    }
+
+    if (mailValues.isNotEmpty) {
+      String emails;
+      if (mailValues.length == 1 || phoneValues.length == 1 ||
+          (phoneValues.length == 2 && homePhone != null)) {
+        emails = mailValues.map((PageDataValue v) => v.toUrlPart()).join(',');
+      } else {
+        final int index = phoneValues.indexOf(dataValue);
+        emails =
+        index < mailValues.length ? mailValues[index].toUrlPart() : null;
+      }
+
+      if (emails != null) {
+        url += '&emails=$emails';
+      }
+    }
+
+    html = html.replaceFirst(dataValue.htmlValue, dataValue.htmlValue + '''
+                <a href="$url" style="position: relative; top: 9px; right: 7px; text-decoration: none; color: purple;">
+                  <svg width="32px" height="32px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke="none" stroke-width="1" fill="purple">
+                      <path d="M17,17 L17,20 L16,20 L16,17 L13,17 L13,16 L16,16 L16,13 L17,13 L17,16 L20,16 L20,17 L17,17 Z M12,20 L7,20 C6.44771525,20 6,19.5522847 6,19 L6,17 C6,14.4353804 7.60905341,12.2465753 9.87270435,11.3880407 C8.74765126,10.68015 8,9.42738667 8,8 C8,5.790861 9.790861,4 12,4 C14.209139,4 16,5.790861 16,8 C16,9.42738667 15.2523487,10.68015 14.1272957,11.3880407 C13.8392195,11.573004 13.4634542,11.7769904 13,12 L13,10.829 C14.165,10.417 15,9.307 15,8 C15,6.343 13.657,5 12,5 C10.343,5 9,6.343 9,8 C9,9.307 9.835,10.417 11,10.829 L11,12.1 C8.718,12.564 7,14.581 7,17 L7,19 L12,19 L12,20 Z"></path>
+                    </g>'
+                  </svg>
+                </a>
+                ''');
+  }
+
+  String getPageFamilyName() =>
+      page.title
+          .split(RegExp(r'\s'))
+          .last;
+
+  String getPageGivenName() =>
+      page.title.substring(0, page.title.length - getPageFamilyName().length)
+          .trim();
+
+  @override
+  String toString() {
+    return html;
+  }
+}
+
 class PageView extends StatelessWidget {
   const PageView(this.page);
 
   final Page page;
-
-  String htmlToShow() {
-    return page.html
-        .replaceFirst('<table', '<table width="100%" style="font-size: 1.2em;"')
-        .replaceAll('font-size:10pt', '')
-        .replaceAll('background-color:transparent', '')
-        .replaceAll(RegExp(r" ?style=';*'"), '')
-        .replaceAllMapped(RegExp(r'<span>([^<]*)</span>'), (Match match) => match.group(1))
-        .replaceAll(RegExp(r"<img src='[^']*twitter[^']*'"), "<img width='36' height='36' src='https://icon-library.net/images/twitter-social-media-icon/twitter-social-media-icon-19.jpg'")
-        .replaceAll(RegExp(r"<img src='[^']*facebook[^']*'"), "<img width='40' height='40' src='https://icon-library.net/images/official-facebook-icon/official-facebook-icon-16.jpg'")
-        .replaceAll(RegExp(r"alt='https:\/\/www.facebook.com[^']*'"), '')
-        .replaceAllMapped(RegExp(r'([^>=\/\d-])([\d-]{8,})'),
-            (Match match) => match.group(1) +
-            '<a href="tel:${match.group(2).replaceAll('-', '')}">'
-                '${match.group(2)}'
-                '</a>');
 
   void onMenuSelected(String itemValue) {
     switch(itemValue) {
@@ -258,7 +403,7 @@ class PageView extends StatelessWidget {
         ),
         body: WebView(
           initialUrl: Uri.dataFromString(
-              htmlToShow(),
+              PageHTMLProcessor(page).toString(),
               mimeType: 'text/html',
               encoding: Encoding.getByName('UTF-8')).toString(),
           navigationDelegate: (NavigationRequest navigation) {
@@ -270,6 +415,37 @@ class PageView extends StatelessWidget {
               } else {
                 openPage(page, context);
               }
+            } else if(navigation.url.startsWith('action:addUser?')) {
+              final String queryString = Uri.decodeQueryComponent(navigation.url.split('?')[1]);
+              final Contact contact = Contact();
+              for (List<String> keyValue in queryString.split('&').map((String v) => v.split('='))) {
+                final String value = keyValue[1];
+                switch(keyValue[0]) {
+                  case 'givenName':
+                    contact.givenName = value;
+                    break;
+
+                  case 'familyName':
+                    contact.familyName = value;
+                    break;
+
+                  case 'address':
+                    contact.postalAddresses = <PostalAddress>[PostalAddress(label: 'בית', street: value)];
+                    break;
+
+                  case 'phones':
+                    contact.phones = value.split(',').map((String v) => Item(label: v.startsWith('05') ? 'mobile' : 'home', value: v));
+                    break;
+
+                  case 'emails':
+                    contact.emails = value.split(',').map((String v) => Item(label: 'home', value: v));
+                    break;
+                }
+              }
+
+              NativeContactDialog.addContact(contact).then((dynamic result) {
+                print('add contact dialog closed. $result');
+              }).catchError((dynamic error) => print('Error adding contact! $error'));
             } else {
               openUrl(navigation.url);
             }
@@ -377,6 +553,15 @@ class _MainState extends State<Main> {
           _isUserVerified = true;
           checkForUpdates(forceUpdate: false);
         }
+
+        final List<int> stats = <int>[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        for (Page page in pages) {
+          final PageHTMLProcessor p = PageHTMLProcessor(page);
+          p.toString();
+          stats[p.phoneValues.length] += 1;
+        }
+
+        print('stats: $stats');
       });
     });
   }

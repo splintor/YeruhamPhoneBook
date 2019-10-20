@@ -4,5 +4,7 @@ A Flutter mobile application to provide easy and fast access to [Yeruham's phone
 
 ## Tasks still need to be done
 - TODO: Show exception details when clicking on (error) status
-- TODO: add page to contacts (https://pub.dev/packages/contacts_service)
+- TODO: Make appBar menu RTL
+- TODO: Make PageView work on iOS
+- TODO: Refresh contacts after adding to contact
 - TODO: send BI events (https://moz.com/blog/absolute-beginners-guide-to-google-analytics)
