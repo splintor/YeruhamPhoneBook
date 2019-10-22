@@ -354,17 +354,39 @@ class PageHTMLProcessor {
   String getPageGivenName() =>
       page.title.substring(0, page.title.length - getPageFamilyName().length)
           .trim();
-
-  @override
-  String toString() {
-    return html;
-  }
 }
 
-class PageView extends StatelessWidget {
-  const PageView(this.page);
+class PageView extends StatefulWidget {
+  const PageView(this.page) : super();
 
   final Page page;
+
+  @override
+  PageViewState createState() => PageViewState(page);
+}
+
+class PageViewState extends State<PageView> {
+  PageViewState(this.page): html = PageHTMLProcessor(page).html {
+    openPageViews.add(this);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    openPageViews.remove(this);
+  }
+
+  final Page page;
+  String html;
+  WebViewController webViewController;
+
+  void checkForHtmlChanges() {
+    final String newHtml = PageHTMLProcessor(page).html;
+    if (html != newHtml) {
+      html = newHtml;
+      webViewController.loadUrl(getDataUrlForHtml());
+    }
+  }
 
   void onMenuSelected(String itemValue) {
     switch (itemValue) {
@@ -376,6 +398,68 @@ class PageView extends StatelessWidget {
         openUrl(page.url);
         return;
     }
+  }
+
+  String getDataUrlForHtml() =>
+      Uri.dataFromString(html, mimeType: 'text/html', encoding: Encoding.getByName('UTF-8')).toString();
+
+  void onWebViewCreated(WebViewController controller) => webViewController = controller;
+
+  NavigationDecision onWebViewNavigation(NavigationRequest navigation, BuildContext context) {
+    final String pageUrlBase = RegExp(r'https:\/\/[^\/]+\/').firstMatch(
+        page.url ?? '')?.group(0);
+    if (pageUrlBase != null && navigation.url.startsWith(pageUrlBase)) {
+      final Page page = pages.firstWhere((Page p) =>
+      p.url == navigation.url);
+      if (page == null) {
+        openUrl(navigation.url);
+      } else {
+        openPage(page, context);
+      }
+    } else if (navigation.url.startsWith('action:addUser?')) {
+      addContact(navigation.url);
+    } else {
+      openUrl(navigation.url);
+    }
+
+    return NavigationDecision.prevent;
+  }
+
+  void addContact(String url) {
+    final String queryString = Uri.decodeQueryComponent(
+        url.split('?')[1]);
+    final Contact contact = Contact();
+    for (List<String> keyValue in queryString.split('&').map((
+        String v) => v.split('='))) {
+      final String value = keyValue[1];
+      switch (keyValue[0]) {
+        case 'givenName':
+          contact.givenName = value;
+          break;
+
+        case 'familyName':
+          contact.familyName = value;
+          break;
+
+        case 'address':
+          contact.postalAddresses =
+          <PostalAddress>[PostalAddress(label: 'בית', street: value)];
+          break;
+
+        case 'phones':
+          contact.phones = value.split(',').map((String v) => Item(
+              label: v.startsWith('05') ? 'mobile' : 'home',
+              value: v));
+          break;
+
+        case 'emails':
+          contact.emails = value.split(',').map((String v) =>
+              Item(label: 'home', value: v));
+          break;
+      }
+    }
+
+    NativeContactDialog.addContact(contact);
   }
 
   @override
@@ -400,55 +484,9 @@ class PageView extends StatelessWidget {
           ],
         ),
         body: WebView(
-          initialUrl: Uri.dataFromString(
-              PageHTMLProcessor(page).toString(),
-              mimeType: 'text/html',
-              encoding: Encoding.getByName('UTF-8')).toString(),
-          navigationDelegate: (NavigationRequest navigation) {
-            final String pageUrlBase = RegExp(r'https:\/\/[^\/]+\/').firstMatch(page.url ?? '')?.group(0);
-            if (pageUrlBase != null && navigation.url.startsWith(pageUrlBase)) {
-              final Page page = pages.firstWhere((Page p) => p.url == navigation.url);
-              if (page == null) {
-                openUrl(navigation.url);
-              } else {
-                openPage(page, context);
-              }
-            } else if(navigation.url.startsWith('action:addUser?')) {
-              final String queryString = Uri.decodeQueryComponent(navigation.url.split('?')[1]);
-              final Contact contact = Contact();
-              for (List<String> keyValue in queryString.split('&').map((String v) => v.split('='))) {
-                final String value = keyValue[1];
-                switch(keyValue[0]) {
-                  case 'givenName':
-                    contact.givenName = value;
-                    break;
-
-                  case 'familyName':
-                    contact.familyName = value;
-                    break;
-
-                  case 'address':
-                    contact.postalAddresses = <PostalAddress>[PostalAddress(label: 'בית', street: value)];
-                    break;
-
-                  case 'phones':
-                    contact.phones = value.split(',').map((String v) => Item(label: v.startsWith('05') ? 'mobile' : 'home', value: v));
-                    break;
-
-                  case 'emails':
-                    contact.emails = value.split(',').map((String v) => Item(label: 'home', value: v));
-                    break;
-                }
-              }
-
-              NativeContactDialog.addContact(contact).then((dynamic result) {
-                print('add contact dialog closed. $result');
-              }).catchError((dynamic error) => print('Error adding contact! $error'));
-            } else {
-              openUrl(navigation.url);
-            }
-            return NavigationDecision.prevent;
-          },
+          initialUrl: getDataUrlForHtml(),
+          onWebViewCreated: onWebViewCreated,
+          navigationDelegate: (NavigationRequest navigation) => onWebViewNavigation(navigation, context),
         ),
       );
 }
