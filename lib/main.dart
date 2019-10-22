@@ -815,10 +815,8 @@ class _MainState extends State<Main> {
             ),
           ),
           Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                buildRoundedButton(
-                    onPressed: checkForUpdates, title: 'בדוק אם יש עדכונים'),
                 buildRoundedButton(
                     onPressed: sendFeedback, title: 'שלח משוב'),
               ]),
@@ -955,6 +953,10 @@ class _MainState extends State<Main> {
       case 'openInBrowser':
         openUrl('https://sites.google.com/site/yeruchamphonebook/');
         return;
+
+      case 'checkForUpdates':
+        checkForUpdates();
+        return;
     }
   }
 
@@ -975,6 +977,10 @@ class _MainState extends State<Main> {
                 PopupMenuItem<String>(
                   value: 'openInBrowser',
                   child: const Text('פתח בדפדפן'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'checkForUpdates',
+                  child: const Text('בדוק אם יש עדכונים'),
                 ),
               ]),
         ],
