@@ -367,7 +367,7 @@ class PageView extends StatelessWidget {
   final Page page;
 
   void onMenuSelected(String itemValue) {
-    switch(itemValue) {
+    switch (itemValue) {
       case 'copyPageUrl':
         Clipboard.setData(ClipboardData(text: page.url));
         return;
@@ -383,21 +383,21 @@ class PageView extends StatelessWidget {
       Scaffold(
         appBar: AppBar(
           title: Text(page.title),
-        actions: page.url == null ? null : <Widget>[
-          PopupMenuButton<String>(
-              onSelected: onMenuSelected,
-              itemBuilder: (BuildContext context) =>
-              <PopupMenuItem<String>>[
-                PopupMenuItem<String>(
-                  value: 'copyPageUrl',
-                  child: const Text('העתק את כתובת הדף'),
-                ),
-                PopupMenuItem<String>(
-                  value: 'openPageInBrowser',
-                  child: const Text('פתח דף בדפדפן'),
-                ),
-              ]),
-        ],
+          actions: page.url == null ? null : <Widget>[
+            PopupMenuButton<String>(
+                onSelected: onMenuSelected,
+                itemBuilder: (BuildContext context) =>
+                <PopupMenuItem<String>>[
+                  PopupMenuItem<String>(
+                    value: 'copyPageUrl',
+                    child: const Text('העתק את כתובת הדף'),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'openPageInBrowser',
+                    child: const Text('פתח דף בדפדפן'),
+                  ),
+                ]),
+          ],
         ),
         body: WebView(
           initialUrl: Uri.dataFromString(
