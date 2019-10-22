@@ -13,6 +13,9 @@ import 'package:native_contact_dialog/native_contact_dialog.dart';
 
 const String appVersion = '3.0';
 List<Page> pages;
+final List<PageViewState> openPageViews = <PageViewState>[];
+
+bool contactPermissionWasGranted = false;
 Set<String> contactPhones;
 
 void main() => runApp(YeruhamPhonebookApp());
@@ -48,21 +51,6 @@ class Page {
 }
 
 class YeruhamPhonebookApp extends StatelessWidget {
-  YeruhamPhonebookApp() {
-    PermissionHandler().requestPermissions(<PermissionGroup>[PermissionGroup.contacts]).then((Map<PermissionGroup, PermissionStatus> permissionsMap) async {
-      print('permissionsMap[PermissionGroup.contacts]: ${permissionsMap[PermissionGroup.contacts]}');
-      if (permissionsMap[PermissionGroup.contacts] == PermissionStatus.granted) {
-        final Iterable<contacts_plugin.Contact> contacts = await contacts_plugin.ContactsService.getContacts(withThumbnails: false);
-        contactPhones = Set<String>.from(contacts.expand<String>(
-                (contacts_plugin.Contact contact) => contact.phones.map(
-                        (contacts_plugin.Item item) => item.value
-                            .replaceAll(RegExp(r'[- ]'), '')
-                            .replaceAll('+972', '0')
-                )));
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -576,6 +564,16 @@ class _MainState extends State<Main> {
     _searchTextController.addListener(() =>
         handleSearchChanged(_searchTextController.text));
 
+    PermissionHandler().requestPermissions(
+        <PermissionGroup>[PermissionGroup.contacts])
+        .then((Map<PermissionGroup, PermissionStatus> permissionsMap) async {
+      if (permissionsMap[PermissionGroup.contacts] ==
+          PermissionStatus.granted) {
+        contactPermissionWasGranted = true;
+        loadPhoneContacts();
+      }
+    });
+
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
       setState(() {
         _prefs = prefs;
@@ -591,6 +589,35 @@ class _MainState extends State<Main> {
         }
       });
     });
+
+    WidgetsBinding.instance.addObserver(LifecycleEventHandler(() => loadPhoneContacts()));
+  }
+
+  Future<void> loadPhoneContacts() async {
+    if (!contactPermissionWasGranted) {
+      return;
+    }
+
+    final Iterable<contacts_plugin.Contact> contacts =
+        await contacts_plugin.ContactsService.getContacts(withThumbnails: false);
+
+    contactPhones = Set<String>.from(contacts.expand<String>(
+            (contacts_plugin.Contact contact) =>
+            contact.phones.map(
+                    (contacts_plugin.Item item) =>
+                    item.value
+                        .replaceAll(RegExp(r'[- ()]'), '')
+                        .replaceAll('+972', '0')
+            )));
+
+    updateAllPageViews();
+  }
+
+  void updateAllPageViews() {
+    print('updateAllStates ${openPageViews.length}');
+    for (PageViewState pageView in openPageViews) {
+      pageView.checkForHtmlChanges();
+    }
   }
 
   Future<void> checkPhoneNumber() async {
@@ -1014,5 +1041,18 @@ class _MainState extends State<Main> {
       ),
       body: buildMainWidget(),
     );
+  }
+}
+
+class LifecycleEventHandler extends WidgetsBindingObserver {
+  LifecycleEventHandler(this.resumeCallBack);
+
+  final Function resumeCallBack;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      resumeCallBack();
+    }
   }
 }
