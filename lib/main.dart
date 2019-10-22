@@ -264,8 +264,6 @@ class PageHTMLProcessor {
     mailValues = dataValues.where((PageDataValue v) =>
         v.label.contains(RegExp(r'(mail|מייל)'))).toList(growable: false);
 
-    getValueForLabel('נייד', mustBePhone: true);
-
     final PageDataValue homeValue = getValueForLabel(
         'טלפון', mustBePhone: true);
     for (PageDataValue v in phoneValues) {
