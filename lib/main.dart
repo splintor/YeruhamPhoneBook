@@ -553,15 +553,6 @@ class _MainState extends State<Main> {
           _isUserVerified = true;
           checkForUpdates(forceUpdate: false);
         }
-
-        final List<int> stats = <int>[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-        for (Page page in pages) {
-          final PageHTMLProcessor p = PageHTMLProcessor(page);
-          p.toString();
-          stats[p.phoneValues.length] += 1;
-        }
-
-        print('stats: $stats');
       });
     });
   }
