@@ -10,6 +10,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart' as contacts_plugin;
 import 'package:native_contact_dialog/native_contact_dialog.dart';
+import 'package:intl/intl.dart';
 
 const String appVersion = '3.0';
 List<Page> pages;
@@ -98,6 +99,8 @@ void openPage(Page page, BuildContext context) {
   );
 }
 
+String formatNumberWithCommas(int number) => NumberFormat.decimalPattern().format(number);
+
 Page getAboutPage() {
   int mails = 0;
   int phones = 0;
@@ -120,11 +123,11 @@ Page getAboutPage() {
         <a href="https://flutter.dev/">Flutter</a>.<br><br>
         זוהי גרסה <b>$appVersion</b><br><br>
         ספר הטלפונים כולל
-        <b>${pages.length}</b>
+        <b>${formatNumberWithCommas(pages.length)}</b>
         דפים.<br><br>
-        מספרי טלפון: $phones<br><br>
-        כתובות מייל: $mails<br><br>
-        </td></tr></tbody>''';
+        מספרי טלפון: ${formatNumberWithCommas(phones)}<br><br>
+        כתובות מייל: ${formatNumberWithCommas(mails)}<br><br>
+        </div></td></tr></tbody>''';
 }
 const String urlPattern = r'https?:/\/\\S+';
 const String emailPattern = r'\S+@\S+';
