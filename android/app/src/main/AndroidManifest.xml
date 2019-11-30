@@ -11,8 +11,8 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="yeruham_phone_book"
         android:icon="@mipmap/ic_launcher">
+        android:label="ספר הטלפונים של ירוחם"
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
