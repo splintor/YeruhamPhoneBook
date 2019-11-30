@@ -11,8 +11,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart' as contacts_plugin;
 import 'package:native_contact_dialog/native_contact_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info/package_info.dart';
 
-const String appVersion = '3.0';
 List<Page> pages;
 final List<PageViewState> openPageViews = <PageViewState>[];
 
@@ -101,16 +101,25 @@ void openPage(Page page, BuildContext context) {
 
 String formatNumberWithCommas(int number) => NumberFormat.decimalPattern().format(number);
 
-Page getAboutPage() {
+Future<Page> getAboutPage() async {
+  final Future<PackageInfo> packageInfoPromise = PackageInfo.fromPlatform();
   int mails = 0;
   int phones = 0;
-  for(Page page in pages) {
+  for (Page page in pages) {
     mails += RegExp(r'\S+@\S+')
         .allMatches(page.text)
         .length;
     phones += RegExp(r'[^>=\/\d-][\d-]{8,}')
         .allMatches(page.text)
         .length;
+  }
+
+  PackageInfo packageInfo;
+
+  try {
+    packageInfo = await packageInfoPromise;
+  } catch (e) {
+    packageInfo = PackageInfo(version: 'N/A', buildNumber: '?');
   }
 
   return Page()
@@ -121,7 +130,7 @@ Page getAboutPage() {
         (<a href="mailto:splintor@gmail.com">splintor@gmail.com</a>)
        בעזרת 
         <a href="https://flutter.dev/">Flutter</a>.<br><br>
-        זוהי גרסה <b>$appVersion</b><br><br>
+        זוהי גרסה <b>${packageInfo.version}+${packageInfo.buildNumber}</b><br><br>
         ספר הטלפונים כולל
         <b>${formatNumberWithCommas(pages.length)}</b>
         דפים.<br><br>
@@ -986,10 +995,10 @@ class _MainState extends State<Main> {
     }
   }
 
-  void onMenuSelected(String itemValue) {
+  Future<void> onMenuSelected(String itemValue) async {
     switch(itemValue) {
       case 'about':
-        openPage(getAboutPage(), context);
+        openPage(await getAboutPage(), context);
         return;
 
       case 'openInBrowser':
