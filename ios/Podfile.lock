@@ -2,6 +2,8 @@ PODS:
   - contacts_service (0.2.1):
     - Flutter
   - Flutter (1.0.0)
+  - native_contact_dialog (0.0.1):
+    - Flutter
   - permission_handler (3.2.2):
     - Flutter
   - shared_preferences (0.0.1):
@@ -14,6 +16,7 @@ PODS:
 DEPENDENCIES:
   - contacts_service (from `.symlinks/plugins/contacts_service/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
+  - native_contact_dialog (from `.symlinks/plugins/native_contact_dialog/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
@@ -24,6 +27,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/contacts_service/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
+  native_contact_dialog:
+    :path: ".symlinks/plugins/native_contact_dialog/ios"
   permission_handler:
     :path: ".symlinks/plugins/permission_handler/ios"
   shared_preferences:
@@ -36,6 +41,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   contacts_service: d212985196c101372bb55c42f41dae7be59ab811
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  native_contact_dialog: cc636bb390605ac82c821f45358967b7c90a7984
   permission_handler: d59f41439f5bc6c4d1005f3355e98f05ddc68ece
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
   url_launcher: 0067ddb8f10d36786672aa0722a21717dba3a298
