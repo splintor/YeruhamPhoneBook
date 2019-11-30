@@ -625,7 +625,6 @@ class _MainState extends State<Main> {
   }
 
   void updateAllPageViews() {
-    print('updateAllStates ${openPageViews.length}');
     for (PageViewState pageView in openPageViews) {
       pageView.checkForHtmlChanges();
     }
