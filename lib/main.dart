@@ -747,9 +747,15 @@ class _MainState extends State<Main> {
     setState(() => _searchResults = result);
   }
 
-  Future<void> sendFeedback() async {
-    const String url = 'mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם';
-    await openUrl(url);
+  FloatingActionButton getFeedbackButton() {
+    return _searchString.isEmpty || _searchResults == null ? FloatingActionButton.extended(
+      onPressed: () async {
+        const String url = 'mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם';
+        await openUrl(url);
+      },
+      label: const Text('משוב'),
+      icon: Icon(Icons.send)
+    ) : null;
   }
 
   int getLastUpdateDate() {
@@ -850,20 +856,13 @@ class _MainState extends State<Main> {
   Widget buildSearchContent() {
     if (_searchString.isEmpty || _searchResults == null) {
       return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
 
         children: <Widget>[
-          const Padding(padding: EdgeInsets.only(bottom: 20.0)),
           Image.asset(
             './assets/round_irus.png',
             scale: .8,
           ),
-          Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                buildRoundedButton(
-                    onPressed: sendFeedback, title: 'שלח משוב'),
-              ]),
         ],
       );
     } else if (_searchResults.length > searchResultsLimit && _searchString != newPagesKeyword) {
@@ -1031,6 +1030,7 @@ class _MainState extends State<Main> {
         ],
       ),
       body: buildMainWidget(),
+      floatingActionButton: getFeedbackButton(),
     );
   }
 
