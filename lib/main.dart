@@ -803,6 +803,7 @@ class _MainState extends State<Main> {
               updatedPages.length) : '',
               onPress: updatedPages.isEmpty ? null : () =>
                   setState(() {
+                    _searchTextController.text = newPagesKeyword;
                     _searchString = newPagesKeyword;
                     _searchResults = updatedPages;
                   }));
