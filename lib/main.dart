@@ -129,6 +129,16 @@ Page getAboutPage() {
         כתובות מייל: ${formatNumberWithCommas(mails)}<br><br>
         </div></td></tr></tbody>''';
 }
+
+Page getErrorPage(String title, Object error) {
+  return Page()
+    ..title = title
+    ..html = '''
+    <table><tbody><tr><td>
+      <code style="color: red;">${error.toString()}</code>
+    </td></tr></tbody>
+    ''';
+}
 const String urlPattern = r'https?:/\/\\S+';
 const String emailPattern = r'\S+@\S+';
 const String phonePattern = r'[\d-]{9,}';
@@ -483,6 +493,7 @@ class PageViewState extends State<PageView> {
 }
 
 class _MainState extends State<Main> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   SharedPreferences _prefs;
   List<Page> _searchResults;
   Timer _searchOverflowTimer;
@@ -491,9 +502,6 @@ class _MainState extends State<Main> {
   String _phoneNumber = '';
   final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
-  String _statusText = '';
-  Function _statusPressHandler;
-  bool _statusIsWarning = false;
 
   Future<void> fetchData() async {
     try {
@@ -507,19 +515,18 @@ class _MainState extends State<Main> {
           setLastUpdateDate(jsonData);
         });
       } else {
-        updateStatus(
-            'טעינת הנתונים נכשלה.' '\n' 'response.statusCode: ${response
-                .statusCode}', isWarning: true);
+        throw 'Server returned an error: ${response.statusCode} ${response.body}';
       }
     } catch (e) {
-      updateStatus(
-          'טעינת הנתונים נכשלה.' '\n' 'Exception: $e', isWarning: true);
+      showError('טעינת הנתונים נכשלה.', e);
     }
   }
 
   List<Page> parseData(dynamic jsonData, {@required bool growable}) {
-    final List<Map<String, dynamic>> dynamicPages = jsonData['pages'].cast<Map<String, dynamic>>();
-    return dynamicPages.map((Map<String, dynamic> page) => Page.fromMap(page)).toList(growable: growable);
+    final List<Map<String, dynamic>> dynamicPages = jsonData['pages'].cast<
+        Map<String, dynamic>>();
+    return dynamicPages.map((Map<String, dynamic> page) => Page.fromMap(page))
+        .toList(growable: growable);
   }
 
   String normalizedNumber(String number) {
@@ -593,7 +600,8 @@ class _MainState extends State<Main> {
       });
     });
 
-    WidgetsBinding.instance.addObserver(LifecycleEventHandler(() => loadPhoneContacts()));
+    WidgetsBinding.instance.addObserver(
+        LifecycleEventHandler(() => loadPhoneContacts()));
   }
 
   Future<void> loadPhoneContacts() async {
@@ -688,9 +696,6 @@ class _MainState extends State<Main> {
   }
 
   void handleSearchChanged(String searchString) {
-    if (searchString.isNotEmpty && _statusText.isNotEmpty) {
-      updateStatus('');
-    }
     setState(() => _searchString = searchString);
     if (_searchString == '___resetValidationNumber') {
       _prefs.remove('validationNumber');
@@ -747,14 +752,6 @@ class _MainState extends State<Main> {
     await openUrl(url);
   }
 
-  void updateStatus(String text, {bool isWarning = false, void Function() onPress}) {
-    setState(() {
-      _statusText = text;
-      _statusIsWarning = isWarning;
-      _statusPressHandler = onPress;
-    });
-  }
-
   int getLastUpdateDate() {
     try {
       return _prefs.getInt('lastUpdateDate');
@@ -779,7 +776,7 @@ class _MainState extends State<Main> {
   }
 
   Future<void> checkForUpdates({bool forceUpdate = true}) async {
-    updateStatus('בודק אם יש עדכונים...');
+    showInSnackBar('בודק אם יש עדכונים...');
     try {
       final http.Response response = await http.get(
           getDataUrl(lastUpdateDate: getLastUpdateDate())
@@ -799,9 +796,10 @@ class _MainState extends State<Main> {
             }
           }
           setLastUpdateDate(jsonData);
-          updateStatus(forceUpdate || updatedPages.isNotEmpty ? getUpdateStatus(
-              updatedPages.length) : '',
-              onPress: updatedPages.isEmpty ? null : () =>
+          showInSnackBar(
+              forceUpdate || updatedPages.isNotEmpty ? getUpdateStatus(updatedPages.length) : '',
+              actionLabel: updatedPages.isEmpty ? null : 'הצג',
+              actionHandler: updatedPages.isEmpty ? null : () =>
                   setState(() {
                     _searchTextController.text = newPagesKeyword;
                     _searchString = newPagesKeyword;
@@ -816,11 +814,10 @@ class _MainState extends State<Main> {
           _prefs.setString('data', jsonEncode(updatedData));
         }
       } else {
-        updateStatus('טעינת העדכון נכשלה' '\n' 'response.statusCode: ${response
-            .statusCode}', isWarning: true);
+        showError('טעינת העדכון נכשלה.', 'Status Code is ${response.statusCode}');
       }
     } catch (e) {
-      updateStatus('טעינת העדכון נכשלה' '\n' 'Exception: $e', isWarning: true);
+      showError('טעינת העדכון נכשלה', e);
     }
   }
 
@@ -860,17 +857,6 @@ class _MainState extends State<Main> {
           Image.asset(
             './assets/round_irus.png',
             scale: .8,
-          ),
-          Center(
-            child: InkWell(
-                onTap: _statusPressHandler,
-                child: Text(_statusText,
-                  style: TextStyle(
-                      fontSize: 20.0,
-                      color: _statusIsWarning ? Colors.red : Colors.blueAccent
-                  ),
-                )
-            ),
           ),
           Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1021,6 +1007,7 @@ class _MainState extends State<Main> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: const Text(appTitle),
         actions: <Widget>[
@@ -1045,6 +1032,16 @@ class _MainState extends State<Main> {
       ),
       body: buildMainWidget(),
     );
+  }
+
+  void showError(String title, Object error) {
+    showInSnackBar(title, isWarning: true, actionLabel: 'פרטים', actionHandler: () => openPage(getErrorPage(title, error), context));
+  }
+
+  void showInSnackBar(String value, { bool isWarning = false, String actionLabel, Function actionHandler }) {
+    final SnackBarAction action = actionLabel == null ? null : SnackBarAction(label: actionLabel, onPressed: actionHandler);
+    final Text content = Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
+    _scaffoldKey.currentState.showSnackBar(SnackBar(action: action, content: content));
   }
 }
 
