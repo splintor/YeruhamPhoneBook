@@ -721,7 +721,7 @@ class _MainState extends State<Main> {
         .where((String w) => w.isNotEmpty)
         .toList(growable: false);
     final List<Page> result = pages.where((Page page) =>
-        searchWords.every((String word) => isPageMatchWord(page, word))).toList(
+        page.isDeleted != true && searchWords.every((String word) => isPageMatchWord(page, word))).toList(
         growable: false);
 
     result.sort((Page a, Page b) {
@@ -984,7 +984,7 @@ class _MainState extends State<Main> {
         child: buildRoundedButton(
             onPressed: getNumberPage(_phoneNumber) == null ? null : () =>
                 checkPhoneNumber(),
-            color: Colors.blue
+            color: Colors.blue,
             title: 'המשך'),
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
       ),
