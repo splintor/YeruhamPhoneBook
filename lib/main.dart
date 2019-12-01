@@ -105,7 +105,7 @@ Future<Page> getAboutPage() async {
   final Future<PackageInfo> packageInfoPromise = PackageInfo.fromPlatform();
   int mails = 0;
   int phones = 0;
-  for (Page page in pages) {
+  for (Page page in pages.where((Page p) => p.isDeleted != true)) {
     mails += RegExp(r'\S+@\S+')
         .allMatches(page.text)
         .length;
@@ -559,7 +559,7 @@ class _MainState extends State<Main> {
     }
 
     return pages.firstWhere((Page page) =>
-        page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number),
+        page.isDeleted != true && page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number),
         orElse: () => null);
   }
 
