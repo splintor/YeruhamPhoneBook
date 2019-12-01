@@ -1,4 +1,4 @@
-package com.splintor.yeruham_phone_book
+package com.splintor.yeruhamphonebook
 
 import android.os.Bundle
 
