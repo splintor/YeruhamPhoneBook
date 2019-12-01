@@ -12,6 +12,7 @@ import 'package:contacts_service/contacts_service.dart' as contacts_plugin;
 import 'package:native_contact_dialog/native_contact_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info/package_info.dart';
+import 'package:share/share.dart';
 
 List<Page> pages;
 final List<PageViewState> openPageViews = <PageViewState>[];
@@ -475,6 +476,20 @@ class PageViewState extends State<PageView> {
     NativeContactDialog.addContact(contact);
   }
 
+  String getPageInnerText() => page.html
+      .replaceAll(RegExp(r'<(div|br)[^>]*>'), '\n')
+      .replaceAll(RegExp(r'<[^>]*>'), '')
+      .replaceAll(RegExp(r'(\s*\n)+'), '\n')
+      .trim();
+
+  FloatingActionButton getShareButton() {
+    return FloatingActionButton.extended(
+        onPressed: () => Share.share('${page.title}\n${getPageInnerText()}', subject: page.title),
+        label: const Text('שתף'),
+        icon: Icon(Icons.share),
+    );
+  }
+
   @override
   Widget build(BuildContext context) =>
       Scaffold(
@@ -501,6 +516,7 @@ class PageViewState extends State<PageView> {
           onWebViewCreated: onWebViewCreated,
           navigationDelegate: (NavigationRequest navigation) => onWebViewNavigation(navigation, context),
         ),
+        floatingActionButton: getShareButton(),
       );
 }
 
@@ -766,7 +782,7 @@ class _MainState extends State<Main> {
         await openUrl(url);
       },
       label: const Text('משוב'),
-      icon: Icon(Icons.send)
+      icon: Icon(Icons.send),
     ) : null;
   }
 
