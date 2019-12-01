@@ -266,7 +266,7 @@ class PageHTMLProcessor {
           (Match match) => '<a href="tel:${match.group(1).replaceAll(
           RegExp(r'[-+]+'), '')}">${match.group(1)}</a>${match.group(2)}') {
     dataValues = RegExp(r'<div[^>]*>([^<:]*):\s*(((?!</div>).)+)')
-        .allMatches(html.replaceAll('<br/>', ''))
+        .allMatches(html.replaceAll('<br/>', '</div><div>'))
         .map((RegExpMatch match) => PageDataValue(match))
         .toList(growable: false);
 
@@ -346,7 +346,9 @@ class PageHTMLProcessor {
       }
     }
 
-    html = html.replaceFirst(dataValue.htmlValue, dataValue.htmlValue + '''
+    final String htmlValue = dataValue.htmlValue.replaceFirst(RegExp(r'<div>\s*$'), '');
+
+    html = html.replaceFirst(htmlValue, htmlValue + '''
                 <a href="$url" style="position: relative; top: 9px; right: 7px; text-decoration: none; color: purple;">
                   <svg width="32px" height="32px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="none" stroke-width="1" fill="purple">
