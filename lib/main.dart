@@ -640,7 +640,7 @@ class _MainState extends State<Main> {
     }
   }
 
-  Future<void> checkPhoneNumber() async {
+  void checkPhoneNumber() {
     final Page page = getNumberPage(_phoneNumber);
     if (page != null) {
       _prefs.setString('validationNumber', normalizedNumber(_phoneNumber));
@@ -964,6 +964,8 @@ class _MainState extends State<Main> {
         child: TextField(
             controller: _phoneNumberController,
             keyboardType: TextInputType.phone,
+            onEditingComplete: checkPhoneNumber,
+            onSubmitted: (String value) => checkPhoneNumber(),
             decoration: InputDecoration(
               prefixIcon: const Icon(Icons.phone),
               suffixIcon: _phoneNumber.isEmpty
