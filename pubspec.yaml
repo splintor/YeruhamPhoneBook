@@ -1,4 +1,4 @@
-name: YeruhamPhoneBook
+name: yeruham_phone_book
 description: A Flutter mobile application to provide easy and fast access to [Yeruham's phone book](https://sites.google.com/site/yeruchamphonebook/). Access to the app is only allowed to people that appear in the book.
 
 # The following defines the version and build number for your application.
