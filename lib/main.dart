@@ -811,15 +811,16 @@ class _MainState extends State<Main> {
             }
           }
           setLastUpdateDate(jsonData);
-          showInSnackBar(
-              forceUpdate || updatedPages.isNotEmpty ? getUpdateStatus(updatedPages.length) : '',
-              actionLabel: updatedPages.isEmpty ? null : 'הצג',
-              actionHandler: updatedPages.isEmpty ? null : () =>
-                  setState(() {
-                    _searchTextController.text = newPagesKeyword;
-                    _searchString = newPagesKeyword;
-                    _searchResults = updatedPages;
-                  }));
+          if (forceUpdate || updatedPages.isNotEmpty) {
+            showInSnackBar(getUpdateStatus(updatedPages.length),
+                actionLabel: updatedPages.isEmpty ? null : 'הצג',
+                actionHandler: updatedPages.isEmpty ? null : () =>
+                    setState(() {
+                      _searchTextController.text = newPagesKeyword;
+                      _searchString = newPagesKeyword;
+                      _searchResults = updatedPages;
+                    }));
+          }
         });
 
         if (updatedPages.isNotEmpty) {
