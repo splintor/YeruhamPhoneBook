@@ -70,5 +70,5 @@ android/key.properties
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 
-android-old
-ios-old
+android-old*
+ios-old*
