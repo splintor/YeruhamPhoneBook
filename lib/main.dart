@@ -564,10 +564,11 @@ class _MainState extends State<Main> {
         orElse: () => null);
   }
 
-  RaisedButton buildRoundedButton({String title, VoidCallback onPressed}) {
+  RaisedButton buildRoundedButton({String title, VoidCallback onPressed, Color color}) {
     return RaisedButton(
         onPressed: onPressed,
         child: Text(title),
+        color: color,
         shape:
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16));
@@ -983,6 +984,7 @@ class _MainState extends State<Main> {
         child: buildRoundedButton(
             onPressed: getNumberPage(_phoneNumber) == null ? null : () =>
                 checkPhoneNumber(),
+            color: Colors.blue
             title: 'המשך'),
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
       ),
