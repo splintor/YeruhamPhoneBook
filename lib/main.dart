@@ -124,7 +124,8 @@ Future<Page> getAboutPage() async {
 
   return Page()
     ..title = 'אפליקצית ספר הטלפונים של ירוחם'
-    ..html = '''<table><tbody><tr><td><div dir='rtl'>
+    ..dummyPage = true
+    ..html = '''<table width="100%" style="font-size: 1.2em;"><tbody><tr><td><div dir='rtl'>
         האפליקציה נכתבה ב<a href="https://github.com/splintor/YeruhamPhoneBook">קוד פתוח</a>
          על-ידי שמוליק פלינט
         (<a href="mailto:splintor@gmail.com">splintor@gmail.com</a>)
@@ -248,7 +249,7 @@ class PageDataValue {
 
 class PageHTMLProcessor {
   PageHTMLProcessor(this.page)
-      : html = page.html
+      : html = page.dummyPage == true ? page.html : page.html
       .replaceFirst('<table', '<table width="100%" style="font-size: 1.2em;"')
       .replaceAll('font-size:10pt', '')
       .replaceAll('background-color:transparent', '')
