@@ -58,7 +58,7 @@ class YeruhamPhonebookApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: appTitle,
-      theme: ThemeData(primarySwatch: Colors.pink),
+      theme: ThemeData(primarySwatch: Colors.purple),
       home: const Main(),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         GlobalMaterialLocalizations.delegate,
@@ -989,7 +989,7 @@ class _MainState extends State<Main> {
       Container(
         child: RaisedButton(
             onPressed: getNumberPage(_phoneNumber) == null ? null : () =>checkPhoneNumber(),
-            color: Colors.blue,
+            color: Colors.deepPurpleAccent,
             child: const Text('המשך'),
             textTheme: ButtonTextTheme.primary,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
