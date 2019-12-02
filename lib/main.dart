@@ -58,14 +58,7 @@ class YeruhamPhonebookApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: appTitle,
-      theme: ThemeData(
-          primarySwatch: Colors.pink,
-          disabledColor: Colors.grey,
-          buttonTheme: ButtonThemeData(
-            buttonColor: Colors.pink,
-            textTheme: ButtonTextTheme.primary,
-          )
-      ),
+      theme: ThemeData(primarySwatch: Colors.pink),
       home: const Main(),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         GlobalMaterialLocalizations.delegate,
@@ -587,16 +580,6 @@ class _MainState extends State<Main> {
         orElse: () => null);
   }
 
-  RaisedButton buildRoundedButton({String title, VoidCallback onPressed, Color color}) {
-    return RaisedButton(
-        onPressed: onPressed,
-        child: Text(title),
-        color: color,
-        shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16));
-  }
-
   @override
   void initState() {
     super.initState();
@@ -1004,11 +987,13 @@ class _MainState extends State<Main> {
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
       ),
       Container(
-        child: buildRoundedButton(
-            onPressed: getNumberPage(_phoneNumber) == null ? null : () =>
-                checkPhoneNumber(),
+        child: RaisedButton(
+            onPressed: getNumberPage(_phoneNumber) == null ? null : () =>checkPhoneNumber(),
             color: Colors.blue,
-            title: 'המשך'),
+            child: const Text('המשך'),
+            textTheme: ButtonTextTheme.primary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16)),
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
       ),
     ]);
