@@ -26,7 +26,8 @@ const String appTitle = 'ספר הטלפונים של ירוחם';
 const Locale hebrewLocale = Locale('he', 'IL');
 const int searchResultsLimit = 40;
 const Duration searchOverflowDuration = Duration(seconds: 2);
-const TextStyle emptyListMessageStyle = TextStyle(fontSize: 22.0);
+const TextStyle emptyListMessageStyle = TextStyle(fontSize: 20);
+const double searchResultFontSize = 15;
 const String newPagesKeyword = '#חדשים';
 
 class Page {
@@ -162,6 +163,7 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen) => WidgetSpan(
         style: TextStyle(
           color: Colors.blueAccent,
           decoration: TextDecoration.underline,
+          fontSize: searchResultFontSize,
         ),
       ),
       onTap: () => openUrl(linkToOpen),
@@ -205,7 +207,10 @@ class PageItem extends StatelessWidget {
 
   TextSpan buildLines() {
     final String text = page.text.replaceAll(RegExp(r'[\r\n]+'), ' ');
-    return TextSpan(children: linkify(text.length > 350 ? text.substring(0, 350) : text));
+    return TextSpan(
+      children: linkify(text.length > 350 ? text.substring(0, 350) : text),
+      style: const TextStyle(fontSize: searchResultFontSize),
+    );
   }
 
   @override
@@ -219,7 +224,7 @@ class PageItem extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 16.0,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -251,7 +256,7 @@ class PageDataValue {
 class PageHTMLProcessor {
   PageHTMLProcessor(this.page)
       : html = page.dummyPage == true ? page.html : page.html
-      .replaceFirst('<table', '<table width="100%" style="font-size: 1.2em;"')
+      .replaceFirst('<table', '<table width="100%" style="font-size: 1.4em;"')
       .replaceAll('font-size:10pt', '')
       .replaceAll('background-color:transparent', '')
       .replaceAll(RegExp(r" ?style=';*'"), '')
@@ -862,7 +867,7 @@ class _MainState extends State<Main> {
       maxLines: 1,
       autofocus: true,
       style: const TextStyle(
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
       decoration: InputDecoration(
