@@ -872,16 +872,7 @@ class _MainState extends State<Main> {
 
   Widget buildSearchContent() {
     if (_searchString.isEmpty || _searchResults == null) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-
-        children: <Widget>[
-          Image.asset(
-            './assets/round_irus.png',
-            scale: .8,
-          ),
-        ],
-      );
+      return Image.asset('./assets/round_irus.png');
     } else if (_searchResults.length > searchResultsLimit && _searchString != newPagesKeyword) {
       if (_searchOverflowTimer == null) {
         return Align(
