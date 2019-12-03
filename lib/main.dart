@@ -249,7 +249,7 @@ class PageDataValue {
 class PageHTMLProcessor {
   PageHTMLProcessor(this.page)
       : html = page.dummyPage == true ? page.html : page.html
-      .replaceFirst('<table', '<table width="100%" style="font-size: 1.4em;"')
+      .replaceFirst('<table', '<table width="100%" style="font-size: 1.3em;"')
       .replaceAll('font-size:10pt', '')
       .replaceAll('background-color:transparent', '')
       .replaceAll(RegExp(r" ?style=';*'"), '')
