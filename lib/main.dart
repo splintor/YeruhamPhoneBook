@@ -671,7 +671,7 @@ class _MainState extends State<Main> {
 
     final int nextPos = s.indexOf('"', pos + 1);
     if (nextPos == -1) {
-      return parseToWords(s.replaceFirst('"', ''));
+      return s.split(' ');
     }
 
     return parseToWords(s.substring(0, pos))
