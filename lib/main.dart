@@ -176,13 +176,11 @@ List<InlineSpan> linkify(String text) {
   }
 
   final String linkText = match.group(0);
-  if (linkText.contains(RegExp(urlPattern, caseSensitive: false))) {
+  if (linkText.contains(pRegExp(urlPattern, caseSensitive: false))) {
     list.add(buildLinkComponent(linkText, linkText));
-  }
-  else if (linkText.contains(RegExp(emailPattern, caseSensitive: false))) {
+  } else if (linkText.contains(RegExp(emailPattern, caseSensitive: false))) {
     list.add(buildLinkComponent(linkText, 'mailto:$linkText'));
-  }
-  else if (linkText.contains(RegExp(phonePattern, caseSensitive: false))) {
+  } else if (linkText.contains(RegExp(phonePattern, caseSensitive: false))) {
     list.add(buildLinkComponent(linkText, 'tel:$linkText'));
   } else {
     throw 'Unexpected match: $linkText';
