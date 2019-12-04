@@ -197,7 +197,7 @@ class PageItem extends StatelessWidget {
   final Page page;
 
   TextSpan buildLines() {
-    final String text = page.text.replaceAll(RegExp(r'[\r\n]+'), ' ');
+    final String text = page.text.replaceAll(RegExp(r'[\r\n]+'), ' ').replaceAll('email:', 'דוא"ל:');
     return TextSpan(
       children: linkify(text.length > 350 ? text.substring(0, 350) : text),
       style: const TextStyle(fontSize: searchResultFontSize),
@@ -286,6 +286,8 @@ class PageHTMLProcessor {
     html = html.replaceAllMapped(RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>'), (Match match) =>
         '${match.group(0)}&nbsp;<a href="whatsapp://send?phone=${match.group(1).replaceAll('-', '').replaceFirst('0', '+972')}">'
             '<img width="30" height="26" style="top: 6px; position: relative;" src="https://icon-library.net//images/whatsapp-icon-android/whatsapp-icon-android-28.jpg"></a>');
+
+    html = html.replaceAll('email:', 'דוא"ל:');
   }
 
   Page page;
