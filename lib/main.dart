@@ -284,7 +284,7 @@ class PageHTMLProcessor {
     }
 
     html = html.replaceAllMapped(RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>'), (Match match) =>
-        '${match.group(0)} <a href="whatsapp://send?phone=${match.group(1).replaceAll('-', '')}">'
+        '${match.group(0)}&nbsp;<a href="whatsapp://send?phone=${match.group(1).replaceAll('-', '').replaceFirst('0', '+972')}">'
             '<img width="30" height="26" style="top: 6px; position: relative;" src="https://icon-library.net//images/whatsapp-icon-android/whatsapp-icon-android-28.jpg"></a>');
   }
 
