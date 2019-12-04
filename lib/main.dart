@@ -144,7 +144,7 @@ Page getErrorPage(String title, Object error) {
     </td></tr></tbody>
     ''';
 }
-const String urlPattern = r'https?:/\/\\S+';
+const String urlPattern = r'http\S+';
 const String emailPattern = r'\S+@\S+';
 const String phonePattern = r'[\d-]{9,}';
 final RegExp linkRegExp = RegExp('($urlPattern)|($emailPattern)|($phonePattern)', caseSensitive: false);
