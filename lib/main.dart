@@ -665,14 +665,11 @@ class _MainState extends State<Main> {
 
   List<String> parseToWords(String s) {
     final int pos = s.indexOf('"');
-    if (pos == -1) {
+    if (pos == -1 || (pos > 0 && s[pos - 1] != ' ')) {
       return s.split(' ');
     }
 
     final int nextPos = s.indexOf('"', pos + 1);
-    if (nextPos == -1) {
-      return s.split(' ');
-    }
 
     return parseToWords(s.substring(0, pos))
       ..add(s.substring(pos + 1, nextPos - pos - 1))
