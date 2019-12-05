@@ -801,8 +801,10 @@ class _MainState extends State<Main> {
     }
   }
 
-  Future<void> checkForUpdates({bool forceUpdate = true}) async {
-    showInSnackBar('בודק אם יש עדכונים...');
+  Future<void> checkForUpdates({bool forceUpdate}) async {
+    if (forceUpdate) {
+      showInSnackBar('בודק אם יש עדכונים...');
+    }
     try {
       final http.Response response = await http.get(
           getDataUrl(lastUpdateDate: getLastUpdateDate())
@@ -1015,7 +1017,7 @@ class _MainState extends State<Main> {
         return;
 
       case 'checkForUpdates':
-        checkForUpdates();
+        checkForUpdates(forceUpdate: true);
         return;
     }
   }
