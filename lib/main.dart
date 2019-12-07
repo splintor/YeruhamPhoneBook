@@ -250,10 +250,16 @@ class PageDataValue {
   String toUrlPart() => isPhoneValue() ? phoneValue() : innerText;
 }
 
+final RegExp newLineTagsRE = RegExp(r'<(div|br)[^>]*>');
+final RegExp bulletsTagsRE = RegExp(r'<li[^>]*>');
+final RegExp anyTagRE = RegExp(r'<[^>]*>');
+final RegExp multipleNewLinesRE = RegExp(r'(\s*\n)+');
+
 String getPageInnerText(Page page) => replaceEmail(page.html
-    .replaceAll(RegExp(r'<(div|br)[^>]*>'), '\n')
-    .replaceAll(RegExp(r'<[^>]*>'), '')
-    .replaceAll(RegExp(r'(\s*\n)+'), '\n')
+    .replaceAll(newLineTagsRE, '\n')
+    .replaceAll(bulletsTagsRE, '\n* ')
+    .replaceAll(anyTagRE, '')
+    .replaceAll(multipleNewLinesRE, '\n')
     .trim());
 
 
