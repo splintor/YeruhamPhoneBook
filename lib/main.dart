@@ -203,7 +203,7 @@ class PageItem extends StatelessWidget {
   final Page page;
 
   TextSpan buildLines() {
-    final String text = replaceEmail(page.text.replaceAll(RegExp(r'[\r\n]+'), ' '));
+    final String text = getPageInnerText(page);
     return TextSpan(
       children: linkify(text.length > 350 ? text.substring(0, 350) : text),
       style: const TextStyle(fontSize: searchResultFontSize),
@@ -249,6 +249,13 @@ class PageDataValue {
   String phoneValue() => isPhoneValue() ? innerText.replaceAll(RegExp(r'[\s-+=]'), '') : null;
   String toUrlPart() => isPhoneValue() ? phoneValue() : innerText;
 }
+
+String getPageInnerText(Page page) => replaceEmail(page.html
+    .replaceAll(RegExp(r'<(div|br)[^>]*>'), '\n')
+    .replaceAll(RegExp(r'<[^>]*>'), '')
+    .replaceAll(RegExp(r'(\s*\n)+'), '\n')
+    .trim());
+
 
 final RegExp styleURLRE = RegExp(r" ?style=';*'");
 final RegExp specialCharsRE = RegExp(r'[\u2000-\u2BFF]');
@@ -493,15 +500,9 @@ class PageViewState extends State<PageView> {
     NativeContactDialog.addContact(contact);
   }
 
-  String getPageInnerText() => replaceEmail(page.html
-      .replaceAll(RegExp(r'<(div|br)[^>]*>'), '\n')
-      .replaceAll(RegExp(r'<[^>]*>'), '')
-      .replaceAll(RegExp(r'(\s*\n)+'), '\n')
-      .trim());
-
   FloatingActionButton getShareButton() {
     return FloatingActionButton.extended(
-        onPressed: () => Share.share('${page.title}\n${getPageInnerText()}', subject: page.title),
+        onPressed: () => Share.share('${page.title}\n${getPageInnerText(page)}', subject: page.title),
         label: const Text('שתף'),
         icon: Icon(Icons.share),
     );
