@@ -98,8 +98,11 @@ String formatNumberWithCommas(int number) => NumberFormat.decimalPattern().forma
 
 String replaceEmail(String s) => s.replaceAll('email:', 'דוא"ל:');
 
-String whatsAppLink(String phone) => '<a href="whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}">'
-    '<img width="28" height="28" style="top: 8px; position: relative;" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/479px-WhatsApp.svg.png"></a>';
+String whatsappImageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/479px-WhatsApp.svg.png';
+
+String whatsappUrl(String phone) => 'whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}';
+
+String whatsAppLink(String phone) => '<a href="${whatsappUrl(phone)}"><img width="28" height="28" style="top: 8px; position: relative;" src="$whatsappImageUrl"></a>';
 
 Future<Page> getAboutPage() async {
   final Future<PackageInfo> packageInfoPromise = PackageInfo.fromPlatform();
@@ -169,6 +172,13 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen) => WidgetSpan(
     )
 );
 
+WidgetSpan buildImageLinkComponent(String imageUrl, String linkToOpen) => WidgetSpan(
+    child: InkWell(
+      child: Image.network(imageUrl, height: 20, width: 20),
+      onTap: () => openUrl(linkToOpen),
+    )
+);
+
 List<InlineSpan> linkify(String text) {
   final List<InlineSpan> list = <InlineSpan>[];
   final RegExpMatch match = linkRegExp.firstMatch(text);
@@ -187,6 +197,9 @@ List<InlineSpan> linkify(String text) {
   } else if (linkText.contains(RegExp(emailPattern, caseSensitive: false))) {
     list.add(buildLinkComponent(linkText, 'mailto:$linkText'));
   } else if (linkText.contains(RegExp(phonePattern, caseSensitive: false))) {
+    if (linkText.startsWith('05')) {
+      list.add(buildImageLinkComponent(whatsappImageUrl, whatsappUrl(linkText)));
+    }
     list.add(buildLinkComponent(linkText, 'tel:$linkText'));
   } else {
     throw 'Unexpected match: $linkText';
