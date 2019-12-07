@@ -98,6 +98,9 @@ String formatNumberWithCommas(int number) => NumberFormat.decimalPattern().forma
 
 String replaceEmail(String s) => s.replaceAll('email:', 'דוא"ל:');
 
+String whatsAppLink(String phone) => '<a href="whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}">'
+    '<img width="30" height="26" style="top: 6px; position: relative;" src="https://icon-library.net//images/whatsapp-icon-android/whatsapp-icon-android-28.jpg"></a>';
+
 Future<Page> getAboutPage() async {
   final Future<PackageInfo> packageInfoPromise = PackageInfo.fromPlatform();
   int mails = 0;
@@ -125,15 +128,16 @@ Future<Page> getAboutPage() async {
     ..html = '''<table width="100%" style="font-size: 1.2em;"><tbody><tr><td><div dir='rtl'>
         האפליקציה נכתבה ב<a href="https://github.com/splintor/YeruhamPhoneBook">קוד פתוח</a>
          על-ידי שמוליק פלינט
-        (<a href="mailto:splintor@gmail.com">splintor@gmail.com</a>)
+        (<a href="mailto:splintor@gmail.com">splintor@gmail.com</a>&nbsp;${whatsAppLink('0523843115')})
        בעזרת 
         <a href="https://flutter.dev/">Flutter</a>.<br><br>
-        זוהי גרסה <b>${packageInfo.version}+${packageInfo.buildNumber}</b><br><br>
+        זוהי גרסה <b>${packageInfo.version}</b><br><br>
         ספר הטלפונים כולל
-        <b>${formatNumberWithCommas(pages.length)}</b>
-        דפים.<br><br>
-        מספרי טלפון: ${formatNumberWithCommas(phones)}<br><br>
-        כתובות מייל: ${formatNumberWithCommas(mails)}<br><br>
+        <b>${formatNumberWithCommas(pages.length)}</b> דפים, ${formatNumberWithCommas(phones)} מספרי טלפון ו-${formatNumberWithCommas(mails)} כתובות דוא"ל.
+        <br><br>
+        הנתונים באפליקציית ספר הטלפונים לקוחים מ<a href="https://sites.google.com/site/yeruchamphonebook/home?overridemobile=true">אתר ספר הטלפונים הישובי</a>.
+        <br><br>
+        האתר פתוח לכלל תושבי ירוחם. התושבים יכולים (ואף מוזמנים!) להכנס לאתר ולתקן נתונים שגויים, או להוסיף פרטים חדשים. הסבר ניתן למצוא <a href="https://sites.google.com/site/yeruchamphonebook/usage">כאן</a>.
         </div></td></tr></tbody>''';
 }
 
@@ -285,9 +289,8 @@ class PageHTMLProcessor {
       }
     }
 
-    html = html.replaceAllMapped(RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>'), (Match match) =>
-        '${match.group(0)}&nbsp;<a href="whatsapp://send?phone=${match.group(1).replaceAll('-', '').replaceFirst('0', '+972')}">'
-            '<img width="30" height="26" style="top: 6px; position: relative;" src="https://icon-library.net//images/whatsapp-icon-android/whatsapp-icon-android-28.jpg"></a>');
+    html = html.replaceAllMapped(RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>'),
+            (Match match) => '${match.group(0)}&nbsp;${whatsAppLink(match.group(1))}');
 
     html = replaceEmail(html);
   }
