@@ -250,25 +250,35 @@ class PageDataValue {
   String toUrlPart() => isPhoneValue() ? phoneValue() : innerText;
 }
 
+final RegExp styleURLRE = RegExp(r" ?style=';*'");
+final RegExp specialCharsRE = RegExp(r'[\u2000-\u2BFF]');
+final RegExp spanElementRE = RegExp(r'<span>([^<]*)</span>');
+final RegExp twitterImgRE = RegExp(r"<img src='[^']*twitter[^']*'");
+final RegExp facebookImgRE = RegExp(r"<img src='[^']*facebook[^']*'");
+final RegExp facebookAltRE = RegExp(r"alt='https:\/\/www.facebook.com[^']*'");
+final RegExp phoneNumberRE = RegExp(r'([\d-+]{8,})([^"])');
+final RegExp phoneNumberNonDigitsRE = RegExp(r'[-+]+');
+final RegExp divElementRE = RegExp(r'<div[^>]*>([^<:]*):\s*(((?!</div>).)+)');
+final RegExp mailTitleRE = RegExp(r'(mail|מייל)');
+final RegExp phoneTitleRE = RegExp(r'^(טלפון|נייד|בית)$');
+final RegExp mobilePhoneTitleRE = RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>');
+
 class PageHTMLProcessor {
   PageHTMLProcessor(this.page)
       : html = page.dummyPage == true ? page.html : page.html
       .replaceFirst('<table', '<table width="100%" style="font-size: 1.3em;"')
       .replaceAll('font-size:10pt', '')
       .replaceAll('background-color:transparent', '')
-      .replaceAll(RegExp(r" ?style=';*'"), '')
-      .replaceAll(RegExp(r'[\u2000-\u2BFF]'), '')
-      .replaceAllMapped(
-      RegExp(r'<span>([^<]*)</span>'), (Match match) => match.group(1))
-      .replaceAll(RegExp(r"<img src='[^']*twitter[^']*'"),
-      "<img width='36' height='36' src='https://icon-library.net/images/twitter-social-media-icon/twitter-social-media-icon-19.jpg'")
-      .replaceAll(RegExp(r"<img src='[^']*facebook[^']*'"),
-      "<img width='40' height='40' src='https://icon-library.net/images/official-facebook-icon/official-facebook-icon-16.jpg'")
-      .replaceAll(RegExp(r"alt='https:\/\/www.facebook.com[^']*'"), '')
-      .replaceAllMapped(RegExp(r'([\d-+]{8,})([^"])'),
+      .replaceAll(styleURLRE, '')
+      .replaceAll(specialCharsRE, '')
+      .replaceAllMapped(spanElementRE, (Match match) => match.group(1))
+      .replaceAll(twitterImgRE, "<img width='36' height='36' src='https://icon-library.net/images/twitter-social-media-icon/twitter-social-media-icon-19.jpg'")
+      .replaceAll(facebookImgRE, "<img width='40' height='40' src='https://icon-library.net/images/official-facebook-icon/official-facebook-icon-16.jpg'")
+      .replaceAll(facebookAltRE, '')
+      .replaceAllMapped(phoneNumberRE,
           (Match match) => '<a href="tel:${match.group(1).replaceAll(
-          RegExp(r'[-+]+'), '')}">${match.group(1)}</a>${match.group(2)}') {
-    dataValues = RegExp(r'<div[^>]*>([^<:]*):\s*(((?!</div>).)+)')
+              phoneNumberNonDigitsRE, '')}">${match.group(1)}</a>${match.group(2)}') {
+    dataValues = divElementRE
         .allMatches(html.replaceAll('<br/>', '</div><div>'))
         .map((RegExpMatch match) => PageDataValue(match))
         .toList(growable: false);
@@ -276,20 +286,20 @@ class PageHTMLProcessor {
     phoneValues = dataValues.where((PageDataValue v) =>
         v.isPhoneValue()).toList(growable: false);
     mailValues = dataValues.where((PageDataValue v) =>
-        v.label.contains(RegExp(r'(mail|מייל)'))).toList(growable: false);
+        v.label.contains(mailTitleRE)).toList(growable: false);
 
     final PageDataValue homeValue = getValueForLabel(
         'טלפון', mustBePhone: true);
     for (PageDataValue v in phoneValues) {
       if (!inContact(v.phoneValue())) {
         appendAddContactLink(v,
-            givenName: v.label.contains(RegExp(r'^(טלפון|נייד|בית)$'))
+            givenName: v.label.contains(phoneTitleRE)
                 ? null
                 : v.label, homePhone: homeValue);
       }
     }
 
-    html = html.replaceAllMapped(RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>'),
+    html = html.replaceAllMapped(mobilePhoneTitleRE,
             (Match match) => '${match.group(0)}&nbsp;${whatsAppLink(match.group(1))}');
 
     html = replaceEmail(html);
