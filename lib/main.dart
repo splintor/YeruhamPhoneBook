@@ -98,7 +98,7 @@ String formatNumberWithCommas(int number) => NumberFormat.decimalPattern().forma
 
 String replaceEmail(String s) => s.replaceAll('email:', 'דוא"ל:');
 
-String whatsappImageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/479px-WhatsApp.svg.png';
+String whatsappImageUrl = 'https://i.imgur.com/1MJdN9J.png';
 
 String whatsappUrl(String phone) => 'whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}';
 
