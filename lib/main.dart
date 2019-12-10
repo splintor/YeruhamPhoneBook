@@ -16,6 +16,7 @@ import 'package:share/share.dart';
 
 List<Page> pages;
 final List<PageViewState> openPageViews = <PageViewState>[];
+const int previewMaxLines = 5;
 
 bool contactPermissionWasGranted = false;
 Set<String> contactPhones;
@@ -182,6 +183,10 @@ WidgetSpan buildImageLinkComponent(String imageUrl, String linkToOpen) => Widget
 
 List<InlineSpan> linkify(String text) {
   final List<InlineSpan> list = <InlineSpan>[];
+  final List<String> lines = text.split('\n');
+  if (lines.length > previewMaxLines) {
+    text = lines.sublist(0, previewMaxLines - 1).join('\n');
+  }
   final RegExpMatch match = linkRegExp.firstMatch(text);
   if (match == null) {
     list.add(TextSpan(text: text));
@@ -241,7 +246,7 @@ class PageItem extends StatelessWidget {
             ),
             const Padding(padding: EdgeInsets.only(bottom: 2.0)),
             Text.rich(
-              buildLines(), maxLines: 5, overflow: TextOverflow.ellipsis,),
+              buildLines(), maxLines: previewMaxLines, overflow: TextOverflow.ellipsis,),
             const Padding(padding: EdgeInsets.only(bottom: 6.0)),
           ],
         ),
