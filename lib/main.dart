@@ -826,7 +826,7 @@ class _MainState extends State<Main> {
 
   String getDataUrl({int lastUpdateDate = 0}) {
     return 'https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=' +
-        DateTime.fromMillisecondsSinceEpoch(lastUpdateDate).toIso8601String();
+        DateTime.fromMillisecondsSinceEpoch(lastUpdateDate, isUtc: true).toIso8601String();
   }
 
   void setLastUpdateDate(dynamic jsonData) => _prefs.setInt('lastUpdateDate', jsonData['maxDate']);
