@@ -17,6 +17,8 @@ import 'package:share/share.dart';
 List<Page> pages;
 final List<PageViewState> openPageViews = <PageViewState>[];
 const int previewMaxLines = 5;
+const int patchLevel = 1;
+final int flutterAppReleaseDate = DateTime(2019, 12, 1).millisecondsSinceEpoch;
 
 bool contactPermissionWasGranted = false;
 Set<String> contactPhones;
@@ -659,6 +661,7 @@ class _MainState extends State<Main> {
           _isUserVerified = true;
           checkForUpdates(forceUpdate: false);
         }
+        _prefs.setInt('patchLevel', patchLevel);
       });
     });
 
@@ -844,9 +847,10 @@ class _MainState extends State<Main> {
       showInSnackBar('בודק אם יש עדכונים...');
     }
     try {
-      final http.Response response = await http.get(
-          getDataUrl(lastUpdateDate: getLastUpdateDate())
-      );
+      final int currentPatchLevel = _prefs.getInt('patchLevel') ?? 0;
+      final int lastUpdateDate = currentPatchLevel < 1 ? flutterAppReleaseDate : getLastUpdateDate();
+      final String url = getDataUrl(lastUpdateDate: lastUpdateDate);
+      final http.Response response = await http.get(url);
 
       if (response.statusCode == 200) {
         final dynamic jsonData = json.decode(response.body);
