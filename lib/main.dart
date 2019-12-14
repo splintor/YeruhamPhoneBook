@@ -300,7 +300,7 @@ final RegExp mobilePhoneTitleRE = RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>');
 class PageHTMLProcessor {
   PageHTMLProcessor(this.page)
       : html = page.dummyPage == true ? page.html : page.html
-      .replaceFirst('<table', '<table width="100%" style="font-size: 1.3em;"')
+      .replaceFirst('<table', '<table width="100%" style="font-size: 1.2em;"')
       .replaceAll('font-size:10pt', '')
       .replaceAll('background-color:transparent', '')
       .replaceAll(styleURLRE, '')
