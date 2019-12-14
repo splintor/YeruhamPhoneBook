@@ -545,13 +545,13 @@ class PageViewState extends State<PageView> {
                 onSelected: onMenuSelected,
                 itemBuilder: (BuildContext context) =>
                 <PopupMenuItem<String>>[
-                  PopupMenuItem<String>(
+                  const PopupMenuItem<String>(
                     value: 'copyPageUrl',
-                    child: const Text('העתק את כתובת הדף'),
+                    child: Text('העתק את כתובת הדף'),
                   ),
-                  PopupMenuItem<String>(
+                  const PopupMenuItem<String>(
                     value: 'openPageInBrowser',
-                    child: const Text('פתח דף בדפדפן'),
+                    child: Text('פתח דף בדפדפן'),
                   ),
                 ]),
           ],
@@ -912,7 +912,7 @@ class _MainState extends State<Main> {
               _searchTextController.clear();
             }),
         border: OutlineInputBorder(
-            borderSide: BorderSide(width: 1),
+            borderSide: const BorderSide(width: 1),
             borderRadius: BorderRadius.circular(32.0)),
       ),
     );
@@ -1040,7 +1040,7 @@ class _MainState extends State<Main> {
 
   Widget buildMainWidget() {
     if (_prefs == null || pages == null) {
-      return Center(child: const Text('טוען...'));
+      return const Center(child: Text('טוען...'));
     } else if (_isUserVerified) {
       return buildSearchView();
     } else {
@@ -1075,17 +1075,17 @@ class _MainState extends State<Main> {
             onSelected: onMenuSelected,
               itemBuilder: (BuildContext context) =>
               <PopupMenuItem<String>>[
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'about',
-                  child: const Text('אודות'),
+                  child: Text('אודות'),
                 ),
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'openInBrowser',
-                  child: const Text('פתח בדפדפן'),
+                  child: Text('פתח בדפדפן'),
                 ),
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'checkForUpdates',
-                  child: const Text('בדוק אם יש עדכונים'),
+                  child: Text('בדוק אם יש עדכונים'),
                 ),
               ]),
         ],
