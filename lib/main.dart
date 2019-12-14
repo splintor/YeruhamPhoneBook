@@ -470,6 +470,8 @@ class PageViewState extends State<PageView> {
 
   void onWebViewCreated(WebViewController controller) => webViewController = controller;
 
+  Future<void> onPageFinished(String url) => webViewController.evaluateJavascript('document.body.scrollLeft = document.body.scrollWidth');
+
   NavigationDecision onWebViewNavigation(NavigationRequest navigation, BuildContext context) {
     final String pageUrlBase = RegExp(r'https:\/\/[^\/]+\/').firstMatch(
         page.url ?? '')?.group(0);
@@ -557,8 +559,10 @@ class PageViewState extends State<PageView> {
           ],
         ),
         body: WebView(
+          javascriptMode: JavascriptMode.unrestricted,
           initialUrl: getDataUrlForHtml(),
           onWebViewCreated: onWebViewCreated,
+          onPageFinished: onPageFinished,
           navigationDelegate: (NavigationRequest navigation) => onWebViewNavigation(navigation, context),
         ),
         floatingActionButton: getShareButton(),
