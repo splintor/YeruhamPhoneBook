@@ -157,10 +157,15 @@ Page getErrorPage(String title, Object error) {
     </td></tr></tbody>
     ''';
 }
+const String anchorPattern = '<a [^>]*href=["\']([^"\']+)["\'][^>]*>([^<]+)</a>';
+final RegExp anchorPatternRE = RegExp(anchorPattern, caseSensitive: false);
 const String urlPattern = r'http\S+';
+final RegExp urlPatternRE = RegExp(urlPattern, caseSensitive: false);
 const String emailPattern = r'\S+@\S+';
+final RegExp emailPatternRE = RegExp(emailPattern, caseSensitive: false);
 const String phonePattern = r'[\d-]{9,}';
-final RegExp linkRegExp = RegExp('($urlPattern)|($emailPattern)|($phonePattern)', caseSensitive: false);
+final RegExp phonePatternRE = RegExp(phonePattern, caseSensitive: false);
+final RegExp linkRegExp = RegExp('($anchorPattern)|($urlPattern)|($emailPattern)|($phonePattern)', caseSensitive: false);
 
 WidgetSpan buildLinkComponent(String text, String linkToOpen) => WidgetSpan(
     child: InkWell(
@@ -200,11 +205,14 @@ List<InlineSpan> linkify(String text) {
   }
 
   final String linkText = match.group(0);
-  if (linkText.contains(RegExp(urlPattern, caseSensitive: false))) {
+  final RegExpMatch anchorMatch = anchorPatternRE.firstMatch(linkText);
+  if (anchorMatch != null) {
+    list.add(buildLinkComponent(anchorMatch.group(2), anchorMatch.group(1)));
+  } else if (linkText.contains(urlPatternRE)) {
     list.add(buildLinkComponent(linkText, linkText));
-  } else if (linkText.contains(RegExp(emailPattern, caseSensitive: false))) {
+  } else if (linkText.contains(emailPatternRE)) {
     list.add(buildLinkComponent(linkText, 'mailto:$linkText'));
-  } else if (linkText.contains(RegExp(phonePattern, caseSensitive: false))) {
+  } else if (linkText.contains(phonePatternRE)) {
     if (linkText.startsWith('05')) {
       list.add(buildImageLinkComponent(whatsappImageUrl, whatsappUrl(linkText)));
     }
@@ -224,9 +232,9 @@ class PageItem extends StatelessWidget {
   final Page page;
 
   TextSpan buildLines() {
-    final String text = getPageInnerText(page);
+    final String text = getPageInnerText(page, leaveAnchors: true);
     return TextSpan(
-      children: linkify(text.length > 350 ? text.substring(0, 350) : text),
+      children: linkify(text),
       style: const TextStyle(fontSize: searchResultFontSize),
     );
   }
@@ -274,12 +282,13 @@ class PageDataValue {
 final RegExp newLineTagsRE = RegExp(r'<(div|br)[^>]*>');
 final RegExp bulletsTagsRE = RegExp(r'<li[^>]*>');
 final RegExp anyTagRE = RegExp(r'<[^>]*>');
+final RegExp anyTagButAnchorRE = RegExp(r'<[^aA/][^>]*>|</[^aA][^>]*>');
 final RegExp multipleNewLinesRE = RegExp(r'(\s*\n)+');
 
-String getPageInnerText(Page page) => replaceEmail(page.html
+String getPageInnerText(Page page, {bool leaveAnchors}) => replaceEmail(page.html
     .replaceAll(newLineTagsRE, '\n')
     .replaceAll(bulletsTagsRE, '\n* ')
-    .replaceAll(anyTagRE, '')
+    .replaceAll(leaveAnchors ? anyTagButAnchorRE : anyTagRE, '')
     .replaceAll(multipleNewLinesRE, '\n')
     .trim());
 
@@ -531,7 +540,7 @@ class PageViewState extends State<PageView> {
 
   FloatingActionButton getShareButton() {
     return FloatingActionButton.extended(
-        onPressed: () => Share.share('${page.title}\n${getPageInnerText(page)}', subject: page.title),
+        onPressed: () => Share.share('${page.title}\n${getPageInnerText(page, leaveAnchors: false)}', subject: page.title),
         label: const Text('שתף'),
         icon: Icon(Icons.share),
     );
