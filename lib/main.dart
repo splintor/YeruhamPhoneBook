@@ -91,6 +91,15 @@ Future<void> openUrl(String url) async {
   }
 }
 
+Future<void> openUrlOrPage(String url, BuildContext context) async {
+  final Page page = context == null ? null : pages.firstWhere((Page p) => p.url == url);
+  if (page == null) {
+    openUrl(url);
+  } else {
+    openPage(page, context);
+  }
+}
+
 void openPage(Page page, BuildContext context) {
   Navigator.push(
     context,
@@ -157,17 +166,17 @@ Page getErrorPage(String title, Object error) {
     </td></tr></tbody>
     ''';
 }
-const String anchorPattern = '<a [^>]*href=["\']([^"\']+)["\'][^>]*>([^<]+)</a>';
+const String anchorPattern = '<a [^>]*href=["\']([^"\']+)["\'][^>]*>([^<]*)</a>';
 final RegExp anchorPatternRE = RegExp(anchorPattern, caseSensitive: false);
-const String urlPattern = r'http\S+';
+const String urlPattern = 'http[^\'">]+';
 final RegExp urlPatternRE = RegExp(urlPattern, caseSensitive: false);
 const String emailPattern = r'\S+@\S+';
 final RegExp emailPatternRE = RegExp(emailPattern, caseSensitive: false);
-const String phonePattern = r'[\d-]{9,}';
+const String phonePattern = r'(0[\d-]{8,})|(\*\d{3,})|(\d{3,}\*)';
 final RegExp phonePatternRE = RegExp(phonePattern, caseSensitive: false);
-final RegExp linkRegExp = RegExp('($anchorPattern)|($urlPattern)|($emailPattern)|($phonePattern)', caseSensitive: false);
+final RegExp linkRegExp = RegExp('($anchorPattern)|($urlPattern)|($emailPattern)|$phonePattern', caseSensitive: false);
 
-WidgetSpan buildLinkComponent(String text, String linkToOpen) => WidgetSpan(
+WidgetSpan buildLinkComponent(String text, String linkToOpen, BuildContext context) => WidgetSpan(
     child: InkWell(
       child: Text(
         text,
@@ -177,7 +186,7 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen) => WidgetSpan(
           fontSize: searchResultFontSize,
         ),
       ),
-      onTap: () => openUrl(linkToOpen),
+      onTap: () => openUrlOrPage(linkToOpen, context),
     )
 );
 
@@ -188,7 +197,7 @@ WidgetSpan buildImageLinkComponent(String imageUrl, String linkToOpen) => Widget
     )
 );
 
-List<InlineSpan> linkify(String text) {
+List<InlineSpan> linkify(String text, BuildContext context) {
   final List<InlineSpan> list = <InlineSpan>[];
   final List<String> lines = text.split('\n');
   if (lines.length > previewMaxLines) {
@@ -196,7 +205,11 @@ List<InlineSpan> linkify(String text) {
   }
   final RegExpMatch match = linkRegExp.firstMatch(text);
   if (match == null) {
-    list.add(TextSpan(text: text));
+    text = text.trim();
+    if (text.isNotEmpty) {
+      list.add(TextSpan(text: text));
+    }
+
     return list;
   }
 
@@ -207,21 +220,23 @@ List<InlineSpan> linkify(String text) {
   final String linkText = match.group(0);
   final RegExpMatch anchorMatch = anchorPatternRE.firstMatch(linkText);
   if (anchorMatch != null) {
-    list.add(buildLinkComponent(anchorMatch.group(2), anchorMatch.group(1)));
+    if (anchorMatch.group(2).trim().isNotEmpty) {
+      list.add(buildLinkComponent(anchorMatch.group(2), anchorMatch.group(1), context));
+    }
   } else if (linkText.contains(urlPatternRE)) {
-    list.add(buildLinkComponent(linkText, linkText));
+    list.add(buildLinkComponent(linkText, linkText, null));
   } else if (linkText.contains(emailPatternRE)) {
-    list.add(buildLinkComponent(linkText, 'mailto:$linkText'));
+    list.add(buildLinkComponent(linkText, 'mailto:$linkText', null));
   } else if (linkText.contains(phonePatternRE)) {
     if (linkText.startsWith('05')) {
       list.add(buildImageLinkComponent(whatsappImageUrl, whatsappUrl(linkText)));
     }
-    list.add(buildLinkComponent(linkText, 'tel:$linkText'));
+    list.add(buildLinkComponent(linkText, phoneNumberUrl(linkText), null));
   } else {
     throw 'Unexpected match: $linkText';
   }
 
-  list.addAll(linkify(text.substring(match.start + linkText.length)));
+  list.addAll(linkify(text.substring(match.start + linkText.length), context));
 
   return list;
 }
@@ -231,10 +246,19 @@ class PageItem extends StatelessWidget {
 
   final Page page;
 
-  TextSpan buildLines() {
+  TextSpan buildLines(BuildContext context) {
     final String text = getPageInnerText(page, leaveAnchors: true);
+    final List<InlineSpan> lines = linkify(text, context);
+
+    if (lines.isNotEmpty && lines[lines.length - 1] is TextSpan) {
+      final TextSpan textSpan = lines[lines.length - 1];
+      if (textSpan.text.trim().isEmpty) {
+        lines.removeLast();
+      }
+    }
+
     return TextSpan(
-      children: linkify(text),
+      children: lines,
       style: const TextStyle(fontSize: searchResultFontSize),
     );
   }
@@ -256,7 +280,7 @@ class PageItem extends StatelessWidget {
             ),
             const Padding(padding: EdgeInsets.only(bottom: 2.0)),
             Text.rich(
-              buildLines(), maxLines: previewMaxLines, overflow: TextOverflow.ellipsis,),
+              buildLines(context), maxLines: previewMaxLines, overflow: TextOverflow.ellipsis,),
             const Padding(padding: EdgeInsets.only(bottom: 6.0)),
           ],
         ),
@@ -300,11 +324,21 @@ final RegExp twitterImgRE = RegExp(r"<img src='[^']*twitter[^']*'");
 final RegExp facebookImgRE = RegExp(r"<img src='[^']*facebook[^']*'");
 final RegExp facebookAltRE = RegExp(r"alt='https:\/\/www.facebook.com[^']*'");
 final RegExp phoneNumberRE = RegExp(r'([\d-+]{8,})([^"])');
+final RegExp prefixStarPhoneNumberRE = RegExp(r'(\*\d{3,)([^"])');
+final RegExp suffixStarPhoneNumberRE = RegExp(r'(\d{3,}\*)([^"])');
 final RegExp phoneNumberNonDigitsRE = RegExp(r'[-+]+');
 final RegExp divElementRE = RegExp(r'<div[^>]*>([^<:]*):\s*(((?!</div>).)+)');
 final RegExp mailTitleRE = RegExp(r'(mail|מייל)');
 final RegExp phoneTitleRE = RegExp(r'^(טלפון|נייד|בית)$');
 final RegExp mobilePhoneTitleRE = RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>');
+final RegExp suffixStar = RegExp(r'(\d*)\*');
+
+String phoneNumberUrl(String phoneNumber) =>
+    'tel:' + phoneNumber
+        .replaceAll(phoneNumberNonDigitsRE, '')
+        .replaceFirstMapped(suffixStar, (Match match) => '*' + match.group(1));
+
+String phoneNumberMatcher(Match match) => '<a href="${phoneNumberUrl(match.group(1))}">${match.group(1)}</a>${match.group(2)}';
 
 class PageHTMLProcessor {
   PageHTMLProcessor(this.page)
@@ -318,9 +352,9 @@ class PageHTMLProcessor {
       .replaceAll(twitterImgRE, "<img width='36' height='36' src='https://icon-library.net/images/twitter-social-media-icon/twitter-social-media-icon-19.jpg'")
       .replaceAll(facebookImgRE, "<img width='40' height='40' src='https://icon-library.net/images/official-facebook-icon/official-facebook-icon-16.jpg'")
       .replaceAll(facebookAltRE, '')
-      .replaceAllMapped(phoneNumberRE,
-          (Match match) => '<a href="tel:${match.group(1).replaceAll(
-              phoneNumberNonDigitsRE, '')}">${match.group(1)}</a>${match.group(2)}') {
+      .replaceAllMapped(phoneNumberRE, phoneNumberMatcher)
+      .replaceAllMapped(prefixStarPhoneNumberRE, phoneNumberMatcher)
+      .replaceAllMapped(suffixStarPhoneNumberRE, phoneNumberMatcher) {
     dataValues = divElementRE
         .allMatches(html.replaceAll('<br/>', '</div><div>'))
         .map((RegExpMatch match) => PageDataValue(match))
@@ -485,13 +519,7 @@ class PageViewState extends State<PageView> {
     final String pageUrlBase = RegExp(r'https:\/\/[^\/]+\/').firstMatch(
         page.url ?? '')?.group(0);
     if (pageUrlBase != null && navigation.url.startsWith(pageUrlBase)) {
-      final Page page = pages.firstWhere((Page p) =>
-      p.url == navigation.url);
-      if (page == null) {
-        openUrl(navigation.url);
-      } else {
-        openPage(page, context);
-      }
+      openUrlOrPage(navigation.url, context);
     } else if (navigation.url.startsWith('action:addUser?')) {
       addContact(navigation.url);
     } else {
