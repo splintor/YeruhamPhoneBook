@@ -298,7 +298,7 @@ class PageDataValue {
   String htmlValue;
   String innerText;
 
-  bool isPhoneValue() => innerText.contains(RegExp(r'^[\d+-]{8,}$'));
+  bool isPhoneValue() => innerText.contains(RegExp(r'^\*?[\d+-]{8,}\*?$'));
   String phoneValue() => isPhoneValue() ? innerText.replaceAll(RegExp(r'[\s-+=]'), '') : null;
   String toUrlPart() => isPhoneValue() ? phoneValue() : innerText;
 }
@@ -312,7 +312,7 @@ final RegExp multipleNewLinesRE = RegExp(r'(\s*\n)+');
 String getPageInnerText(Page page, {bool leaveAnchors}) => replaceEmail(page.html
     .replaceAll(newLineTagsRE, '\n')
     .replaceAll(bulletsTagsRE, '\n* ')
-    .replaceAll(leaveAnchors ? anyTagButAnchorRE : anyTagRE, '')
+    .replaceAll(leaveAnchors ? anyTagButAnchorRE : anyTagRE, ' ')
     .replaceAll(multipleNewLinesRE, '\n')
     .trim());
 
@@ -324,7 +324,7 @@ final RegExp twitterImgRE = RegExp(r"<img src='[^']*twitter[^']*'");
 final RegExp facebookImgRE = RegExp(r"<img src='[^']*facebook[^']*'");
 final RegExp facebookAltRE = RegExp(r"alt='https:\/\/www.facebook.com[^']*'");
 final RegExp phoneNumberRE = RegExp(r'([\d-+]{8,})([^"])');
-final RegExp prefixStarPhoneNumberRE = RegExp(r'(\*\d{3,)([^"])');
+final RegExp prefixStarPhoneNumberRE = RegExp(r'(\*\d{3,})([^"])');
 final RegExp suffixStarPhoneNumberRE = RegExp(r'(\d{3,}\*)([^"])');
 final RegExp phoneNumberNonDigitsRE = RegExp(r'[-+]+');
 final RegExp divElementRE = RegExp(r'<div[^>]*>([^<:]*):\s*(((?!</div>).)+)');
