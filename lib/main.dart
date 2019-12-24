@@ -56,6 +56,8 @@ class Page {
   bool dummyPage;
 }
 
+bool isPageSearchable(Page page) => page.isDeleted != true && page.text.isNotEmpty;
+
 class YeruhamPhonebookApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -121,7 +123,7 @@ Future<Page> getAboutPage() async {
   final Future<PackageInfo> packageInfoPromise = PackageInfo.fromPlatform();
   int mails = 0;
   int phones = 0;
-  for (Page page in pages.where((Page p) => p.isDeleted != true)) {
+  for (Page page in pages.where(isPageSearchable)) {
     mails += RegExp(r'\S+@\S+')
         .allMatches(page.text)
         .length;
@@ -812,9 +814,9 @@ class _MainState extends State<Main> {
         .map((String s) => s.trim())
         .where((String w) => w.isNotEmpty)
         .toList(growable: false);
-    final List<Page> result = pages.where((Page page) =>
-        page.isDeleted != true && searchWords.every((String word) => isPageMatchWord(page, word))).toList(
-        growable: false);
+    final List<Page> result = pages.where((Page page) => isPageSearchable(page) &&
+        searchWords.every((String word) => isPageMatchWord(page, word))
+    ).toList(growable: false);
 
     result.sort((Page a, Page b) {
       final int titleCompare = compareSearchIndexes(a.title, b.title);
