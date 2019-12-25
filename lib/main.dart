@@ -612,6 +612,7 @@ class _MainState extends State<Main> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   SharedPreferences _prefs;
   List<Page> _searchResults;
+  List<Page> _updatedPages;
   Timer _searchOverflowTimer;
   bool _isUserVerified = false;
   final TextEditingController _phoneNumberController = TextEditingController();
@@ -678,8 +679,7 @@ class _MainState extends State<Main> {
         setState(() => _phoneNumber = _phoneNumberController.text)
     );
 
-    _searchTextController.addListener(() =>
-        handleSearchChanged(_searchTextController.text));
+    _searchTextController.addListener(handleSearchChanged);
 
     PermissionHandler().requestPermissions(
         <PermissionGroup>[PermissionGroup.contacts])
@@ -799,7 +799,8 @@ class _MainState extends State<Main> {
     return index1.compareTo(index2);
   }
 
-  void handleSearchChanged(String searchString) {
+  void handleSearchChanged() {
+    final searchString = _searchTextController.text.trim();
     setState(() => _searchString = searchString);
     if (_searchString == '___resetValidationNumber') {
       _prefs.remove('validationNumber');
@@ -808,6 +809,16 @@ class _MainState extends State<Main> {
         _searchTextController.clear();
         _isUserVerified = false;
       });
+    }
+
+    if (searchString.isEmpty) {
+      setState(() => _searchResults = null);
+      return;
+    }
+
+    if (searchString == newPagesKeyword) {
+      setState(() => _searchResults = _updatedPages);
+      return;
     }
 
     final List<String> searchWords = parseToWords(_searchString.toLowerCase())
@@ -915,8 +926,7 @@ class _MainState extends State<Main> {
                 actionHandler: updatedPages.isEmpty ? null : () =>
                     setState(() {
                       _searchTextController.text = newPagesKeyword;
-                      _searchString = newPagesKeyword;
-                      _searchResults = updatedPages;
+                      _updatedPages = updatedPages;
                     }));
           }
         });
