@@ -30,7 +30,7 @@ const Locale hebrewLocale = Locale('he', 'IL');
 const int searchResultsLimit = 40;
 const Duration searchOverflowDuration = Duration(seconds: 2);
 const TextStyle emptyListMessageStyle = TextStyle(fontSize: 20);
-const double searchResultFontSize = 15;
+const double searchResultFontSize = 20;
 const String newPagesKeyword = '#חדשים';
 
 class Page {
