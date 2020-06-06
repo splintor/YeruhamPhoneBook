@@ -33,6 +33,7 @@ const int searchResultsLimit = 40;
 const Duration searchOverflowDuration = Duration(seconds: 2);
 const TextStyle emptyListMessageStyle = TextStyle(fontSize: 20);
 const double searchResultFontSize = 20;
+const double whatsAppImageSize = 28;
 const String newPagesKeyword = '#חדשים';
 
 class Page {
@@ -115,11 +116,9 @@ String formatNumberWithCommas(int number) => NumberFormat.decimalPattern().forma
 
 String replaceEmail(String s) => s.replaceAll('email:', 'דוא"ל:');
 
-String whatsappImageUrl = 'https://i.imgur.com/1MJdN9J.png';
-
 String whatsappUrl(String phone) => 'whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}';
 
-String whatsAppLink(String phone) => '<a href="${whatsappUrl(phone)}"><img width="28" height="28" style="top: 8px; position: relative;" src="$whatsappImageUrl"></a>';
+String whatsAppLink(String phone) => '<a href="${whatsappUrl(phone)}"><img width="$whatsAppImageSize" height="$whatsAppImageSize" style="top: 8px; position: relative;" src="data:image/jpeg;base64,$whatsappImageData"></a>';
 
 Future<Page> getAboutPage() async {
   final Future<PackageInfo> packageInfoPromise = PackageInfo.fromPlatform();
@@ -179,6 +178,7 @@ final RegExp emailPatternRE = RegExp(emailPattern, caseSensitive: false);
 const String phonePattern = r'(0[\d-]{8,})|(\*\d{3,})|(\d{3,}\*)';
 final RegExp phonePatternRE = RegExp(phonePattern, caseSensitive: false);
 final RegExp linkRegExp = RegExp('($anchorPattern)|($urlPattern)|($emailPattern)|$phonePattern', caseSensitive: false);
+final Image whatsAppImage = Image.memory(base64Decode(whatsappImageData), height: whatsAppImageSize, width: whatsAppImageSize);
 
 WidgetSpan buildLinkComponent(String text, String linkToOpen, BuildContext context) => WidgetSpan(
     child: InkWell(
@@ -191,13 +191,6 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen, BuildContext conte
         ),
       ),
       onTap: () => openUrlOrPage(linkToOpen, context),
-    )
-);
-
-WidgetSpan buildImageLinkComponent(String imageUrl, String linkToOpen) => WidgetSpan(
-    child: InkWell(
-      child: Image.network(imageUrl, height: 20, width: 20),
-      onTap: () => openUrl(linkToOpen),
     )
 );
 
@@ -233,7 +226,10 @@ List<InlineSpan> linkify(String text, BuildContext context) {
     list.add(buildLinkComponent(linkText, 'mailto:$linkText', null));
   } else if (linkText.contains(phonePatternRE)) {
     if (linkText.startsWith('05')) {
-      list.add(buildImageLinkComponent(whatsappImageUrl, whatsappUrl(linkText)));
+      list.add(WidgetSpan(child: InkWell(
+        child: whatsAppImage,
+        onTap: () => openUrl(whatsappUrl(linkText)),
+      )));
     }
     list.add(buildLinkComponent(linkText, phoneNumberUrl(linkText), null));
   } else {
