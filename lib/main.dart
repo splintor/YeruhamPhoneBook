@@ -147,7 +147,7 @@ Future<Page> getAboutPage() async {
         האפליקציה נכתבה ב<a href="https://github.com/splintor/YeruhamPhoneBook">קוד פתוח</a>
          על-ידי שמוליק פלינט
         (<a href="mailto:splintor@gmail.com">splintor@gmail.com</a>&nbsp;${whatsAppLink('0523843115')})
-       בעזרת 
+       בעזרת
         <a href="https://flutter.dev/">Flutter</a>.<br><br>
         זוהי גרסה <b>${packageInfo.version}</b><br><br>
         ספר הטלפונים כולל
@@ -800,7 +800,7 @@ class _MainState extends State<Main> {
   }
 
   void handleSearchChanged() {
-    final searchString = _searchTextController.text.trim();
+    final String searchString = _searchTextController.text.trim();
     setState(() => _searchString = searchString);
     if (_searchString == '___resetValidationNumber') {
       _prefs.remove('validationNumber');
