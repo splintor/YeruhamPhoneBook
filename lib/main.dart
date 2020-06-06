@@ -14,6 +14,8 @@ import 'package:intl/intl.dart';
 import 'package:package_info/package_info.dart';
 import 'package:share/share.dart';
 
+import 'icons.dart';
+
 List<Page> pages;
 final List<PageViewState> openPageViews = <PageViewState>[];
 const int previewMaxLines = 5;
@@ -323,8 +325,6 @@ String getPageInnerText(Page page, {bool leaveAnchors}) => replaceEmail(page.htm
 final RegExp styleURLRE = RegExp(r" ?style=';*'");
 final RegExp specialCharsRE = RegExp(r'[\u2000-\u2BFF]');
 final RegExp spanElementRE = RegExp(r'<span>([^<]*)</span>');
-final RegExp twitterImgRE = RegExp(r"<img src='[^']*twitter[^']*'");
-final RegExp facebookImgRE = RegExp(r"<img src='[^']*facebook[^']*'");
 final RegExp facebookAltRE = RegExp(r"alt='https:\/\/www.facebook.com[^']*'");
 final RegExp phoneNumberRE = RegExp(r'([\d-+]{8,})([^"/\d])');
 final RegExp prefixStarPhoneNumberRE = RegExp(r'(\*\d{3,})([^"])');
@@ -352,8 +352,8 @@ class PageHTMLProcessor {
       .replaceAll(styleURLRE, '')
       .replaceAll(specialCharsRE, '')
       .replaceAllMapped(spanElementRE, (Match match) => match.group(1))
-      .replaceAll(twitterImgRE, "<img width='36' height='36' src='https://icon-library.net/images/twitter-social-media-icon/twitter-social-media-icon-19.jpg'")
-      .replaceAll(facebookImgRE, "<img width='40' height='40' src='https://icon-library.net/images/official-facebook-icon/official-facebook-icon-16.jpg'")
+      .replaceAll(twitterImgRE, twitterDataImg)
+      .replaceAll(facebookImgRE, facebookDataImg)
       .replaceAll(facebookAltRE, '')
       .replaceAllMapped(phoneNumberRE, phoneNumberMatcher)
       .replaceAllMapped(prefixStarPhoneNumberRE, phoneNumberMatcher)
