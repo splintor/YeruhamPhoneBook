@@ -276,8 +276,9 @@ class PageItem extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: Colors.deepPurple,
               ),
             ),
             const Padding(padding: EdgeInsets.only(bottom: 2.0)),
