@@ -261,7 +261,7 @@ class PageItem extends StatelessWidget {
 
     return TextSpan(
       children: lines,
-      style: const TextStyle(fontSize: searchResultFontSize),
+      style: const TextStyle(fontSize: searchResultFontSize, height: 1.6),
     );
   }
 
