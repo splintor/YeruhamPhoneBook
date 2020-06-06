@@ -284,7 +284,7 @@ class PageItem extends StatelessWidget {
             const Padding(padding: EdgeInsets.only(bottom: 2.0)),
             Text.rich(
               buildLines(context), maxLines: previewMaxLines, overflow: TextOverflow.ellipsis,),
-            const Padding(padding: EdgeInsets.only(bottom: 6.0)),
+            const Padding(padding: EdgeInsets.only(bottom: 20.0)),
           ],
         ),
         onTap: () => openPage(page, context),
