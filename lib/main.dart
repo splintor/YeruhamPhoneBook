@@ -350,6 +350,7 @@ class PageHTMLProcessor {
       .replaceAllMapped(spanElementRE, (Match match) => match.group(1))
       .replaceAll(twitterImgRE, twitterDataImg)
       .replaceAll(facebookImgRE, facebookDataImg)
+      .replaceAll(instagramImgRE, instagramDataImg)
       .replaceAll(facebookAltRE, '')
       .replaceAllMapped(phoneNumberRE, phoneNumberMatcher)
       .replaceAllMapped(prefixStarPhoneNumberRE, phoneNumberMatcher)
