@@ -184,7 +184,7 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen, BuildContext conte
     child: InkWell(
       child: Text(
         text,
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.blueAccent,
           decoration: TextDecoration.underline,
           fontSize: searchResultFontSize,
@@ -570,7 +570,7 @@ class PageViewState extends State<PageView> {
     return FloatingActionButton.extended(
         onPressed: () => Share.share('${page.title}\n${getPageInnerText(page, leaveAnchors: false)}', subject: page.title),
         label: const Text('שתף'),
-        icon: Icon(Icons.share),
+        icon: const Icon(Icons.share),
     );
   }
 
@@ -867,7 +867,7 @@ class _MainState extends State<Main> {
         await openUrl(url);
       },
       label: const Text('משוב'),
-      icon: Icon(Icons.send),
+      icon: const Icon(Icons.send),
     ) : null;
   }
 
