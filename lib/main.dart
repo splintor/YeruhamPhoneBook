@@ -879,9 +879,9 @@ class _MainState extends State<Main> {
     }
   }
 
-  String getDataUrl({int lastUpdateDate = 0}) {
-    return 'https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=' +
-        DateTime.fromMillisecondsSinceEpoch(lastUpdateDate, isUtc: true).toIso8601String();
+  Uri getDataUrl({int lastUpdateDate = 0}) {
+    return Uri.parse('https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=' +
+        DateTime.fromMillisecondsSinceEpoch(lastUpdateDate, isUtc: true).toIso8601String());
   }
 
   void setLastUpdateDate(dynamic jsonData) => _prefs.setInt('lastUpdateDate', jsonData['maxDate']);
@@ -901,7 +901,7 @@ class _MainState extends State<Main> {
     try {
       final int currentPatchLevel = _prefs.getInt('patchLevel') ?? 0;
       final int lastUpdateDate = currentPatchLevel < 1 ? flutterAppReleaseDate : getLastUpdateDate();
-      final String url = getDataUrl(lastUpdateDate: lastUpdateDate);
+      final Uri url = getDataUrl(lastUpdateDate: lastUpdateDate);
       final http.Response response = await http.get(url);
 
       if (response.statusCode == 200) {
