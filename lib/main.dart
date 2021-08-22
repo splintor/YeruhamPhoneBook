@@ -138,7 +138,12 @@ Future<Page> getAboutPage() async {
   try {
     packageInfo = await packageInfoPromise;
   } catch (e) {
-    packageInfo = PackageInfo(version: 'N/A', buildNumber: '?');
+    packageInfo = PackageInfo(
+      appName: 'Unknown',
+      packageName: 'Unknown',
+      version: 'Unknown',
+      buildNumber: 'Unknown',
+    );
   }
 
   return Page()
@@ -679,15 +684,7 @@ class _MainState extends State<Main> {
 
     _searchTextController.addListener(handleSearchChanged);
 
-    PermissionHandler().requestPermissions(
-        <PermissionGroup>[PermissionGroup.contacts])
-        .then((Map<PermissionGroup, PermissionStatus> permissionsMap) async {
-      if (permissionsMap[PermissionGroup.contacts] ==
-          PermissionStatus.granted) {
-        contactPermissionWasGranted = true;
-        loadPhoneContacts();
-      }
-    });
+    loadContacts();
 
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
       setState(() {
@@ -708,6 +705,13 @@ class _MainState extends State<Main> {
 
     WidgetsBinding.instance.addObserver(
         LifecycleEventHandler(() => loadPhoneContacts()));
+  }
+
+  Future<void> loadContacts() async {
+    if (await Permission.contacts.request().isDenied) {
+      contactPermissionWasGranted = true;
+      loadPhoneContacts();
+    }
   }
 
   Future<void> loadPhoneContacts() async {
@@ -754,7 +758,11 @@ class _MainState extends State<Main> {
       return s.split(' ');
     }
 
-    final int nextPos = s.indexOf('"', pos + 1);
+    int nextPos = s.indexOf('"', pos + 1);
+    if (nextPos == -1) {
+      s = s + '"';
+      nextPos = s.indexOf('"', pos + 1);
+    }
 
     return parseToWords(s.substring(0, pos))
       ..add(s.substring(pos + 1, nextPos - pos - 1))
@@ -1077,13 +1085,14 @@ class _MainState extends State<Main> {
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
       ),
       Container(
-        child: RaisedButton(
-            onPressed: getNumberPage(_phoneNumber) == null ? null : () =>checkPhoneNumber(),
-            color: Colors.deepPurpleAccent,
+        child: ElevatedButton(
+            onPressed: getNumberPage(_phoneNumber) == null ? null : () => checkPhoneNumber(),
             child: const Text('המשך'),
-            textTheme: ButtonTextTheme.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16)),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.deepPurpleAccent,
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(30.0))),
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16)),
+            ),
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
       ),
     ]);
@@ -1092,7 +1101,7 @@ class _MainState extends State<Main> {
   Widget buildMainWidget() {
     if (_prefs == null || pages == null) {
       return const Center(child: Text('טוען...'));
-    } else if (_isUserVerified) {
+    } else if (_isUserVerified && 1 == 2) {
       return buildSearchView();
     } else {
       return buildValidationView();
@@ -1153,7 +1162,7 @@ class _MainState extends State<Main> {
   void showInSnackBar(String value, { bool isWarning = false, String actionLabel, Function actionHandler }) {
     final SnackBarAction action = actionLabel == null ? null : SnackBarAction(label: actionLabel, onPressed: actionHandler);
     final Text content = Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
-    _scaffoldKey.currentState.showSnackBar(SnackBar(action: action, content: content));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(action: action, content: content));
   }
 }
 

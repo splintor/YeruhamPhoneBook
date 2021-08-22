@@ -21,24 +21,24 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  url_launcher: 5.4.10
-  webview_flutter: ^0.3.14+1
-  contacts_service: ^0.3.4
-  permission_handler: ^3.2.2
+  url_launcher: ^6.0.9
+  webview_flutter: ^2.0.12
+  contacts_service: ^0.6.1
+  permission_handler: ^8.1.4+2
   native_contact_dialog: ^0.2.2
-  package_info: ^0.4.0+11
-  share: ^0.6.3+3
+  package_info: ^2.0.2
+  share: ^2.0.4
   shared_preferences:
   http:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^0.1.2
+  cupertino_icons: ^1.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: "^0.7.3"
+  flutter_launcher_icons: ^0.9.1
 
 flutter_icons:
   android: "launcher_icon"
