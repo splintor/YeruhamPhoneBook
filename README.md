@@ -1,9 +1,8 @@
 # Yeruham Phone Book
 
-A Flutter mobile application to provide easy and fast access to [Yeruham's phone book](https://sites.google.com/site/yeruchamphonebook/). Access to the app is only allowed to people that appear in the book.
+A Flutter mobile application to provide easy and fast access to [Yeruham's phone book](https://yeruham-phone-book.vercel.app). Access to the app is only allowed to people that appear in the book.
 
 ## Tasks still need to be done
-- TODO: Move to use the new site
 - TODO: Make sure there are no pages with the same title (should be fixed once we move to new site that is keyed by title)
 - TODO: Scroll pages to the right on open (המועצה)
 - TODO: Send BI events (https://moz.com/blog/absolute-beginners-guide-to-google-analytics) - maybe use the apps engine URL we are already sending?

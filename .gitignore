@@ -26,6 +26,7 @@
 .pub-cache/
 .pub/
 /build/
+lib/secret.dart
 
 # Android related
 android/key.properties

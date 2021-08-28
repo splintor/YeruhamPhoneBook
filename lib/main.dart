@@ -15,6 +15,7 @@ import 'package:package_info/package_info.dart';
 import 'package:share/share.dart';
 
 import 'icons.dart';
+import 'secret.dart';
 
 List<Page> pages;
 final List<PageViewState> openPageViews = <PageViewState>[];
@@ -36,13 +37,17 @@ const double searchResultFontSize = 20;
 const double whatsAppImageSize = 28;
 const String newPagesKeyword = '#חדשים';
 
+// https://stackoverflow.com/a/67241469/46635
+String stripHtmlTags(String text) {
+  return text.replaceAll(RegExp(r'<[^>]*>|&[^;]+;', multiLine: true), '');
+}
+
 class Page {
   Page();
   Page.fromMap(this.page) :
-    name = page['name'],
-    url = page['url'],
+    url = 'https://yeruham-phone-book.vercel.app/' + page['title'].replaceAll(' ', '_'),
     title = page['title'],
-    text = page['text'],
+    text = stripHtmlTags(page['html']),
     html = page['html'],
     isDeleted = page['isDeleted'],
     dummyPage = page['dummyPage'];
@@ -50,7 +55,6 @@ class Page {
   dynamic toJson() => page;
 
   Map<String, dynamic> page;
-  String name;
   String url;
   String title;
   String text;
@@ -159,9 +163,9 @@ Future<Page> getAboutPage() async {
         ספר הטלפונים כולל
         <b>${formatNumberWithCommas(pages.length)}</b> דפים, ${formatNumberWithCommas(phones)} מספרי טלפון ו-${formatNumberWithCommas(mails)} כתובות דוא"ל.
         <br><br>
-        הנתונים באפליקציית ספר הטלפונים לקוחים מ<a href="https://sites.google.com/site/yeruchamphonebook/home?overridemobile=true">אתר ספר הטלפונים הישובי</a>.
+        הנתונים באפליקציית ספר הטלפונים לקוחים מ<a href="https://yeruham-phone-book.vercel.app">אתר ספר הטלפונים הישובי</a>.
         <br><br>
-        האתר פתוח לכלל תושבי ירוחם. התושבים יכולים (ואף מוזמנים!) להכנס לאתר ולתקן נתונים שגויים, או להוסיף פרטים חדשים. הסבר ניתן למצוא <a href="https://sites.google.com/site/yeruchamphonebook/usage">כאן</a>.
+        האתר פתוח לכלל תושבי ירוחם. התושבים יכולים (ואף מוזמנים!) להכנס לאתר ולתקן נתונים שגויים, או להוסיף פרטים חדשים. הסבר ניתן למצוא <a href="https://yeruham-phone-book.vercel.app/הסבר_על_השימוש_באתר">כאן</a>.
         </div></td></tr></tbody>''';
 }
 
@@ -625,7 +629,7 @@ class _MainState extends State<Main> {
 
   Future<void> fetchData() async {
     try {
-      final http.Response response = await http.get(getDataUrl());
+      final http.Response response = await getData();
 
       if (response.statusCode == 200) {
         _prefs.setString('data', response.body);
@@ -744,7 +748,7 @@ class _MainState extends State<Main> {
     final Page page = getNumberPage(_phoneNumber);
     if (page != null) {
       _prefs.setString('validationNumber', normalizedNumber(_phoneNumber));
-      _prefs.setString('validationName', page.name);
+      _prefs.setString('validationName', page.title);
 
       setState(() {
         _isUserVerified = true;
@@ -841,7 +845,7 @@ class _MainState extends State<Main> {
         return titleCompare;
       }
 
-      final int textCompare = compareSearchIndexes(a.text, b.text);
+      final int textCompare = compareSearchIndexes(a.html, b.html);
       if (textCompare != 0) {
         return textCompare;
       }
@@ -887,9 +891,15 @@ class _MainState extends State<Main> {
     }
   }
 
-  Uri getDataUrl({int lastUpdateDate = 0}) {
-    return Uri.parse('https://script.google.com/macros/s/AKfycbwk3WW_pyJyJugmrj5ZN61382UabkclrJNxXzEsTDKrkD_vtEc/exec?UpdatedAfter=' +
+  Future<http.Response> getData({int lastUpdateDate = 0}) {
+    const Map<String, String> headers = <String, String>{
+      'cookie': DataAuthCookie,
+    };
+
+    final Uri url = Uri.parse('https://yeruham-phone-book.vercel.app/api/allPages?UpdatedAfter=' +
         DateTime.fromMillisecondsSinceEpoch(lastUpdateDate, isUtc: true).toIso8601String());
+
+    return http.get(url, headers: headers);
   }
 
   void setLastUpdateDate(dynamic jsonData) => _prefs.setInt('lastUpdateDate', jsonData['maxDate']);
@@ -909,8 +919,7 @@ class _MainState extends State<Main> {
     try {
       final int currentPatchLevel = _prefs.getInt('patchLevel') ?? 0;
       final int lastUpdateDate = currentPatchLevel < 1 ? flutterAppReleaseDate : getLastUpdateDate();
-      final Uri url = getDataUrl(lastUpdateDate: lastUpdateDate);
-      final http.Response response = await http.get(url);
+      final http.Response response = await getData(lastUpdateDate: lastUpdateDate);
 
       if (response.statusCode == 200) {
         final dynamic jsonData = json.decode(response.body);
@@ -1101,7 +1110,7 @@ class _MainState extends State<Main> {
   Widget buildMainWidget() {
     if (_prefs == null || pages == null) {
       return const Center(child: Text('טוען...'));
-    } else if (_isUserVerified && 1 == 2) {
+    } else if (_isUserVerified) {
       return buildSearchView();
     } else {
       return buildValidationView();
@@ -1115,7 +1124,7 @@ class _MainState extends State<Main> {
         return;
 
       case 'openInBrowser':
-        openUrl('https://sites.google.com/site/yeruchamphonebook/');
+        openUrl('https://yeruham-phone-book.vercel.app');
         return;
 
       case 'checkForUpdates':
