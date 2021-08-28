@@ -21,7 +21,7 @@ List<Page> pages;
 final List<PageViewState> openPageViews = <PageViewState>[];
 const int previewMaxLines = 5;
 const int patchLevel = 1;
-final int flutterAppReleaseDate = DateTime(2019, 12, 1).millisecondsSinceEpoch;
+final int startOfTime = DateTime(1900, 12, 1).millisecondsSinceEpoch;
 
 bool contactPermissionWasGranted = false;
 Set<String> contactPhones;
@@ -934,7 +934,7 @@ class _MainState extends State<Main> {
     }
     try {
       final int currentPatchLevel = _prefs.getInt('patchLevel') ?? 0;
-      final int lastUpdateDate = currentPatchLevel < 1 ? flutterAppReleaseDate : getLastUpdateDate();
+      final int lastUpdateDate = currentPatchLevel < 1 ? startOfTime : getLastUpdateDate();
       final http.Response response = await getData(lastUpdateDate: lastUpdateDate);
 
       if (response.statusCode == 200) {
