@@ -5,6 +5,7 @@ A Flutter mobile application to provide easy and fast access to [Yeruham's phone
 ## Tasks still need to be done
 - TODO: Add tags support
 - TODO: Consider showing more info in search results (like Add User icon)
+- TODO: Verify "Open in Browser" menu item works
 - TODO: Scroll pages to the right on open (המועצה)
 - TODO: Send BI events (https://moz.com/blog/absolute-beginners-guide-to-google-analytics) - maybe use the apps engine URL we are already sending?
 - TODO: Make PageView work on iOS (https://github.com/flutter/flutter/issues/19030#issuecomment-437534853)
