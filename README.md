@@ -3,7 +3,7 @@
 A Flutter mobile application to provide easy and fast access to [Yeruham's phone book](https://yeruham-phone-book.vercel.app). Access to the app is only allowed to people that appear in the book.
 
 ## Tasks still need to be done
-- TODO: Make sure there are no pages with the same title (should be fixed once we move to new site that is keyed by title)
+- TODO: Add tags support
 - TODO: Scroll pages to the right on open (המועצה)
 - TODO: Send BI events (https://moz.com/blog/absolute-beginners-guide-to-google-analytics) - maybe use the apps engine URL we are already sending?
 - TODO: Make PageView work on iOS (https://github.com/flutter/flutter/issues/19030#issuecomment-437534853)
