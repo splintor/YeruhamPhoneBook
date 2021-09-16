@@ -3,7 +3,6 @@
 A Flutter mobile application to provide easy and fast access to [Yeruham's phone book](https://yeruham-phone-book.vercel.app). Access to the app is only allowed to people that appear in the book.
 
 ## Tasks still need to be done
-- TODO: Add tags support
 - TODO: Consider showing more info in search results (like Add User icon)
 - TODO: Verify "Open in Browser" menu item works
 - TODO: Scroll pages to the right on open (המועצה)

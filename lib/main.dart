@@ -20,6 +20,7 @@ import 'icons.dart';
 import 'secret.dart';
 
 List<Page> pages;
+List<String> tags;
 final List<PageViewState> openPageViews = <PageViewState>[];
 const int previewMaxLines = 5;
 const int patchLevel = 1;
@@ -35,6 +36,7 @@ const Locale hebrewLocale = Locale('he', 'IL');
 const int searchResultsLimit = 40;
 const Duration searchOverflowDuration = Duration(seconds: 2);
 const TextStyle emptyListMessageStyle = TextStyle(fontSize: 20);
+const TextStyle tagTitleStyle = TextStyle(fontSize: 22);
 const double searchResultFontSize = 20;
 const double whatsAppImageSize = 28;
 const String newPagesKeyword = '#חדשים';
@@ -50,6 +52,7 @@ class Page {
     url = 'https://yeruham-phone-book.vercel.app/' + page['title'].replaceAll(' ', '_'),
     title = page['title'],
     text = stripHtmlTags(page['html']),
+    tags = (page['tags'] as List<dynamic>)?.map((dynamic tag) => tag as String)?.toList(),
     html = page['html'],
     isDeleted = page['isDeleted'],
     dummyPage = page['dummyPage'];
@@ -60,6 +63,7 @@ class Page {
   String url;
   String title;
   String text;
+  List<String> tags;
   String html;
   bool isDeleted;
   bool dummyPage;
@@ -104,10 +108,12 @@ class YeruhamPhonebookApp extends StatelessWidget {
 }
 
 class Main extends StatefulWidget {
-  const Main({Key key}) : super(key: key);
+  const Main({Key key, this.openedTag }) : super(key: key);
+
+  final String openedTag;
 
   @override
-  _MainState createState() => _MainState();
+  _MainState createState() => _MainState(openedTag);
 }
 
 Future<void> openUrl(String url) async {
@@ -131,6 +137,13 @@ void openPage(Page page, BuildContext context) {
   Navigator.push(
     context,
     MaterialPageRoute<void>(builder: (BuildContext context) => PageView(page)),
+  );
+}
+
+void openTag(String tag, BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute<void>(builder: (BuildContext context) => Main(openedTag: tag)),
   );
 }
 
@@ -306,6 +319,7 @@ class PageItem extends StatelessWidget {
                 color: Colors.deepPurple,
               ),
             ),
+            tagsList(page.tags, filled: false, openTag: openTag, context: context),
             const Padding(padding: EdgeInsets.only(bottom: 2.0)),
             Text.rich(
               buildLines(context), maxLines: previewMaxLines, overflow: TextOverflow.ellipsis,),
@@ -622,21 +636,38 @@ class PageViewState extends State<PageView> {
                 ]),
           ],
         ),
-        body: WebView(
-          javascriptMode: JavascriptMode.unrestricted,
-          initialUrl: getDataUrlForHtml(),
-          onWebViewCreated: onWebViewCreated,
-          onPageFinished: onPageFinished,
-          navigationDelegate: (NavigationRequest navigation) => onWebViewNavigation(navigation, context),
-        ),
+        body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              tagsList(page.tags, filled: false, openTag: openTag, context: context),
+              Expanded(
+                child: WebView(
+                  javascriptMode: JavascriptMode.unrestricted,
+                  initialUrl: getDataUrlForHtml(),
+                  onWebViewCreated: onWebViewCreated,
+                  onPageFinished: onPageFinished,
+                  navigationDelegate: (NavigationRequest navigation) => onWebViewNavigation(navigation, context),
+                )
+              )
+            ]),
         floatingActionButton: getShareButton(),
       );
 }
 
 class _MainState extends State<Main> {
+  _MainState(this._openedTag) {
+    if (_openedTag != null) {
+      _searchResults = pages
+          .where((Page page) => isPageSearchable(page) && page.tags != null && page.tags.contains(_openedTag))
+          .toList(growable: false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   SharedPreferences _prefs;
   List<Page> _searchResults;
+  List<String> _tagsSearchResults;
   List<Page> _updatedPages;
   Timer _searchOverflowTimer;
   bool _isUserVerified = false;
@@ -644,6 +675,7 @@ class _MainState extends State<Main> {
   String _phoneNumber = '';
   final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
+  String _openedTag;
 
   Future<void> fetchData() async {
     try {
@@ -654,6 +686,7 @@ class _MainState extends State<Main> {
         final dynamic jsonData = json.decode(response.body);
         setState(() {
           pages = parseData(jsonData, growable: false);
+          getTagsFromPages();
           setLastUpdateDate(jsonData);
         });
       } else {
@@ -669,6 +702,16 @@ class _MainState extends State<Main> {
         Map<String, dynamic>>();
     return dynamicPages.map((Map<String, dynamic> page) => Page.fromMap(page))
         .toList(growable: growable);
+  }
+
+  void getTagsFromPages() {
+    final Set<String> tagsSet = <String>{};
+    for (Page p in pages) {
+      if (p.tags != null) {
+        tagsSet.addAll(p.tags);
+      }
+    }
+    tags = tagsSet.toList();
   }
 
   String normalizedNumber(String number) {
@@ -699,6 +742,17 @@ class _MainState extends State<Main> {
   @override
   void initState() {
     super.initState();
+    if (_openedTag != null) {
+      SharedPreferences.getInstance().then((SharedPreferences prefs) {
+        setState(() {
+          _prefs = prefs;
+          _phoneNumber = _prefs.getString('validationNumber');
+          _isUserVerified = _phoneNumber?.isNotEmpty;
+        });
+      });
+
+      return;
+    }
 
     _phoneNumberController.addListener(() =>
         setState(() => _phoneNumber = _phoneNumberController.text)
@@ -718,6 +772,7 @@ class _MainState extends State<Main> {
         } else {
           final String dataString = _prefs.getString('data');
           pages = parseData(json.decode(dataString), growable: true);
+          getTagsFromPages();
           _isUserVerified = true;
           checkForUpdates(forceUpdate: false);
         }
@@ -829,7 +884,14 @@ class _MainState extends State<Main> {
 
   void handleSearchChanged() {
     final String searchString = _searchTextController.text.trim();
-    setState(() => _searchString = searchString);
+    if (searchString == _searchString && _openedTag != null) {
+      return;
+    }
+
+    setState(() {
+      _searchString = searchString;
+      _openedTag = null;
+    });
     if (_searchString == '___resetValidationNumber') {
       _prefs.remove('validationNumber');
       _prefs.remove('validationName');
@@ -855,6 +917,9 @@ class _MainState extends State<Main> {
         .toList(growable: false);
     final List<Page> result = pages.where((Page page) => isPageSearchable(page) &&
         searchWords.every((String word) => isPageMatchWord(page, word))
+    ).toList(growable: false);
+    final List<String> tagsResult = tags.where(
+            (String tag) => searchWords.every((String word) => tag.toLowerCase().contains(word))
     ).toList(growable: false);
 
     result.sort((Page a, Page b) {
@@ -887,7 +952,10 @@ class _MainState extends State<Main> {
       }
     }
 
-    setState(() => _searchResults = result);
+    setState(() {
+      _searchResults = result;
+      _tagsSearchResults = tagsResult;
+    });
   }
 
   FloatingActionButton getFeedbackButton() {
@@ -952,6 +1020,7 @@ class _MainState extends State<Main> {
               updatedPages.add(updatedPage);
             }
           }
+          getTagsFromPages();
           setLastUpdateDate(jsonData);
           if (forceUpdate || updatedPages.isNotEmpty) {
             showInSnackBar(getUpdateStatus(updatedPages.length),
@@ -1004,10 +1073,32 @@ class _MainState extends State<Main> {
     );
   }
 
+  Column buildTagTitle() {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          tagsList(
+              <String>[_openedTag], filled: true, context: context),
+          Text.rich(
+              TextSpan(
+                  style: tagTitleStyle,
+                  children: <TextSpan>[
+                    const TextSpan(text: 'בקטגוריה יש '),
+                    TextSpan(
+                      text: _searchResults.length.toString(),
+                      style: const TextStyle(color: Colors.blueAccent),
+                    ),
+                    const TextSpan(text: ' דפים '),
+                  ]
+              )
+          )]
+    );
+  }
+
   Widget buildSearchContent() {
-    if (_searchString.isEmpty || _searchResults == null) {
+    if ((_searchString.isEmpty && _openedTag == null) || _searchResults == null) {
       return Image.asset('./assets/round_irus.png');
-    } else if (_searchResults.length > searchResultsLimit && _searchString != newPagesKeyword) {
+    } else if (_searchResults.length > searchResultsLimit && _searchString != newPagesKeyword && _openedTag == null) {
       if (_searchOverflowTimer == null) {
         return Align(
           alignment: Alignment.topRight,
@@ -1029,7 +1120,7 @@ class _MainState extends State<Main> {
       } else {
         return null;
       }
-    } else if (_searchResults.isEmpty) {
+    } else if (_searchResults.isEmpty && _tagsSearchResults.isEmpty) {
       return Align(
         alignment: Alignment.topRight,
         child: Text.rich(
@@ -1047,7 +1138,10 @@ class _MainState extends State<Main> {
       );
     } else {
       return ListView(
-        children: _searchResults.map<PageItem>((Page page) => PageItem(page: page)).toList(growable: false),
+        children: <Widget>[
+          tagsList(_tagsSearchResults, filled: true, openTag: openTag, context: context),
+          ..._searchResults.map<PageItem>((Page page) => PageItem(page: page)).toList(growable: false)
+        ],
       );
     }
   }
@@ -1065,9 +1159,10 @@ class _MainState extends State<Main> {
                             padding: const EdgeInsets.symmetric(
                                 vertical: 15.0, horizontal: 10.0),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
-                                buildSearchField(),
+                                _openedTag != null ? buildTagTitle() : buildSearchField(),
                                 const Padding(padding: EdgeInsets.only(bottom: 10.0)),
                                 Expanded(
                                     child: Container(
