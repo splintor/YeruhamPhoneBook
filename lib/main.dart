@@ -21,6 +21,7 @@ import 'secret.dart';
 
 List<Page> pages;
 List<String> tags;
+const String siteUrl = 'https://yeruham-phone-book.vercel.app';
 final List<PageViewState> openPageViews = <PageViewState>[];
 const int previewMaxLines = 5;
 const int patchLevel = 1;
@@ -1228,7 +1229,13 @@ class _MainState extends State<Main> {
         return;
 
       case 'openInBrowser':
-        openUrl('https://yeruham-phone-book.vercel.app');
+        if (_openedTag != null) {
+          openUrl('$siteUrl/tag/$_openedTag');
+        } else if (_searchString.isNotEmpty) {
+          openUrl('$siteUrl/search/$_searchString');
+        } else {
+          openUrl(siteUrl);
+        }
         return;
 
       case 'checkForUpdates':
