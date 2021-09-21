@@ -639,7 +639,10 @@ class PageViewState extends State<PageView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              tagsList(page.tags, filled: false, openTag: openTag, context: context),
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: tagsList(page.tags, filled: false, openTag: openTag, context: context),
+              ),
               Expanded(
                 child: WebView(
                   javascriptMode: JavascriptMode.disabled,
