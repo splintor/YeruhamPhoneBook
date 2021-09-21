@@ -311,8 +311,7 @@ class PageItem extends StatelessWidget {
           children: <Widget>[
             Text(
               page.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              maxLines: 20,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
