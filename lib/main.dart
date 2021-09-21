@@ -1075,25 +1075,14 @@ class _MainState extends State<Main> {
     );
   }
 
-  Column buildTagTitle() {
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Row buildTagTitle() {
+    return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           tagsList(
               <String>[_openedTag], filled: true, context: context),
-          Text.rich(
-              TextSpan(
-                  style: tagTitleStyle,
-                  children: <TextSpan>[
-                    const TextSpan(text: 'בקטגוריה יש '),
-                    TextSpan(
-                      text: _searchResults.length.toString(),
-                      style: const TextStyle(color: Colors.blueAccent),
-                    ),
-                    const TextSpan(text: ' דפים '),
-                  ]
-              )
-          )]
+          Text(' (${_searchResults.length} דפים בקטגוריה)', style: const TextStyle(fontSize: 18)),
+        ]
     );
   }
 
