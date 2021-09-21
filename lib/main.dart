@@ -319,10 +319,10 @@ class PageItem extends StatelessWidget {
               ),
             ),
             tagsList(page.tags, filled: false, openTag: openTag, context: context),
-            const Padding(padding: EdgeInsets.only(bottom: 2.0)),
-            Text.rich(
-              buildLines(context), maxLines: previewMaxLines, overflow: TextOverflow.ellipsis,),
-            const Padding(padding: EdgeInsets.only(bottom: 20.0)),
+            Padding(
+              padding: const EdgeInsets.only(top: 2, bottom: 20),
+              child: Text.rich(buildLines(context), maxLines: previewMaxLines, overflow: TextOverflow.ellipsis),
+            )
           ],
         ),
         onTap: () => openPage(page, context),
