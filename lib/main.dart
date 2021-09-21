@@ -642,7 +642,7 @@ class PageViewState extends State<PageView> {
               tagsList(page.tags, filled: false, openTag: openTag, context: context),
               Expanded(
                 child: WebView(
-                  javascriptMode: JavascriptMode.unrestricted,
+                  javascriptMode: JavascriptMode.disabled,
                   initialUrl: getDataUrlForHtml(),
                   onWebViewCreated: onWebViewCreated,
                   onPageFinished: onPageFinished,
