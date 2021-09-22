@@ -323,6 +323,7 @@ class PageItem extends StatelessWidget {
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
                 color: Colors.deepPurple,
+                decoration: TextDecoration.underline,
               ),
             ),
             tagsList(page.tags, filled: false, openTag: openTag, context: context),
