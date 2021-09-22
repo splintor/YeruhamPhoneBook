@@ -125,19 +125,19 @@ Future<void> openUrl(String url) async {
   }
 }
 
-Future<void> openUrlOrPage(String url, BuildContext context) async {
+Future<void> openUrlOrPage(String url, String phoneNumber, BuildContext context) async {
   final Page page = context == null ? null : pages.firstWhere((Page p) => p.url == url);
   if (page == null) {
     openUrl(url);
   } else {
-    openPage(page, context);
+    openPage(page, phoneNumber, context);
   }
 }
 
-void openPage(Page page, BuildContext context) {
+void openPage(Page page, String phoneNumber, BuildContext context) {
   Navigator.push(
     context,
-    MaterialPageRoute<void>(builder: (BuildContext context) => PageView(page)),
+    MaterialPageRoute<void>(builder: (BuildContext context) => PageView(page, phoneNumber)),
   );
 }
 
@@ -221,7 +221,7 @@ final RegExp phonePatternRE = RegExp(phonePattern, caseSensitive: false);
 final RegExp linkRegExp = RegExp('($anchorPattern)|($urlPattern)|($emailPattern)|$phonePattern', caseSensitive: false);
 final Image whatsAppImage = Image.memory(base64Decode(whatsappImageData), height: whatsAppImageSize, width: whatsAppImageSize);
 
-WidgetSpan buildLinkComponent(String text, String linkToOpen, BuildContext context) => WidgetSpan(
+WidgetSpan buildLinkComponent(String text, String linkToOpen, String phoneNumber, BuildContext context) => WidgetSpan(
     child: InkWell(
       child: Text(
         text,
@@ -231,11 +231,11 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen, BuildContext conte
           fontSize: searchResultFontSize,
         ),
       ),
-      onTap: () => openUrlOrPage(linkToOpen, context),
+      onTap: () => openUrlOrPage(linkToOpen, phoneNumber, context),
     )
 );
 
-List<InlineSpan> linkify(String text, BuildContext context) {
+List<InlineSpan> linkify(String text, String phoneNumber, BuildContext context) {
   final List<InlineSpan> list = <InlineSpan>[];
   final List<String> lines = text.split('\n');
   if (lines.length > previewMaxLines) {
@@ -259,12 +259,12 @@ List<InlineSpan> linkify(String text, BuildContext context) {
   final RegExpMatch anchorMatch = anchorPatternRE.firstMatch(linkText);
   if (anchorMatch != null) {
     if (anchorMatch.group(2).trim().isNotEmpty) {
-      list.add(buildLinkComponent(anchorMatch.group(2), anchorMatch.group(1), context));
+      list.add(buildLinkComponent(anchorMatch.group(2), anchorMatch.group(1), phoneNumber, context));
     }
   } else if (linkText.contains(urlPatternRE)) {
-    list.add(buildLinkComponent(linkText, linkText, null));
+    list.add(buildLinkComponent(linkText, linkText, phoneNumber, null));
   } else if (linkText.contains(emailPatternRE)) {
-    list.add(buildLinkComponent(linkText, 'mailto:$linkText', null));
+    list.add(buildLinkComponent(linkText, 'mailto:$linkText', phoneNumber, null));
   } else if (linkText.contains(phonePatternRE)) {
     if (linkText.startsWith('05')) {
       list.add(WidgetSpan(child: InkWell(
@@ -272,24 +272,25 @@ List<InlineSpan> linkify(String text, BuildContext context) {
         onTap: () => openUrl(whatsappUrl(linkText)),
       )));
     }
-    list.add(buildLinkComponent(linkText, phoneNumberUrl(linkText), null));
+    list.add(buildLinkComponent(linkText, phoneNumberUrl(linkText), phoneNumber, null));
   } else {
     throw 'Unexpected match: $linkText';
   }
 
-  list.addAll(linkify(text.substring(match.start + linkText.length), context));
+  list.addAll(linkify(text.substring(match.start + linkText.length), phoneNumber, context));
 
   return list;
 }
 
 class PageItem extends StatelessWidget {
-  const PageItem({ Key key, this.page }) : super(key: key);
+  const PageItem({ Key key, this.page, this.phoneNumber }) : super(key: key);
 
   final Page page;
+  final String phoneNumber;
 
   TextSpan buildLines(BuildContext context) {
     final String text = getPageInnerText(page, leaveAnchors: true);
-    final List<InlineSpan> lines = linkify(text, context);
+    final List<InlineSpan> lines = linkify(text, phoneNumber, context);
 
     if (lines.isNotEmpty && lines[lines.length - 1] is TextSpan) {
       final TextSpan textSpan = lines[lines.length - 1];
@@ -326,7 +327,7 @@ class PageItem extends StatelessWidget {
             )
           ],
         ),
-        onTap: () => openPage(page, context),
+        onTap: () => openPage(page, phoneNumber, context),
       );
 }
 
@@ -506,16 +507,17 @@ class PageHTMLProcessor {
 }
 
 class PageView extends StatefulWidget {
-  const PageView(this.page) : super();
+  const PageView(this.page, this.phoneNumber) : super();
 
   final Page page;
+  final String phoneNumber;
 
   @override
-  PageViewState createState() => PageViewState(page);
+  PageViewState createState() => PageViewState(page, phoneNumber);
 }
 
 class PageViewState extends State<PageView> {
-  PageViewState(this.page): html = PageHTMLProcessor(page).html {
+  PageViewState(this.page, this.phoneNumber): html = PageHTMLProcessor(page).html {
     openPageViews.add(this);
   }
 
@@ -526,6 +528,7 @@ class PageViewState extends State<PageView> {
   }
 
   final Page page;
+  final String phoneNumber;
   String html;
   WebViewController webViewController;
 
@@ -544,7 +547,7 @@ class PageViewState extends State<PageView> {
         return;
 
       case 'openPageInBrowser':
-        openUrl(page.url);
+        openUrl('${page.url}#auth:$phoneNumber');
         return;
     }
   }
@@ -560,7 +563,7 @@ class PageViewState extends State<PageView> {
     final String pageUrlBase = RegExp(r'https:\/\/[^\/]+\/').firstMatch(
         page.url ?? '')?.group(0);
     if (pageUrlBase != null && navigation.url.startsWith(pageUrlBase)) {
-      openUrlOrPage(navigation.url, context);
+      openUrlOrPage(navigation.url, phoneNumber, context);
     } else if (navigation.url.startsWith('action:addUser?')) {
       addContact(navigation.url);
     } else {
@@ -1132,7 +1135,7 @@ class _MainState extends State<Main> {
       return ListView(
         children: <Widget>[
           tagsList(_tagsSearchResults, filled: true, openTag: openTag, context: context),
-          ..._searchResults.map<PageItem>((Page page) => PageItem(page: page)).toList(growable: false)
+          ..._searchResults.map<PageItem>((Page page) => PageItem(page: page, phoneNumber: _phoneNumber)).toList(growable: false)
         ],
       );
     }
@@ -1225,16 +1228,17 @@ class _MainState extends State<Main> {
   Future<void> onMenuSelected(String itemValue) async {
     switch(itemValue) {
       case 'about':
-        openPage(await getAboutPage(), context);
+        openPage(await getAboutPage(), _phoneNumber, context);
         return;
 
       case 'openInBrowser':
+        final String suffix = '#auth:$_phoneNumber';
         if (_openedTag != null) {
-          openUrl('$siteUrl/tag/$_openedTag');
+          openUrl('$siteUrl/tag/$_openedTag$suffix');
         } else if (_searchString.isNotEmpty) {
-          openUrl('$siteUrl/search/$_searchString');
+          openUrl('$siteUrl/search/$_searchString$suffix');
         } else {
-          openUrl(siteUrl);
+          openUrl('$siteUrl$suffix');
         }
         return;
 
@@ -1276,7 +1280,7 @@ class _MainState extends State<Main> {
   }
 
   void showError(String title, Object error) {
-    showInSnackBar(title, isWarning: true, actionLabel: 'פרטים', actionHandler: () => openPage(getErrorPage(title, error), context));
+    showInSnackBar(title, isWarning: true, actionLabel: 'פרטים', actionHandler: () => openPage(getErrorPage(title, error), _phoneNumber, context));
   }
 
   void showInSnackBar(String value, { bool isWarning = false, String actionLabel, Function actionHandler }) {
