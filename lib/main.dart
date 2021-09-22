@@ -1098,9 +1098,14 @@ class _MainState extends State<Main> {
     );
   }
 
+  Future<void> openAboutPage() async => openPage(await getAboutPage(), _phoneNumber, context);
+
   Widget buildSearchContent() {
     if ((_searchString.isEmpty && _openedTag == null) || _searchResults == null) {
-      return Image.asset('./assets/round_irus.png');
+      return GestureDetector(
+        onTap: openAboutPage,
+        child: Image.asset('./assets/round_irus.png'),
+      );
     } else if (_searchResults.length > searchResultsLimit && _searchString != newPagesKeyword && _openedTag == null) {
       if (_searchOverflowTimer == null) {
         return Align(
@@ -1236,7 +1241,7 @@ class _MainState extends State<Main> {
   Future<void> onMenuSelected(String itemValue) async {
     switch(itemValue) {
       case 'about':
-        openPage(await getAboutPage(), _phoneNumber, context);
+        openAboutPage();
         return;
 
       case 'openInBrowser':
