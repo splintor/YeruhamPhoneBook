@@ -50,14 +50,17 @@ String stripHtmlTags(String text) {
 
 class Page {
   Page();
-  Page.fromMap(this.page) :
-    url = 'https://$siteDomain/${page['title'].replaceAll(' ', '_')}',
-    title = page['title'],
-    text = stripHtmlTags(page['html']),
-    tags = (page['tags'] as List<dynamic>)?.map((dynamic tag) => tag as String)?.toList(),
-    html = page['html'],
-    isDeleted = page['isDeleted'],
-    dummyPage = page['dummyPage'];
+
+  Page.fromMap(this.page)
+      : url = 'https://$siteDomain/${page['title'].replaceAll(' ', '_')}',
+        title = page['title'],
+        text = stripHtmlTags(page['html']),
+        tags = (page['tags'] as List<dynamic>)
+            ?.map((dynamic tag) => tag as String)
+            ?.toList(),
+        html = page['html'],
+        isDeleted = page['isDeleted'],
+        dummyPage = page['dummyPage'];
 
   dynamic toJson() => page;
 
@@ -71,7 +74,8 @@ class Page {
   bool dummyPage;
 }
 
-bool isPageSearchable(Page page) => page.isDeleted != true && page.text.isNotEmpty;
+bool isPageSearchable(Page page) =>
+    page.isDeleted != true && page.text.isNotEmpty;
 
 class YeruhamPhonebookApp extends StatelessWidget {
   static const int _primaryColor = 0xFF5F1B68;
@@ -81,7 +85,8 @@ class YeruhamPhonebookApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: appTitle,
-      theme: ThemeData(primarySwatch: const MaterialColor(
+      theme: ThemeData(
+          primarySwatch: const MaterialColor(
         _primaryColor,
         <int, Color>{
           50: Color(0xFFF3E5F5),
@@ -110,7 +115,7 @@ class YeruhamPhonebookApp extends StatelessWidget {
 }
 
 class Main extends StatefulWidget {
-  const Main({Key key, this.openedTag }) : super(key: key);
+  const Main({Key key, this.openedTag}) : super(key: key);
 
   final String openedTag;
 
@@ -126,8 +131,10 @@ Future<void> openUrl(String url) async {
   }
 }
 
-Future<void> openUrlOrPage(String url, String phoneNumber, BuildContext context) async {
-  final Page page = context == null ? null : pages.firstWhere((Page p) => p.url == url);
+Future<void> openUrlOrPage(
+    String url, String phoneNumber, BuildContext context) async {
+  final Page page =
+      context == null ? null : pages.firstWhere((Page p) => p.url == url);
   if (page == null) {
     openUrl(url);
   } else {
@@ -138,36 +145,37 @@ Future<void> openUrlOrPage(String url, String phoneNumber, BuildContext context)
 void openPage(Page page, String phoneNumber, BuildContext context) {
   Navigator.push(
     context,
-    MaterialPageRoute<void>(builder: (BuildContext context) => PageView(page, phoneNumber)),
+    MaterialPageRoute<void>(
+        builder: (BuildContext context) => PageView(page, phoneNumber)),
   );
 }
 
 void openTag(String tag, BuildContext context) {
   Navigator.push(
     context,
-    MaterialPageRoute<void>(builder: (BuildContext context) => Main(openedTag: tag)),
+    MaterialPageRoute<void>(
+        builder: (BuildContext context) => Main(openedTag: tag)),
   );
 }
 
-String formatNumberWithCommas(int number) => NumberFormat.decimalPattern().format(number);
+String formatNumberWithCommas(int number) =>
+    NumberFormat.decimalPattern().format(number);
 
 String replaceEmail(String s) => s.replaceAll('email:', 'דוא"ל:');
 
-String whatsappUrl(String phone) => 'whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}';
+String whatsappUrl(String phone) =>
+    'whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}';
 
-String whatsAppLink(String phone) => '<a href="${whatsappUrl(phone)}"><img width="$whatsAppImageSize" height="$whatsAppImageSize" style="top: 8px; position: relative;" src="data:image/jpeg;base64,$whatsappImageData"></a>';
+String whatsAppLink(String phone) =>
+    '<a href="${whatsappUrl(phone)}"><img width="$whatsAppImageSize" height="$whatsAppImageSize" style="top: 8px; position: relative;" src="data:image/jpeg;base64,$whatsappImageData"></a>';
 
 Future<Page> getAboutPage() async {
   final Future<PackageInfo> packageInfoPromise = PackageInfo.fromPlatform();
   int mails = 0;
   int phones = 0;
   for (Page page in pages.where(isPageSearchable)) {
-    mails += RegExp(r'\S+@\S+')
-        .allMatches(page.text)
-        .length;
-    phones += RegExp(r'[^>=\/\d-][\d-]{8,}')
-        .allMatches(page.text)
-        .length;
+    mails += RegExp(r'\S+@\S+').allMatches(page.text).length;
+    phones += RegExp(r'[^>=\/\d-][\d-]{8,}').allMatches(page.text).length;
   }
 
   PackageInfo packageInfo;
@@ -188,7 +196,8 @@ Future<Page> getAboutPage() async {
   return Page()
     ..title = 'אפליקצית ספר הטלפונים של ירוחם'
     ..dummyPage = true
-    ..html = '''<table width="100%" style="font-size: 1.2em;"><tbody><tr><td><div dir='rtl'>
+    ..html =
+        '''<table width="100%" style="font-size: 1.2em;"><tbody><tr><td><div dir='rtl'>
         האפליקציה נכתבה ב<a href="https://github.com/splintor/YeruhamPhoneBook">קוד פתוח</a>
          על-ידי שמוליק פלינט
         (<a href="mailto:splintor@gmail.com">splintor@gmail.com</a>&nbsp;${whatsAppLink('0523843115')})
@@ -215,7 +224,9 @@ Page getErrorPage(String title, Object error) {
     </td></tr></tbody>
     ''';
 }
-const String anchorPattern = '<a [^>]*href=["\']([^"\']+)["\'][^>]*>([^<]*)</a>';
+
+const String anchorPattern =
+    '<a [^>]*href=["\']([^"\']+)["\'][^>]*>([^<]*)</a>';
 final RegExp anchorPatternRE = RegExp(anchorPattern, caseSensitive: false);
 const String urlPattern = 'http[^\'">]+';
 final RegExp urlPatternRE = RegExp(urlPattern, caseSensitive: false);
@@ -223,11 +234,16 @@ const String emailPattern = r'\S+@\S+';
 final RegExp emailPatternRE = RegExp(emailPattern, caseSensitive: false);
 const String phonePattern = r'(0[\d-]{8,})|(\*\d{3,})|(\d{3,}\*)';
 final RegExp phonePatternRE = RegExp(phonePattern, caseSensitive: false);
-final RegExp linkRegExp = RegExp('($anchorPattern)|($urlPattern)|($emailPattern)|$phonePattern', caseSensitive: false);
-final Image whatsAppImage = Image.memory(base64Decode(whatsappImageData), height: whatsAppImageSize, width: whatsAppImageSize);
+final RegExp linkRegExp = RegExp(
+    '($anchorPattern)|($urlPattern)|($emailPattern)|$phonePattern',
+    caseSensitive: false);
+final Image whatsAppImage = Image.memory(base64Decode(whatsappImageData),
+    height: whatsAppImageSize, width: whatsAppImageSize);
 
-WidgetSpan buildLinkComponent(String text, String linkToOpen, String phoneNumber, BuildContext context) => WidgetSpan(
-    child: InkWell(
+WidgetSpan buildLinkComponent(String text, String linkToOpen,
+        String phoneNumber, BuildContext context) =>
+    WidgetSpan(
+        child: InkWell(
       child: Text(
         text,
         style: const TextStyle(
@@ -237,10 +253,10 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen, String phoneNumber
         ),
       ),
       onTap: () => openUrlOrPage(linkToOpen, phoneNumber, context),
-    )
-);
+    ));
 
-List<InlineSpan> linkify(String text, String phoneNumber, BuildContext context) {
+List<InlineSpan> linkify(
+    String text, String phoneNumber, BuildContext context) {
   final List<InlineSpan> list = <InlineSpan>[];
   final List<String> lines = text.split('\n');
   if (lines.length > previewMaxLines) {
@@ -264,31 +280,36 @@ List<InlineSpan> linkify(String text, String phoneNumber, BuildContext context) 
   final RegExpMatch anchorMatch = anchorPatternRE.firstMatch(linkText);
   if (anchorMatch != null) {
     if (anchorMatch.group(2).trim().isNotEmpty) {
-      list.add(buildLinkComponent(anchorMatch.group(2), anchorMatch.group(1), phoneNumber, context));
+      list.add(buildLinkComponent(
+          anchorMatch.group(2), anchorMatch.group(1), phoneNumber, context));
     }
   } else if (linkText.contains(urlPatternRE)) {
     list.add(buildLinkComponent(linkText, linkText, phoneNumber, null));
   } else if (linkText.contains(emailPatternRE)) {
-    list.add(buildLinkComponent(linkText, 'mailto:$linkText', phoneNumber, null));
+    list.add(
+        buildLinkComponent(linkText, 'mailto:$linkText', phoneNumber, null));
   } else if (linkText.contains(phonePatternRE)) {
     if (linkText.startsWith('05')) {
-      list.add(WidgetSpan(child: InkWell(
+      list.add(WidgetSpan(
+          child: InkWell(
         child: whatsAppImage,
         onTap: () => openUrl(whatsappUrl(linkText)),
       )));
     }
-    list.add(buildLinkComponent(linkText, phoneNumberUrl(linkText), phoneNumber, null));
+    list.add(buildLinkComponent(
+        linkText, phoneNumberUrl(linkText), phoneNumber, null));
   } else {
     throw 'Unexpected match: $linkText';
   }
 
-  list.addAll(linkify(text.substring(match.start + linkText.length), phoneNumber, context));
+  list.addAll(linkify(
+      text.substring(match.start + linkText.length), phoneNumber, context));
 
   return list;
 }
 
 class PageItem extends StatelessWidget {
-  const PageItem({ Key key, this.page, this.phoneNumber }) : super(key: key);
+  const PageItem({Key key, this.page, this.phoneNumber}) : super(key: key);
 
   final Page page;
   final String phoneNumber;
@@ -311,8 +332,7 @@ class PageItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      InkWell(
+  Widget build(BuildContext context) => InkWell(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -326,10 +346,12 @@ class PageItem extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ),
             ),
-            tagsList(page.tags, filled: false, openTag: openTag, context: context),
+            tagsList(page.tags,
+                filled: false, openTag: openTag, context: context),
             Padding(
               padding: const EdgeInsets.only(top: 2, bottom: 20),
-              child: Text.rich(buildLines(context), maxLines: previewMaxLines, overflow: TextOverflow.ellipsis),
+              child: Text.rich(buildLines(context),
+                  maxLines: previewMaxLines, overflow: TextOverflow.ellipsis),
             )
           ],
         ),
@@ -341,14 +363,19 @@ class PageDataValue {
   PageDataValue(RegExpMatch match)
       : label = match.group(1).trim(),
         htmlValue = match.group(2),
-        innerText = RegExp(r'>([^<]+)<').firstMatch(match.group(2))?.group(1)?.trim() ?? match.group(2).trim();
+        innerText =
+            RegExp(r'>([^<]+)<').firstMatch(match.group(2))?.group(1)?.trim() ??
+                match.group(2).trim();
 
   String label;
   String htmlValue;
   String innerText;
 
   bool isPhoneValue() => innerText.contains(RegExp(r'^\*?[\d+-]{8,}\*?$'));
-  String phoneValue() => isPhoneValue() ? innerText.replaceAll(RegExp(r'[\s-+=]'), '') : null;
+
+  String phoneValue() =>
+      isPhoneValue() ? innerText.replaceAll(RegExp(r'[\s-+=]'), '') : null;
+
   String toUrlPart() => isPhoneValue() ? phoneValue() : innerText;
 }
 
@@ -358,13 +385,13 @@ final RegExp anyTagRE = RegExp(r'<[^>]*>');
 final RegExp anyTagButAnchorRE = RegExp(r'<[^aA/][^>]*>|</[^aA][^>]*>');
 final RegExp multipleNewLinesRE = RegExp(r'(\s*\n)+');
 
-String getPageInnerText(Page page, {bool leaveAnchors}) => replaceEmail(page.html
-    .replaceAll(newLineTagsRE, '\n')
-    .replaceAll(bulletsTagsRE, '\n* ')
-    .replaceAll(leaveAnchors ? anyTagButAnchorRE : anyTagRE, ' ')
-    .replaceAll(multipleNewLinesRE, '\n')
-    .trim());
-
+String getPageInnerText(Page page, {bool leaveAnchors}) =>
+    replaceEmail(page.html
+        .replaceAll(newLineTagsRE, '\n')
+        .replaceAll(bulletsTagsRE, '\n* ')
+        .replaceAll(leaveAnchors ? anyTagButAnchorRE : anyTagRE, ' ')
+        .replaceAll(multipleNewLinesRE, '\n')
+        .trim());
 
 final RegExp styleURLRE = RegExp(r" ?style=';*'");
 final RegExp specialCharsRE = RegExp(r'[\u2000-\u2BFF]');
@@ -381,51 +408,60 @@ final RegExp mobilePhoneTitleRE = RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>');
 final RegExp suffixStar = RegExp(r'(\d*)\*');
 
 String phoneNumberUrl(String phoneNumber) =>
-    'tel:' + phoneNumber
+    'tel:' +
+    phoneNumber
         .replaceAll(phoneNumberNonDigitsRE, '')
         .replaceFirstMapped(suffixStar, (Match match) => '*' + match.group(1));
 
-String phoneNumberMatcher(Match match) => '<a href="${phoneNumberUrl(match.group(1))}">${match.group(1)}</a>${match.group(2)}';
+String phoneNumberMatcher(Match match) =>
+    '<a href="${phoneNumberUrl(match.group(1))}">${match.group(1)}</a>${match.group(2)}';
 
 class PageHTMLProcessor {
   PageHTMLProcessor(this.page)
-      : html = page.dummyPage == true ? page.html : page.html
-      .replaceFirst('<table', '<table width="100%" style="font-size: 1.2em;"')
-      .replaceAll('font-size:10pt', '')
-      .replaceAll('background-color:transparent', '')
-      .replaceAll(styleURLRE, '')
-      .replaceAll(specialCharsRE, '')
-      .replaceAllMapped(spanElementRE, (Match match) => match.group(1))
-      .replaceAll(twitterImgRE, twitterDataImg)
-      .replaceAll(facebookImgRE, facebookDataImg)
-      .replaceAll(instagramImgRE, instagramDataImg)
-      .replaceAll(facebookAltRE, '')
-      .replaceAllMapped(phoneNumberRE, phoneNumberMatcher)
-      .replaceAllMapped(prefixStarPhoneNumberRE, phoneNumberMatcher)
-      .replaceAllMapped(suffixStarPhoneNumberRE, phoneNumberMatcher) {
+      : html = page.dummyPage == true
+            ? page.html
+            : page.html
+                .replaceFirst(
+                    '<table', '<table width="100%" style="font-size: 1.2em;"')
+                .replaceAll('font-size:10pt', '')
+                .replaceAll('background-color:transparent', '')
+                .replaceAll(styleURLRE, '')
+                .replaceAll(specialCharsRE, '')
+                .replaceAllMapped(
+                    spanElementRE, (Match match) => match.group(1))
+                .replaceAll(twitterImgRE, twitterDataImg)
+                .replaceAll(facebookImgRE, facebookDataImg)
+                .replaceAll(instagramImgRE, instagramDataImg)
+                .replaceAll(facebookAltRE, '')
+                .replaceAllMapped(phoneNumberRE, phoneNumberMatcher)
+                .replaceAllMapped(prefixStarPhoneNumberRE, phoneNumberMatcher)
+                .replaceAllMapped(suffixStarPhoneNumberRE, phoneNumberMatcher) {
     dataValues = divElementRE
         .allMatches(html.replaceAll('<br/>', '</div><div>'))
         .map((RegExpMatch match) => PageDataValue(match))
         .toList(growable: false);
 
-    phoneValues = dataValues.where((PageDataValue v) =>
-        v.isPhoneValue()).toList(growable: false);
-    mailValues = dataValues.where((PageDataValue v) =>
-        v.label.contains(mailTitleRE)).toList(growable: false);
+    phoneValues = dataValues
+        .where((PageDataValue v) => v.isPhoneValue())
+        .toList(growable: false);
+    mailValues = dataValues
+        .where((PageDataValue v) => v.label.contains(mailTitleRE))
+        .toList(growable: false);
 
-    final PageDataValue homeValue = getValueForLabel(
-        'טלפון', mustBePhone: true);
+    final PageDataValue homeValue =
+        getValueForLabel('טלפון', mustBePhone: true);
     for (PageDataValue v in phoneValues) {
       if (!inContact(v.phoneValue())) {
         appendAddContactLink(v,
-            givenName: v.label.contains(phoneTitleRE)
-                ? null
-                : v.label, homePhone: homeValue);
+            givenName: v.label.contains(phoneTitleRE) ? null : v.label,
+            homePhone: homeValue);
       }
     }
 
-    html = html.replaceAllMapped(mobilePhoneTitleRE,
-            (Match match) => '${match.group(0)}&nbsp;${whatsAppLink(match.group(1))}');
+    html = html.replaceAllMapped(
+        mobilePhoneTitleRE,
+        (Match match) =>
+            '${match.group(0)}&nbsp;${whatsAppLink(match.group(1))}');
 
     html = replaceEmail(html);
   }
@@ -439,9 +475,9 @@ class PageHTMLProcessor {
   bool hasLabel(String label) =>
       dataValues.any((PageDataValue v) => v.label == label);
 
-  PageDataValue getValueForLabel(String label, { bool mustBePhone = false }) {
-    final PageDataValue dataValue = dataValues.firstWhere((PageDataValue v) =>
-    v.label == label, orElse: () => null);
+  PageDataValue getValueForLabel(String label, {bool mustBePhone = false}) {
+    final PageDataValue dataValue = dataValues
+        .firstWhere((PageDataValue v) => v.label == label, orElse: () => null);
     if (mustBePhone && dataValue != null && !dataValue.isPhoneValue()) {
       print('Unexpected phone value: ${dataValue.innerText}');
     }
@@ -457,14 +493,17 @@ class PageHTMLProcessor {
     givenName ??= getPageGivenName();
     familyName ??= getPageFamilyName();
     String phones = dataValue.toUrlPart();
-    if (homePhone != null && homePhone != dataValue &&
+    if (homePhone != null &&
+        homePhone != dataValue &&
         !inContact(homePhone.phoneValue())) {
       phones += ',' + homePhone.toUrlPart();
     }
 
-    String url = 'action:addUser?givenName=$givenName&familyName=$familyName&phones=$phones';
-    final List<PageDataValue> addressValues = dataValues.where((
-        PageDataValue v) => v.label == 'כתובת').toList(growable: false);
+    String url =
+        'action:addUser?givenName=$givenName&familyName=$familyName&phones=$phones';
+    final List<PageDataValue> addressValues = dataValues
+        .where((PageDataValue v) => v.label == 'כתובת')
+        .toList(growable: false);
     if (addressValues.isNotEmpty) {
       if (addressValues.length > 1) {
         throw 'More than one address in ${page.title}';
@@ -475,13 +514,14 @@ class PageHTMLProcessor {
 
     if (mailValues.isNotEmpty) {
       String emails;
-      if (mailValues.length == 1 || phoneValues.length == 1 ||
+      if (mailValues.length == 1 ||
+          phoneValues.length == 1 ||
           (phoneValues.length == 2 && homePhone != null)) {
         emails = mailValues.map((PageDataValue v) => v.toUrlPart()).join(',');
       } else {
         final int index = phoneValues.indexOf(dataValue);
         emails =
-        index < mailValues.length ? mailValues[index].toUrlPart() : null;
+            index < mailValues.length ? mailValues[index].toUrlPart() : null;
       }
 
       if (emails != null) {
@@ -489,9 +529,13 @@ class PageHTMLProcessor {
       }
     }
 
-    final String htmlValue = dataValue.htmlValue.replaceFirst(RegExp(r'<div>\s*$'), '');
+    final String htmlValue =
+        dataValue.htmlValue.replaceFirst(RegExp(r'<div>\s*$'), '');
 
-    html = html.replaceFirst(htmlValue, htmlValue + '''
+    html = html.replaceFirst(
+        htmlValue,
+        htmlValue +
+            '''
                 <a href="$url" style="position: relative; top: 9px; right: 7px; text-decoration: none; color: purple;">
                   <svg width="32px" height="32px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="none" stroke-width="1" fill="purple">
@@ -502,14 +546,11 @@ class PageHTMLProcessor {
                 ''');
   }
 
-  String getPageFamilyName() =>
-      page.title
-          .split(RegExp(r'\s'))
-          .last;
+  String getPageFamilyName() => page.title.split(RegExp(r'\s')).last;
 
-  String getPageGivenName() =>
-      page.title.substring(0, page.title.length - getPageFamilyName().length)
-          .trim();
+  String getPageGivenName() => page.title
+      .substring(0, page.title.length - getPageFamilyName().length)
+      .trim();
 }
 
 class PageView extends StatefulWidget {
@@ -523,7 +564,8 @@ class PageView extends StatefulWidget {
 }
 
 class PageViewState extends State<PageView> {
-  PageViewState(this.page, this.phoneNumber): html = PageHTMLProcessor(page).html {
+  PageViewState(this.page, this.phoneNumber)
+      : html = PageHTMLProcessor(page).html {
     openPageViews.add(this);
   }
 
@@ -558,16 +600,21 @@ class PageViewState extends State<PageView> {
     }
   }
 
-  String getDataUrlForHtml() =>
-      Uri.dataFromString(html, mimeType: 'text/html', encoding: Encoding.getByName('UTF-8')).toString();
+  String getDataUrlForHtml() => Uri.dataFromString(html,
+          mimeType: 'text/html', encoding: Encoding.getByName('UTF-8'))
+      .toString();
 
-  void onWebViewCreated(WebViewController controller) => webViewController = controller;
+  void onWebViewCreated(WebViewController controller) =>
+      webViewController = controller;
 
-  Future<void> onPageFinished(String url) => webViewController.evaluateJavascript('document.body.scrollLeft = document.body.scrollWidth');
+  Future<void> onPageFinished(String url) =>
+      webViewController.evaluateJavascript(
+          'document.body.scrollLeft = document.body.scrollWidth');
 
-  NavigationDecision onWebViewNavigation(NavigationRequest navigation, BuildContext context) {
-    final String pageUrlBase = RegExp(r'https:\/\/[^\/]+\/').firstMatch(
-        page.url ?? '')?.group(0);
+  NavigationDecision onWebViewNavigation(
+      NavigationRequest navigation, BuildContext context) {
+    final String pageUrlBase =
+        RegExp(r'https:\/\/[^\/]+\/').firstMatch(page.url ?? '')?.group(0);
     if (pageUrlBase != null && navigation.url.startsWith(pageUrlBase)) {
       openUrlOrPage(navigation.url, phoneNumber, context);
     } else if (navigation.url.startsWith('action:addUser?')) {
@@ -580,11 +627,10 @@ class PageViewState extends State<PageView> {
   }
 
   void addContact(String url) {
-    final String queryString = Uri.decodeQueryComponent(
-        url.split('?')[1]);
+    final String queryString = Uri.decodeQueryComponent(url.split('?')[1]);
     final Contact contact = Contact();
-    for (List<String> keyValue in queryString.split('&').map((
-        String v) => v.split('='))) {
+    for (List<String> keyValue
+        in queryString.split('&').map((String v) => v.split('='))) {
       final String value = keyValue[1];
       switch (keyValue[0]) {
         case 'givenName':
@@ -596,19 +642,19 @@ class PageViewState extends State<PageView> {
           break;
 
         case 'address':
-          contact.postalAddresses =
-          <PostalAddress>[PostalAddress(label: 'בית', street: value)];
+          contact.postalAddresses = <PostalAddress>[
+            PostalAddress(label: 'בית', street: value)
+          ];
           break;
 
         case 'phones':
-          contact.phones = value.split(',').map((String v) => Item(
-              label: v.startsWith('05') ? 'mobile' : 'home',
-              value: v));
+          contact.phones = value.split(',').map((String v) =>
+              Item(label: v.startsWith('05') ? 'mobile' : 'home', value: v));
           break;
 
         case 'emails':
-          contact.emails = value.split(',').map((String v) =>
-              Item(label: 'home', value: v));
+          contact.emails =
+              value.split(',').map((String v) => Item(label: 'home', value: v));
           break;
       }
     }
@@ -618,32 +664,35 @@ class PageViewState extends State<PageView> {
 
   FloatingActionButton getShareButton() {
     return FloatingActionButton.extended(
-        onPressed: () => Share.share('${page.title}\n${getPageInnerText(page, leaveAnchors: false)}', subject: page.title),
-        label: const Text('שתף'),
-        icon: const Icon(Icons.share),
+      onPressed: () => Share.share(
+          '${page.title}\n${getPageInnerText(page, leaveAnchors: false)}',
+          subject: page.title),
+      label: const Text('שתף'),
+      icon: const Icon(Icons.share),
     );
   }
 
   @override
-  Widget build(BuildContext context) =>
-      Scaffold(
+  Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: Text(page.title),
-          actions: page.url == null ? null : <Widget>[
-            PopupMenuButton<String>(
-                onSelected: onMenuSelected,
-                itemBuilder: (BuildContext context) =>
-                <PopupMenuItem<String>>[
-                  const PopupMenuItem<String>(
-                    value: 'copyPageUrl',
-                    child: Text('העתק את כתובת הדף'),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'openPageInBrowser',
-                    child: Text('פתח דף בדפדפן'),
-                  ),
-                ]),
-          ],
+          actions: page.url == null
+              ? null
+              : <Widget>[
+                  PopupMenuButton<String>(
+                      onSelected: onMenuSelected,
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuItem<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'copyPageUrl',
+                              child: Text('העתק את כתובת הדף'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'openPageInBrowser',
+                              child: Text('פתח דף בדפדפן'),
+                            ),
+                          ]),
+                ],
         ),
         body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,17 +700,18 @@ class PageViewState extends State<PageView> {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(right: 6),
-                child: tagsList(page.tags, filled: false, openTag: openTag, context: context),
+                child: tagsList(page.tags,
+                    filled: false, openTag: openTag, context: context),
               ),
               Expanded(
-                child: WebView(
-                  javascriptMode: JavascriptMode.disabled,
-                  initialUrl: getDataUrlForHtml(),
-                  onWebViewCreated: onWebViewCreated,
-                  onPageFinished: onPageFinished,
-                  navigationDelegate: (NavigationRequest navigation) => onWebViewNavigation(navigation, context),
-                )
-              )
+                  child: WebView(
+                javascriptMode: JavascriptMode.disabled,
+                initialUrl: getDataUrlForHtml(),
+                onWebViewCreated: onWebViewCreated,
+                onPageFinished: onPageFinished,
+                navigationDelegate: (NavigationRequest navigation) =>
+                    onWebViewNavigation(navigation, context),
+              ))
             ]),
         floatingActionButton: getShareButton(),
       );
@@ -671,7 +721,10 @@ class _MainState extends State<Main> {
   _MainState(this._openedTag) {
     if (_openedTag != null) {
       _searchResults = pages
-          .where((Page page) => isPageSearchable(page) && page.tags != null && page.tags.contains(_openedTag))
+          .where((Page page) =>
+              isPageSearchable(page) &&
+              page.tags != null &&
+              page.tags.contains(_openedTag))
           .toList(growable: false);
     }
   }
@@ -710,9 +763,10 @@ class _MainState extends State<Main> {
   }
 
   List<Page> parseData(dynamic jsonData, {@required bool growable}) {
-    final List<Map<String, dynamic>> dynamicPages = jsonData['pages'].cast<
-        Map<String, dynamic>>();
-    return dynamicPages.map((Map<String, dynamic> page) => Page.fromMap(page))
+    final List<Map<String, dynamic>> dynamicPages =
+        jsonData['pages'].cast<Map<String, dynamic>>();
+    return dynamicPages
+        .map((Map<String, dynamic> page) => Page.fromMap(page))
         .toList(growable: growable);
   }
 
@@ -746,8 +800,10 @@ class _MainState extends State<Main> {
       return null;
     }
 
-    return pages.firstWhere((Page page) =>
-        page.isDeleted != true && page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number),
+    return pages.firstWhere(
+        (Page page) =>
+            page.isDeleted != true &&
+            page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number),
         orElse: () => null);
   }
 
@@ -766,9 +822,8 @@ class _MainState extends State<Main> {
       return;
     }
 
-    _phoneNumberController.addListener(() =>
-        setState(() => _phoneNumber = _phoneNumberController.text)
-    );
+    _phoneNumberController.addListener(
+        () => setState(() => _phoneNumber = _phoneNumberController.text));
 
     _searchTextController.addListener(handleSearchChanged);
 
@@ -792,8 +847,8 @@ class _MainState extends State<Main> {
       });
     });
 
-    WidgetsBinding.instance.addObserver(
-        LifecycleEventHandler(() => loadPhoneContacts()));
+    WidgetsBinding.instance
+        .addObserver(LifecycleEventHandler(() => loadPhoneContacts()));
   }
 
   Future<void> loadContacts() async {
@@ -809,16 +864,14 @@ class _MainState extends State<Main> {
     }
 
     final Iterable<contacts_plugin.Contact> contacts =
-        await contacts_plugin.ContactsService.getContacts(withThumbnails: false);
+        await contacts_plugin.ContactsService.getContacts(
+            withThumbnails: false);
 
     contactPhones = Set<String>.from(contacts.expand<String>(
-            (contacts_plugin.Contact contact) =>
-            contact.phones.map(
-                    (contacts_plugin.Item item) =>
-                    item.value
-                        .replaceAll(RegExp(r'[- ()]'), '')
-                        .replaceAll('+972', '0')
-            )));
+        (contacts_plugin.Contact contact) => contact.phones.map(
+            (contacts_plugin.Item item) => item.value
+                .replaceAll(RegExp(r'[- ()]'), '')
+                .replaceAll('+972', '0'))));
 
     updateAllPageViews();
   }
@@ -865,7 +918,8 @@ class _MainState extends State<Main> {
 
     if (word.startsWith('##')) {
       final RegExp re = RegExp(word.substring(2));
-      return page.title.contains(re) || page.text.contains(re) ||
+      return page.title.contains(re) ||
+          page.text.contains(re) ||
           page.text.replaceAll('-', '').contains(re);
     }
 
@@ -927,12 +981,15 @@ class _MainState extends State<Main> {
         .map((String s) => s.trim())
         .where((String w) => w.isNotEmpty)
         .toList(growable: false);
-    final List<Page> result = pages.where((Page page) => isPageSearchable(page) &&
-        searchWords.every((String word) => isPageMatchWord(page, word))
-    ).toList(growable: false);
-    final List<String> tagsResult = tags.where(
-            (String tag) => searchWords.every((String word) => tag.toLowerCase().contains(word))
-    ).toList(growable: false);
+    final List<Page> result = pages
+        .where((Page page) =>
+            isPageSearchable(page) &&
+            searchWords.every((String word) => isPageMatchWord(page, word)))
+        .toList(growable: false);
+    final List<String> tagsResult = tags
+        .where((String tag) => searchWords
+            .every((String word) => tag.toLowerCase().contains(word)))
+        .toList(growable: false);
 
     result.sort((Page a, Page b) {
       final int titleCompare = compareSearchIndexes(a.title, b.title);
@@ -949,7 +1006,8 @@ class _MainState extends State<Main> {
     });
 
     if (result.length > searchResultsLimit) {
-      if (_searchOverflowTimer != null || _searchResults == null ||
+      if (_searchOverflowTimer != null ||
+          _searchResults == null ||
           _searchResults.length <= searchResultsLimit) {
         setState(() {
           if (_searchOverflowTimer != null) {
@@ -957,8 +1015,8 @@ class _MainState extends State<Main> {
           }
 
           _searchOverflowTimer = Timer(
-            searchOverflowDuration, () =>
-              setState(() => _searchOverflowTimer = null),
+            searchOverflowDuration,
+            () => setState(() => _searchOverflowTimer = null),
           );
         });
       }
@@ -971,20 +1029,23 @@ class _MainState extends State<Main> {
   }
 
   FloatingActionButton getFeedbackButton() {
-    return _searchString.isEmpty || _searchResults == null ? FloatingActionButton.extended(
-      onPressed: () async {
-        const String url = 'mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם';
-        await openUrl(url);
-      },
-      label: const Text('משוב'),
-      icon: const Icon(Icons.send),
-    ) : null;
+    return _searchString.isEmpty || _searchResults == null
+        ? FloatingActionButton.extended(
+            onPressed: () async {
+              const String url =
+                  'mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם';
+              await openUrl(url);
+            },
+            label: const Text('משוב'),
+            icon: const Icon(Icons.send),
+          )
+        : null;
   }
 
   int getLastUpdateDate() {
     try {
       return _prefs.getInt('lastUpdateDate');
-    } catch(e) {
+    } catch (e) {
       return 0;
     }
   }
@@ -995,20 +1056,26 @@ class _MainState extends State<Main> {
     };
 
     final Uri url = Uri.https(siteDomain, '/api/allPages', <String, String>{
-      'UpdatedAfter': DateTime.fromMillisecondsSinceEpoch(lastUpdateDate, isUtc: true).toIso8601String(),
+      'UpdatedAfter':
+          DateTime.fromMillisecondsSinceEpoch(lastUpdateDate, isUtc: true)
+              .toIso8601String(),
       'RequestedBy': _phoneNumber
     });
 
     return http.get(url, headers: headers);
   }
 
-  void setLastUpdateDate(dynamic jsonData) => _prefs.setInt('lastUpdateDate', jsonData['maxDate']);
+  void setLastUpdateDate(dynamic jsonData) =>
+      _prefs.setInt('lastUpdateDate', jsonData['maxDate']);
 
   String getUpdateStatus(int updatedPagesCount) {
-    switch(updatedPagesCount) {
-      case 0: return 'לא נמצאו עדכונים.';
-      case 1: return 'דף אחד עודכן.';
-      default: return '$updatedPagesCount דפים עודכנו.';
+    switch (updatedPagesCount) {
+      case 0:
+        return 'לא נמצאו עדכונים.';
+      case 1:
+        return 'דף אחד עודכן.';
+      default:
+        return '$updatedPagesCount דפים עודכנו.';
     }
   }
 
@@ -1018,8 +1085,10 @@ class _MainState extends State<Main> {
     }
     try {
       final int currentPatchLevel = _prefs.getInt('patchLevel') ?? 0;
-      final int lastUpdateDate = currentPatchLevel < 1 ? startOfTime : getLastUpdateDate();
-      final http.Response response = await getData(lastUpdateDate: lastUpdateDate);
+      final int lastUpdateDate =
+          currentPatchLevel < 1 ? startOfTime : getLastUpdateDate();
+      final http.Response response =
+          await getData(lastUpdateDate: lastUpdateDate);
 
       if (response.statusCode == 200) {
         final dynamic jsonData = json.decode(response.body);
@@ -1039,11 +1108,12 @@ class _MainState extends State<Main> {
           if (forceUpdate || updatedPages.isNotEmpty) {
             showInSnackBar(getUpdateStatus(updatedPages.length),
                 actionLabel: updatedPages.isEmpty ? null : 'הצג',
-                actionHandler: updatedPages.isEmpty ? null : () =>
-                    setState(() {
-                      _searchTextController.text = newPagesKeyword;
-                      _updatedPages = updatedPages;
-                    }));
+                actionHandler: updatedPages.isEmpty
+                    ? null
+                    : () => setState(() {
+                          _searchTextController.text = newPagesKeyword;
+                          _updatedPages = updatedPages;
+                        }));
           }
         });
 
@@ -1054,7 +1124,8 @@ class _MainState extends State<Main> {
           _prefs.setString('data', jsonEncode(updatedData));
         }
       } else {
-        showError('טעינת העדכון נכשלה.', 'Status Code is ${response.statusCode}');
+        showError(
+            'טעינת העדכון נכשלה.', 'Status Code is ${response.statusCode}');
       }
     } catch (e) {
       showError('טעינת העדכון נכשלה', e);
@@ -1076,10 +1147,10 @@ class _MainState extends State<Main> {
         suffixIcon: _searchString.isEmpty
             ? null
             : IconButton(
-            icon: const Icon(Icons.clear),
-            onPressed: () {
-              _searchTextController.clear();
-            }),
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  _searchTextController.clear();
+                }),
         border: OutlineInputBorder(
             borderSide: const BorderSide(width: 1),
             borderRadius: BorderRadius.circular(32.0)),
@@ -1091,39 +1162,39 @@ class _MainState extends State<Main> {
     return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          tagsList(
-              <String>[_openedTag], filled: true, context: context),
-          Text(' (${_searchResults.length} דפים בקטגוריה)', style: const TextStyle(fontSize: 18)),
-        ]
-    );
+          tagsList(<String>[_openedTag], filled: true, context: context),
+          Text(' (${_searchResults.length} דפים בקטגוריה)',
+              style: const TextStyle(fontSize: 18)),
+        ]);
   }
 
-  Future<void> openAboutPage() async => openPage(await getAboutPage(), _phoneNumber, context);
+  Future<void> openAboutPage() async =>
+      openPage(await getAboutPage(), _phoneNumber, context);
 
   Widget buildSearchContent() {
-    if ((_searchString.isEmpty && _openedTag == null) || _searchResults == null) {
+    if ((_searchString.isEmpty && _openedTag == null) ||
+        _searchResults == null) {
       return GestureDetector(
         onTap: openAboutPage,
         child: Image.asset('./assets/round_irus.png'),
       );
-    } else if (_searchResults.length > searchResultsLimit && _searchString != newPagesKeyword && _openedTag == null) {
+    } else if (_searchResults.length > searchResultsLimit &&
+        _searchString != newPagesKeyword &&
+        _openedTag == null) {
       if (_searchOverflowTimer == null) {
         return Align(
           alignment: Alignment.topRight,
           child: Text.rich(
-              TextSpan(
-                  style: emptyListMessageStyle,
-                  children: <TextSpan>[
-                    const TextSpan(text: 'נמצאו '),
-                    TextSpan(
-                      text: _searchResults.length.toString(),
-                      style: const TextStyle(color: Colors.blueAccent),
-                    ),
-                    const TextSpan(
-                        text: ' תוצאות מתאימות. יש לצמצם את התוצאות ע"י הוספת עוד מילות חיפוש.'),
-                  ]
-              )
-          ),
+              TextSpan(style: emptyListMessageStyle, children: <TextSpan>[
+            const TextSpan(text: 'נמצאו '),
+            TextSpan(
+              text: _searchResults.length.toString(),
+              style: const TextStyle(color: Colors.blueAccent),
+            ),
+            const TextSpan(
+                text:
+                    ' תוצאות מתאימות. יש לצמצם את התוצאות ע"י הוספת עוד מילות חיפוש.'),
+          ])),
         );
       } else {
         return null;
@@ -1132,23 +1203,23 @@ class _MainState extends State<Main> {
       return Align(
         alignment: Alignment.topRight,
         child: Text.rich(
-            TextSpan(
-                style: emptyListMessageStyle,
-                children: <TextSpan>[
-                  const TextSpan(text: 'לא נמצאו תוצאות מתאימות לחיפוש '),
-                  TextSpan(
-                    text: _searchString,
-                    style: const TextStyle(color: Colors.blueAccent),
-                  ),
-                ]
-            )
-        ),
+            TextSpan(style: emptyListMessageStyle, children: <TextSpan>[
+          const TextSpan(text: 'לא נמצאו תוצאות מתאימות לחיפוש '),
+          TextSpan(
+            text: _searchString,
+            style: const TextStyle(color: Colors.blueAccent),
+          ),
+        ])),
       );
     } else {
       return ListView(
         children: <Widget>[
-          tagsList(_tagsSearchResults, filled: true, openTag: openTag, context: context),
-          ..._searchResults.map<PageItem>((Page page) => PageItem(page: page, phoneNumber: _phoneNumber)).toList(growable: false)
+          tagsList(_tagsSearchResults,
+              filled: true, openTag: openTag, context: context),
+          ..._searchResults
+              .map<PageItem>((Page page) =>
+                  PageItem(page: page, phoneNumber: _phoneNumber))
+              .toList(growable: false)
         ],
       );
     }
@@ -1170,62 +1241,63 @@ class _MainState extends State<Main> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
-                                _openedTag != null ? buildTagTitle() : buildSearchField(),
-                                const Padding(padding: EdgeInsets.only(bottom: 10.0)),
+                                _openedTag != null
+                                    ? buildTagTitle()
+                                    : buildSearchField(),
+                                const Padding(
+                                    padding: EdgeInsets.only(bottom: 10.0)),
                                 Expanded(
                                     child: Container(
                                         height: 20.0,
-                                        child: buildSearchContent()
-                                    )
-                                )
+                                        child: buildSearchContent()))
                               ],
-                            )
-                        )
-                    )
-                )
-            )
-    );
+                            ))))));
   }
 
   Widget buildValidationView() {
     return Column(
-        mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-      const Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            'האפליקציה מיועדת לתושבי ירוחם.\n\nבכדי לוודא התאמה, יש להכניס את מספר הטלפון שלך:',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          )),
-      Container(
-        child: TextField(
-            controller: _phoneNumberController,
-            keyboardType: TextInputType.phone,
-            onEditingComplete: checkPhoneNumber,
-            onSubmitted: (String value) => checkPhoneNumber(),
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.phone),
-              suffixIcon: _phoneNumber.isEmpty
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'האפליקציה מיועדת לתושבי ירוחם.\n\nבכדי לוודא התאמה, יש להכניס את מספר הטלפון שלך:',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              )),
+          Container(
+            child: TextField(
+                controller: _phoneNumberController,
+                keyboardType: TextInputType.phone,
+                onEditingComplete: checkPhoneNumber,
+                onSubmitted: (String value) => checkPhoneNumber(),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.phone),
+                  suffixIcon: _phoneNumber.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _phoneNumberController.clear();
+                          }),
+                )),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+          ),
+          Container(
+            child: ElevatedButton(
+              onPressed: getNumberPage(_phoneNumber) == null
                   ? null
-                  : IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _phoneNumberController.clear();
-                  }),
-            )),
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-      ),
-      Container(
-        child: ElevatedButton(
-            onPressed: getNumberPage(_phoneNumber) == null ? null : () => checkPhoneNumber(),
-            child: const Text('המשך'),
-            style: ElevatedButton.styleFrom(
-              primary: Colors.deepPurpleAccent,
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(30.0))),
-              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16)),
+                  : () => checkPhoneNumber(),
+              child: const Text('המשך'),
+              style: ElevatedButton.styleFrom(
+                  primary: Colors.deepPurpleAccent,
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0))),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16)),
             ),
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-      ),
-    ]);
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+          ),
+        ]);
   }
 
   Widget buildMainWidget() {
@@ -1239,7 +1311,7 @@ class _MainState extends State<Main> {
   }
 
   Future<void> onMenuSelected(String itemValue) async {
-    switch(itemValue) {
+    switch (itemValue) {
       case 'about':
         openAboutPage();
         return;
@@ -1269,22 +1341,21 @@ class _MainState extends State<Main> {
         title: const Text(appTitle),
         actions: <Widget>[
           PopupMenuButton<String>(
-            onSelected: onMenuSelected,
-              itemBuilder: (BuildContext context) =>
-              <PopupMenuItem<String>>[
-                const PopupMenuItem<String>(
-                  value: 'about',
-                  child: Text('אודות'),
-                ),
-                const PopupMenuItem<String>(
-                  value: 'openInBrowser',
-                  child: Text('פתח בדפדפן'),
-                ),
-                const PopupMenuItem<String>(
-                  value: 'checkForUpdates',
-                  child: Text('בדוק אם יש עדכונים'),
-                ),
-              ]),
+              onSelected: onMenuSelected,
+              itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'about',
+                      child: Text('אודות'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'openInBrowser',
+                      child: Text('פתח בדפדפן'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'checkForUpdates',
+                      child: Text('בדוק אם יש עדכונים'),
+                    ),
+                  ]),
         ],
       ),
       body: buildMainWidget(),
@@ -1293,13 +1364,22 @@ class _MainState extends State<Main> {
   }
 
   void showError(String title, Object error) {
-    showInSnackBar(title, isWarning: true, actionLabel: 'פרטים', actionHandler: () => openPage(getErrorPage(title, error), _phoneNumber, context));
+    showInSnackBar(title,
+        isWarning: true,
+        actionLabel: 'פרטים',
+        actionHandler: () =>
+            openPage(getErrorPage(title, error), _phoneNumber, context));
   }
 
-  void showInSnackBar(String value, { bool isWarning = false, String actionLabel, Function actionHandler }) {
-    final SnackBarAction action = actionLabel == null ? null : SnackBarAction(label: actionLabel, onPressed: actionHandler);
-    final Text content = Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(action: action, content: content));
+  void showInSnackBar(String value,
+      {bool isWarning = false, String actionLabel, Function actionHandler}) {
+    final SnackBarAction action = actionLabel == null
+        ? null
+        : SnackBarAction(label: actionLabel, onPressed: actionHandler);
+    final Text content =
+        Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(action: action, content: content));
   }
 }
 
