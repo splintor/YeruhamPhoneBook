@@ -726,6 +726,7 @@ class _MainState extends State<Main> {
               page.tags != null &&
               page.tags.contains(_openedTag))
           .toList(growable: false);
+      _searchResults.sort((Page a, Page b) => a.title.compareTo(b.title));
     }
   }
 
