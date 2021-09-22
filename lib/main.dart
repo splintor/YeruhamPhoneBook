@@ -21,7 +21,8 @@ import 'secret.dart';
 
 List<Page> pages;
 List<String> tags;
-const String siteUrl = 'https://yeruham-phone-book.vercel.app';
+const String siteDomain = 'yeruham-phone-book.vercel.app';
+const String siteUrl = 'https://$siteDomain';
 final List<PageViewState> openPageViews = <PageViewState>[];
 const int previewMaxLines = 5;
 const int patchLevel = 1;
@@ -50,7 +51,7 @@ String stripHtmlTags(String text) {
 class Page {
   Page();
   Page.fromMap(this.page) :
-    url = 'https://yeruham-phone-book.vercel.app/' + page['title'].replaceAll(' ', '_'),
+    url = 'https://$siteDomain/${page['title'].replaceAll(' ', '_')}',
     title = page['title'],
     text = stripHtmlTags(page['html']),
     tags = (page['tags'] as List<dynamic>)?.map((dynamic tag) => tag as String)?.toList(),
@@ -182,6 +183,8 @@ Future<Page> getAboutPage() async {
     );
   }
 
+  const String helpUrl = '$siteUrl/help';
+
   return Page()
     ..title = 'אפליקצית ספר הטלפונים של ירוחם'
     ..dummyPage = true
@@ -195,9 +198,9 @@ Future<Page> getAboutPage() async {
         ספר הטלפונים כולל
         <b>${formatNumberWithCommas(pages.length)}</b> דפים, ${formatNumberWithCommas(phones)} מספרי טלפון ו-${formatNumberWithCommas(mails)} כתובות דוא"ל.
         <br><br>
-        הנתונים באפליקציית ספר הטלפונים לקוחים מ<a href="https://yeruham-phone-book.vercel.app">אתר ספר הטלפונים הישובי</a>.
+        הנתונים באפליקציית ספר הטלפונים לקוחים מ<a href="$siteUrl">אתר ספר הטלפונים הישובי</a>.
         <br><br>
-        האתר פתוח לכלל תושבי ירוחם. התושבים יכולים (ואף מוזמנים!) להכנס לאתר ולתקן נתונים שגויים, או להוסיף פרטים חדשים. הסבר ניתן למצוא <a href="https://yeruham-phone-book.vercel.app/הסבר_על_השימוש_באתר">כאן</a>.
+        האתר פתוח לכלל תושבי ירוחם. התושבים יכולים (ואף מוזמנים!) להכנס לאתר ולתקן נתונים שגויים, או להוסיף פרטים חדשים. הסבר ניתן למצוא <a href="$helpUrl">כאן</a>.
         </div></td></tr></tbody>''';
 }
 
@@ -988,8 +991,10 @@ class _MainState extends State<Main> {
       'cookie': DataAuthCookie,
     };
 
-    final Uri url = Uri.parse('https://yeruham-phone-book.vercel.app/api/allPages?UpdatedAfter=' +
-        DateTime.fromMillisecondsSinceEpoch(lastUpdateDate, isUtc: true).toIso8601String());
+    final Uri url = Uri.https(siteDomain, '/api/allPages', <String, String>{
+      'UpdatedAfter': DateTime.fromMillisecondsSinceEpoch(lastUpdateDate, isUtc: true).toIso8601String(),
+      'RequestedBy': _phoneNumber
+    });
 
     return http.get(url, headers: headers);
   }
