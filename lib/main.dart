@@ -705,7 +705,7 @@ class PageViewState extends State<PageView> {
               ),
               Expanded(
                   child: WebView(
-                javascriptMode: JavascriptMode.disabled,
+                javascriptMode: JavascriptMode.unrestricted,
                 initialUrl: getDataUrlForHtml(),
                 onWebViewCreated: onWebViewCreated,
                 onPageFinished: onPageFinished,
