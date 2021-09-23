@@ -161,7 +161,8 @@ void openTag(String tag, BuildContext context) {
 String formatNumberWithCommas(int number) =>
     NumberFormat.decimalPattern().format(number);
 
-String replaceEmail(String s) => s.replaceAll('email:', 'דוא"ל:');
+String replaceEmail(String s) => s.replaceAll(RegExp(r'email\s*:\s*'), 'דוא"ל: ');
+String replacePToDiv(String s) => s.replaceAll('<p>', '<div>').replaceAll('</p>', '</div>');
 
 String whatsappUrl(String phone) =>
     'whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}';
@@ -379,7 +380,7 @@ class PageDataValue {
   String toUrlPart() => isPhoneValue() ? phoneValue() : innerText;
 }
 
-final RegExp newLineTagsRE = RegExp(r'<(div|br)[^>]*>');
+final RegExp newLineTagsRE = RegExp(r'<(div|br|p)(\s+[^>]+)*/?>');
 final RegExp bulletsTagsRE = RegExp(r'<li[^>]*>');
 final RegExp anyTagRE = RegExp(r'<[^>]*>');
 final RegExp anyTagButAnchorRE = RegExp(r'<[^aA/][^>]*>|</[^aA][^>]*>');
@@ -387,6 +388,7 @@ final RegExp multipleNewLinesRE = RegExp(r'(\s*\n)+');
 
 String getPageInnerText(Page page, {bool leaveAnchors}) =>
     replaceEmail(page.html
+        .replaceAll(RegExp(r'\n\s*'), ' ')
         .replaceAll(newLineTagsRE, '\n')
         .replaceAll(bulletsTagsRE, '\n* ')
         .replaceAll(leaveAnchors ? anyTagButAnchorRE : anyTagRE, ' ')
@@ -464,6 +466,10 @@ class PageHTMLProcessor {
             '${match.group(0)}&nbsp;${whatsAppLink(match.group(1))}');
 
     html = replaceEmail(html);
+    html = replacePToDiv(html);
+
+    final String viewSize = html.contains('style="font-size') ? '1.2em' : '1.6em';
+    html = '<div style="font-size: $viewSize;" dir="rtl">$html</div>';
   }
 
   Page page;
