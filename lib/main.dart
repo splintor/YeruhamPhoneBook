@@ -438,8 +438,12 @@ class PageHTMLProcessor {
                 .replaceAllMapped(phoneNumberRE, phoneNumberMatcher)
                 .replaceAllMapped(prefixStarPhoneNumberRE, phoneNumberMatcher)
                 .replaceAllMapped(suffixStarPhoneNumberRE, phoneNumberMatcher) {
+    final String htmlForDataValue = html
+        .replaceAll('<br/>', '</div><div>')
+        .replaceAll(RegExp(r'<p(\s+[^>]+)*>'), '<div>')
+        .replaceAll('</p>', '</div>');
     dataValues = divElementRE
-        .allMatches(html.replaceAll('<br/>', '</div><div>'))
+        .allMatches(htmlForDataValue)
         .map((RegExpMatch match) => PageDataValue(match))
         .toList(growable: false);
 
