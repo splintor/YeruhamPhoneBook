@@ -266,7 +266,7 @@ List<InlineSpan> linkify(
   final RegExpMatch match = linkRegExp.firstMatch(text);
   if (match == null) {
     text = text.trim();
-    if (text.isNotEmpty) {
+    if (text.isNotEmpty && !text.contains('מילות חיפוש')) {
       list.add(TextSpan(text: text));
     }
 
