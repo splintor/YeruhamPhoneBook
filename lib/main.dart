@@ -24,7 +24,7 @@ List<String> tags;
 const String siteDomain = 'yeruham-phone-book.vercel.app';
 const String siteUrl = 'https://$siteDomain';
 final List<PageViewState> openPageViews = <PageViewState>[];
-const int previewMaxLines = 5;
+const int previewMaxLines = 8;
 const int patchLevel = 1;
 final int startOfTime = DateTime(1900, 12, 1).millisecondsSinceEpoch;
 
