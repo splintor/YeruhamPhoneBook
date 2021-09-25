@@ -11,7 +11,7 @@ description: A Flutter mobile application to provide easy and fast access to [Ye
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 3.2.3+300203
+version: 3.2.5+300205
 
 environment:
   sdk: ">=2.2.2 <3.0.0"

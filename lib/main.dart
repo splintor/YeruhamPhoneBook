@@ -133,8 +133,10 @@ Future<void> openUrl(String url) async {
 
 Future<void> openUrlOrPage(
     String url, String phoneNumber, BuildContext context) async {
+  String urlToUse = url.contains('%') ? Uri.decodeFull(url) : url;
+  urlToUse = urlToUse.replaceAll(' ', '_').replaceAll(RegExp(r'^/'), '$siteUrl/');
   final Page page =
-      context == null ? null : pages.firstWhere((Page p) => p.url == url);
+      context == null ? null : pages.firstWhere((Page p) => p.url == urlToUse);
   if (page == null) {
     openUrl(url);
   } else {
@@ -192,9 +194,10 @@ Future<Page> getAboutPage() async {
     );
   }
 
-  const String helpUrl = '$siteUrl/help';
+  const String helpUrl = '$siteUrl/הסבר על השימוש באתר';
 
   return Page()
+    ..url = '$siteUrl/about'
     ..title = 'אפליקצית ספר הטלפונים של ירוחם'
     ..dummyPage = true
     ..html =
@@ -208,7 +211,7 @@ Future<Page> getAboutPage() async {
         ספר הטלפונים כולל
         <b>${formatNumberWithCommas(pages.length)}</b> דפים, ${formatNumberWithCommas(phones)} מספרי טלפון ו-${formatNumberWithCommas(mails)} כתובות דוא"ל.
         <br><br>
-        הנתונים באפליקציית ספר הטלפונים לקוחים מ<a href="$siteUrl">אתר ספר הטלפונים הישובי</a>.
+        הנתונים באפליקצית ספר הטלפונים לקוחים מ<a href="$siteUrl">אתר ספר הטלפונים הישובי</a>.
         <br><br>
         האתר פתוח לכלל תושבי ירוחם. התושבים יכולים (ואף מוזמנים!) להכנס לאתר ולתקן נתונים שגויים, או להוסיף פרטים חדשים. הסבר ניתן למצוא <a href="$helpUrl">כאן</a>.
         <br><br>
@@ -427,6 +430,8 @@ class PageHTMLProcessor {
                     '<table', '<table width="100%" style="font-size: 1.2em;"')
                 .replaceAll('font-size:10pt', '')
                 .replaceAll('background-color:transparent', '')
+                .replaceAll(" href='/", " href='$siteUrl/")
+                .replaceAll(' href="/', ' href="$siteUrl/')
                 .replaceAll(styleURLRE, '')
                 .replaceAll(specialCharsRE, '')
                 .replaceAllMapped(
