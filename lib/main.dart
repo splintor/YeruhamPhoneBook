@@ -194,10 +194,9 @@ Future<Page> getAboutPage() async {
     );
   }
 
-  const String helpUrl = '$siteUrl/הסבר על השימוש באתר';
+  const String helpUrl = '$siteUrl/help';
 
   return Page()
-    ..url = '$siteUrl/about'
     ..title = 'אפליקצית ספר הטלפונים של ירוחם'
     ..dummyPage = true
     ..html =
