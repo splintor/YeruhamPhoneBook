@@ -431,6 +431,7 @@ class PageHTMLProcessor {
                 .replaceAll('background-color:transparent', '')
                 .replaceAll(" href='/", " href='$siteUrl/")
                 .replaceAll(' href="/', ' href="$siteUrl/')
+                .replaceAll(RegExp(r'\s*</a>'), '</a>')
                 .replaceAll(styleURLRE, '')
                 .replaceAll(specialCharsRE, '')
                 .replaceAllMapped(
