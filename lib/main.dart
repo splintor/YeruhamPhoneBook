@@ -1303,13 +1303,12 @@ class _MainState extends State<Main> {
               onPressed: getNumberPage(_phoneNumber) == null
                   ? null
                   : () => checkPhoneNumber(),
-              child: const Text('המשך'),
+              child: const Text('כניסה', style: TextStyle(fontSize: 24.0)),
               style: ElevatedButton.styleFrom(
                   primary: Colors.deepPurpleAccent,
                   shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(30.0))),
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 8.0, horizontal: 16)),
+                  padding: const EdgeInsets.all(16)),
             ),
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
           ),
