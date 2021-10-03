@@ -754,12 +754,14 @@ class _MainState extends State<Main> {
   bool _isUserVerified = false;
   final TextEditingController _phoneNumberController = TextEditingController();
   String _phoneNumber = '';
+  Exception _fetchError;
   final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
   String _openedTag;
 
   Future<void> fetchData() async {
     try {
+      _fetchError = null;
       final http.Response response = await getData();
 
       if (response.statusCode == 200) {
@@ -774,6 +776,7 @@ class _MainState extends State<Main> {
         throw 'Server returned an error: ${response.statusCode} ${response.body}';
       }
     } catch (e) {
+      _fetchError = e;
       showError('טעינת הנתונים נכשלה.', e);
     }
   }
@@ -802,6 +805,10 @@ class _MainState extends State<Main> {
 
   Page getNumberPage(String number) {
     if (number?.isEmpty ?? true) {
+      return null;
+    }
+
+    if (pages == null) {
       return null;
     }
 
@@ -853,11 +860,16 @@ class _MainState extends State<Main> {
           prefs.remove('data');
           fetchData();
         } else {
-          final String dataString = _prefs.getString('data');
-          pages = parseData(json.decode(dataString), growable: true);
-          getTagsFromPages();
-          _isUserVerified = true;
-          checkForUpdates(forceUpdate: false);
+          try {
+            final String dataString = _prefs.getString('data');
+            pages = parseData(json.decode(dataString), growable: true);
+            getTagsFromPages();
+            _isUserVerified = true;
+            checkForUpdates(forceUpdate: false);
+          } catch(_) {
+            prefs.remove('data');
+            fetchData().then((_) => checkPhoneNumber());
+          }
         }
         _prefs.setInt('patchLevel', patchLevel);
       });
@@ -1315,14 +1327,25 @@ class _MainState extends State<Main> {
         ]);
   }
 
-  Widget buildMainWidget() {
-    if (_prefs == null || pages == null) {
-      return const Center(child: Text('טוען...'));
-    } else if (_isUserVerified) {
-      return buildSearchView();
-    } else {
-      return buildValidationView();
+  String getMainWidgetText() {
+    if (_fetchError != null) {
+      return 'אויש, הטעינה נכשלה. :(';
     }
+
+    if (_prefs == null) {
+      return 'טוען את ספר הטלפונים...';
+    }
+
+    if (pages == null) {
+      return 'טוען דפים...';
+    }
+
+    return null;
+  }
+
+  Widget buildMainWidget() {
+    final String mainWidgetText = getMainWidgetText();
+    return mainWidgetText != null ? Center(child: Text(mainWidgetText)) : _isUserVerified ? buildSearchView() : buildValidationView();
   }
 
   Future<void> onMenuSelected(String itemValue) async {
