@@ -755,6 +755,9 @@ class _MainState extends State<Main> {
   final TextEditingController _phoneNumberController = TextEditingController();
   String _phoneNumber = '';
   Exception _fetchError;
+  String _responseError;
+  bool _reloadingData = false;
+  bool _parsingPages = false;
   final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
   String _openedTag;
@@ -762,7 +765,11 @@ class _MainState extends State<Main> {
   Future<void> fetchData() async {
     try {
       _fetchError = null;
+      _reloadingData = true;
+      _prefs.remove('data');
+
       final http.Response response = await getData();
+      _parsingPages = true;
 
       if (response.statusCode == 200) {
         _prefs.setString('data', response.body);
@@ -773,12 +780,16 @@ class _MainState extends State<Main> {
           setLastUpdateDate(jsonData);
         });
       } else {
-        throw 'Server returned an error: ${response.statusCode} ${response.body}';
+        _responseError = 'Server returned an error: ${response.statusCode} ${response.body}';
+        showError('הורדת הנתונים נכשלה.', _responseError);
       }
     } catch (e) {
       _fetchError = e;
       showError('טעינת הנתונים נכשלה.', e);
     }
+
+    _reloadingData = false;
+    _parsingPages = false;
   }
 
   List<Page> parseData(dynamic jsonData, {@required bool growable}) {
@@ -857,7 +868,6 @@ class _MainState extends State<Main> {
         _prefs = prefs;
         _phoneNumber = _prefs.getString('validationNumber') ?? '';
         if (_phoneNumber?.isEmpty ?? true) {
-          prefs.remove('data');
           fetchData();
         } else {
           try {
@@ -867,7 +877,6 @@ class _MainState extends State<Main> {
             _isUserVerified = true;
             checkForUpdates(forceUpdate: false);
           } catch(_) {
-            prefs.remove('data');
             fetchData().then((_) => checkPhoneNumber());
           }
         }
@@ -1153,7 +1162,7 @@ class _MainState extends State<Main> {
         }
       } else {
         showError(
-            'טעינת העדכון נכשלה.', 'Status Code is ${response.statusCode}');
+            'הורדת העדכון נכשלה.', 'Status Code is ${response.statusCode}');
       }
     } catch (e) {
       showError('טעינת העדכון נכשלה', e);
@@ -1332,11 +1341,24 @@ class _MainState extends State<Main> {
       return 'אויש, הטעינה נכשלה. :(';
     }
 
+    if (_responseError != null) {
+      return 'אויש, ההורדה נכשלה! ' + _responseError;
+    }
+
     if (_prefs == null) {
       return 'טוען את ספר הטלפונים...';
     }
 
     if (pages == null) {
+
+      if (_reloadingData) {
+        return 'טוען דפים מחדש...';
+      }
+
+      if (_parsingPages) {
+        return 'מכין דפים...';
+      }
+
       return 'טוען דפים...';
     }
 
