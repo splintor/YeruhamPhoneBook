@@ -1440,7 +1440,7 @@ class _MainState extends State<Main> {
       {bool isWarning = false, String actionLabel, Function actionHandler}) {
     final SnackBarAction action = actionLabel == null
         ? null
-        : SnackBarAction(label: actionLabel, onPressed: actionHandler);
+        : SnackBarAction(label: actionLabel, onPressed: actionHandler, textColor: Colors.blue);
     final Text content =
         Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
     ScaffoldMessenger.of(context)
