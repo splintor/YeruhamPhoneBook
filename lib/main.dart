@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:contacts_service/contacts_service.dart' as contacts_plugin;
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:yeruhamphonebook/tags.dart';
 
+import 'httpsCertificates.dart';
 import 'icons.dart';
 import 'secret.dart';
 
@@ -31,7 +33,10 @@ final int startOfTime = DateTime(1900, 12, 1).millisecondsSinceEpoch;
 bool contactPermissionWasGranted = false;
 Set<String> contactPhones;
 
-void main() => runApp(YeruhamPhonebookApp());
+void main(){
+  HttpOverrides.global = AcceptAllHttpOverrides();
+  runApp(YeruhamPhonebookApp());
+}
 
 const String appTitle = 'ספר הטלפונים של ירוחם';
 const Locale hebrewLocale = Locale('he', 'IL');
