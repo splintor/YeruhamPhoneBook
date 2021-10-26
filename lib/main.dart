@@ -1015,7 +1015,7 @@ class _MainState extends State<Main> {
     }
 
     if (searchString == newPagesKeyword) {
-      setState(() => _searchResults = _updatedPages);
+      setState(() => _searchResults = _updatedPages ?? <Page>[]);
       return;
     }
 
