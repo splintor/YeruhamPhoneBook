@@ -894,7 +894,7 @@ class _MainState extends State<Main> {
   }
 
   Future<void> loadContacts() async {
-    if (await Permission.contacts.request().isDenied) {
+    if (await Permission.contacts.request().isGranted) {
       contactPermissionWasGranted = true;
       loadPhoneContacts();
     }
