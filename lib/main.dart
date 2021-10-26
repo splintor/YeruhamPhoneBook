@@ -141,7 +141,7 @@ Future<void> openUrlOrPage(
   String urlToUse = url.contains('%') ? Uri.decodeFull(url) : url;
   urlToUse = urlToUse.replaceAll(' ', '_').replaceAll(RegExp(r'^/'), '$siteUrl/');
   final Page page =
-      context == null ? null : pages.firstWhere((Page p) => p.url == urlToUse);
+      context == null ? null : pages.firstWhere((Page p) => p.url == urlToUse, orElse: () => null);
   if (page == null) {
     openUrl(url);
   } else {
