@@ -1154,7 +1154,7 @@ class _MainState extends State<Main> {
                     ? null
                     : () => setState(() {
                           _searchTextController.text = newPagesKeyword;
-                          _updatedPages = updatedPages;
+                          _searchResults = _updatedPages = updatedPages;
                         }));
           }
         });
