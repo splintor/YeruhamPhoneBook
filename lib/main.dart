@@ -33,7 +33,7 @@ final int startOfTime = DateTime(1900, 12, 1).millisecondsSinceEpoch;
 bool contactPermissionWasGranted = false;
 Set<String> contactPhones;
 
-void main(){
+void main() {
   HttpOverrides.global = AcceptAllHttpOverrides();
   runApp(YeruhamPhonebookApp());
 }
@@ -57,7 +57,8 @@ class Page {
   Page();
 
   Page.fromMap(this.page)
-      : url = 'https://$siteDomain/${page['title'].replaceAll(' ', '_')}'.replaceAll('"', '%22'),
+      : url = 'https://$siteDomain/${page['title'].replaceAll(' ', '_')}'
+            .replaceAll('"', '%22'),
         title = page['title'],
         text = stripHtmlTags(page['html']),
         tags = (page['tags'] as List<dynamic>)
@@ -139,10 +140,13 @@ Future<void> openUrl(String url) async {
 Future<void> openUrlOrPage(
     String url, String phoneNumber, BuildContext context) async {
   String urlToUse = url.contains('%') ? Uri.decodeFull(url) : url;
-  urlToUse =
-      urlToUse.replaceAll(' ', '_').replaceAll('"', '%22').replaceAll(RegExp(r'^/'), '$siteUrl/');
-  final Page page =
-      context == null ? null : pages.firstWhere((Page p) => p.url == urlToUse, orElse: () => null);
+  urlToUse = urlToUse
+      .replaceAll(' ', '_')
+      .replaceAll('"', '%22')
+      .replaceAll(RegExp(r'^/'), '$siteUrl/');
+  final Page page = context == null
+      ? null
+      : pages.firstWhere((Page p) => p.url == urlToUse, orElse: () => null);
   if (page == null) {
     openUrl(url);
   } else {
@@ -169,8 +173,11 @@ void openTag(String tag, BuildContext context) {
 String formatNumberWithCommas(int number) =>
     NumberFormat.decimalPattern().format(number);
 
-String replaceEmail(String s) => s.replaceAll(RegExp(r'email\s*:\s*'), 'דוא"ל: ');
-String replacePToDiv(String s) => s.replaceAll('<p>', '<div>').replaceAll('</p>', '</div>');
+String replaceEmail(String s) =>
+    s.replaceAll(RegExp(r'email\s*:\s*'), 'דוא"ל: ');
+
+String replacePToDiv(String s) =>
+    s.replaceAll('<p>', '<div>').replaceAll('</p>', '</div>');
 
 String whatsappUrl(String phone) =>
     'whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}';
@@ -483,7 +490,8 @@ class PageHTMLProcessor {
     html = replaceEmail(html);
     html = replacePToDiv(html);
 
-    final String viewSize = html.contains('style="font-size') ? '1.2em' : '1.6em';
+    final String viewSize =
+        html.contains('style="font-size') ? '1.2em' : '1.6em';
     html = '<div style="font-size: $viewSize;" dir="rtl">$html</div>';
   }
 
@@ -786,7 +794,8 @@ class _MainState extends State<Main> {
           setLastUpdateDate(jsonData);
         });
       } else {
-        _responseError = 'Server returned an error: ${response.statusCode} ${response.body}';
+        _responseError =
+            'Server returned an error: ${response.statusCode} ${response.body}';
         showError('הורדת הנתונים נכשלה.', _responseError);
       }
     } catch (e) {
@@ -882,7 +891,7 @@ class _MainState extends State<Main> {
             getTagsFromPages();
             _isUserVerified = true;
             checkForUpdates(forceUpdate: false);
-          } catch(_) {
+          } catch (_) {
             fetchData().then((_) => checkPhoneNumber());
           }
         }
@@ -1356,7 +1365,6 @@ class _MainState extends State<Main> {
     }
 
     if (pages == null) {
-
       if (_reloadingData) {
         return 'טוען דפים מחדש...';
       }
@@ -1373,7 +1381,11 @@ class _MainState extends State<Main> {
 
   Widget buildMainWidget() {
     final String mainWidgetText = getMainWidgetText();
-    return mainWidgetText != null ? Center(child: Text(mainWidgetText)) : _isUserVerified ? buildSearchView() : buildValidationView();
+    return mainWidgetText != null
+        ? Center(child: Text(mainWidgetText))
+        : _isUserVerified
+            ? buildSearchView()
+            : buildValidationView();
   }
 
   Future<void> onMenuSelected(String itemValue) async {
@@ -1441,7 +1453,10 @@ class _MainState extends State<Main> {
       {bool isWarning = false, String actionLabel, Function actionHandler}) {
     final SnackBarAction action = actionLabel == null
         ? null
-        : SnackBarAction(label: actionLabel, onPressed: actionHandler, textColor: Colors.blue);
+        : SnackBarAction(
+            label: actionLabel,
+            onPressed: actionHandler,
+            textColor: Colors.blue);
     final Text content =
         Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
     ScaffoldMessenger.of(context)
