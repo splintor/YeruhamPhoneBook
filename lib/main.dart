@@ -57,7 +57,7 @@ class Page {
   Page();
 
   Page.fromMap(this.page)
-      : url = 'https://$siteDomain/${page['title'].replaceAll(' ', '_')}',
+      : url = 'https://$siteDomain/${page['title'].replaceAll(' ', '_')}'.replaceAll('"', '%22'),
         title = page['title'],
         text = stripHtmlTags(page['html']),
         tags = (page['tags'] as List<dynamic>)
@@ -139,7 +139,8 @@ Future<void> openUrl(String url) async {
 Future<void> openUrlOrPage(
     String url, String phoneNumber, BuildContext context) async {
   String urlToUse = url.contains('%') ? Uri.decodeFull(url) : url;
-  urlToUse = urlToUse.replaceAll(' ', '_').replaceAll(RegExp(r'^/'), '$siteUrl/');
+  urlToUse =
+      urlToUse.replaceAll(' ', '_').replaceAll('"', '%22').replaceAll(RegExp(r'^/'), '$siteUrl/');
   final Page page =
       context == null ? null : pages.firstWhere((Page p) => p.url == urlToUse, orElse: () => null);
   if (page == null) {
