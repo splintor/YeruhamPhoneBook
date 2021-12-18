@@ -637,7 +637,7 @@ class PageViewState extends State<PageView> {
       webViewController = controller;
 
   Future<void> onPageFinished(String url) =>
-      webViewController.evaluateJavascript(
+      webViewController.runJavascript(
           'document.body.scrollLeft = document.body.scrollWidth');
 
   NavigationDecision onWebViewNavigation(
