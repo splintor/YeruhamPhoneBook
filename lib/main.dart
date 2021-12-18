@@ -27,7 +27,7 @@ const String siteDomain = 'yeruham-phone-book.vercel.app';
 const String siteUrl = 'https://$siteDomain';
 final List<PageViewState> openPageViews = <PageViewState>[];
 const int previewMaxLines = 8;
-const int patchLevel = 1;
+const int patchLevel = 2;
 final int startOfTime = DateTime(1900, 12, 1).millisecondsSinceEpoch;
 
 bool contactPermissionWasGranted = false;
@@ -59,6 +59,7 @@ class Page {
   Page.fromMap(this.page)
       : url = 'https://$siteDomain/${page['title'].replaceAll(' ', '_')}'
             .replaceAll('"', '%22'),
+        _id = page['_id'],
         title = page['title'],
         text = stripHtmlTags(page['html']),
         tags = (page['tags'] as List<dynamic>)
@@ -71,6 +72,7 @@ class Page {
   dynamic toJson() => page;
 
   Map<String, dynamic> page;
+  String _id;
   String url;
   String title;
   String text;
@@ -636,9 +638,8 @@ class PageViewState extends State<PageView> {
   void onWebViewCreated(WebViewController controller) =>
       webViewController = controller;
 
-  Future<void> onPageFinished(String url) =>
-      webViewController.runJavascript(
-          'document.body.scrollLeft = document.body.scrollWidth');
+  Future<void> onPageFinished(String url) => webViewController
+      .runJavascript('document.body.scrollLeft = document.body.scrollWidth');
 
   NavigationDecision onWebViewNavigation(
       NavigationRequest navigation, BuildContext context) {
@@ -1137,10 +1138,9 @@ class _MainState extends State<Main> {
     }
     try {
       final int currentPatchLevel = _prefs.getInt('patchLevel') ?? 0;
-      final int lastUpdateDate =
-          currentPatchLevel < 1 ? startOfTime : getLastUpdateDate();
-      final http.Response response =
-          await getData(lastUpdateDate: lastUpdateDate);
+      final bool reloadEntireData = currentPatchLevel < patchLevel;
+      final http.Response response = await getData(
+          lastUpdateDate: reloadEntireData ? startOfTime : getLastUpdateDate());
 
       if (response.statusCode == 200) {
         final dynamic jsonData = json.decode(response.body);
@@ -1148,11 +1148,15 @@ class _MainState extends State<Main> {
         final List<Page> updatedPages = <Page>[];
 
         setState(() {
-          for (Page updatedPage in receivedPages) {
-            pages.removeWhere((Page p) => p.url == updatedPage.url);
-            if (updatedPage.isDeleted != true) {
-              pages.add(updatedPage);
-              updatedPages.add(updatedPage);
+          if (reloadEntireData) {
+            pages = receivedPages;
+          } else {
+            for (Page updatedPage in receivedPages) {
+              pages.removeWhere((Page p) => p._id == updatedPage._id);
+              if (updatedPage.isDeleted != true) {
+                pages.add(updatedPage);
+                updatedPages.add(updatedPage);
+              }
             }
           }
           getTagsFromPages();
