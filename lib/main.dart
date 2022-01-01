@@ -47,6 +47,7 @@ const TextStyle tagTitleStyle = TextStyle(fontSize: 22);
 const double searchResultFontSize = 20;
 const double whatsAppImageSize = 28;
 const String newPagesKeyword = '#חדשים';
+Timer _searchDebounce;
 
 // https://stackoverflow.com/a/67241469/46635
 String stripHtmlTags(String text) {
@@ -131,16 +132,18 @@ class Main extends StatefulWidget {
   _MainState createState() => _MainState(openedTag);
 }
 
-Future<void> openUrl(String url) async {
+Future<void> openUrl(String url, SharedPreferences prefs) async {
+  sendToLog('נפתחה הכתובת "$url"', prefs);
   if (await canLaunch(url)) {
     await launch(url);
   } else {
+    sendToLog('פתיחת הכתובת "$url" נכשלה', prefs);
     throw 'Could not launch $url';
   }
 }
 
 Future<void> openUrlOrPage(
-    String url, String phoneNumber, BuildContext context) async {
+    String url, SharedPreferences prefs, BuildContext context) async {
   String urlToUse = url.contains('%') ? Uri.decodeFull(url) : url;
   urlToUse = urlToUse
       .replaceAll(' ', '_')
@@ -150,21 +153,43 @@ Future<void> openUrlOrPage(
       ? null
       : pages.firstWhere((Page p) => p.url == urlToUse, orElse: () => null);
   if (page == null) {
-    openUrl(url);
+    openUrl(url, prefs);
   } else {
-    openPage(page, phoneNumber, context);
+    openPage(page, prefs, context);
   }
 }
 
-void openPage(Page page, String phoneNumber, BuildContext context) {
+String getPhoneNumber(SharedPreferences prefs) {
+  return prefs.getString('validationNumber');
+}
+
+Future<http.Response> sendToLog(String text, SharedPreferences prefs) {
+  const Map<String, String> headers = <String, String>{
+    'cookie': DataAuthCookie,
+    'content-type': 'application/json',
+  };
+
+  final Uri url = Uri.https(siteDomain, '/api/writeToLog');
+  final String phoneNumber = getPhoneNumber(prefs);
+  final String username = prefs.getString('validationName');
+  final String logSuffix = ' ע"י $username ($phoneNumber)';
+
+  return http.post(url,
+      headers: headers,
+      body: jsonEncode(<String, String>{'text': 'א: ' + text + logSuffix}));
+}
+
+void openPage(Page page, SharedPreferences prefs, BuildContext context) {
+  sendToLog('נפתח הדף "${page.title}"', prefs);
   Navigator.push(
     context,
     MaterialPageRoute<void>(
-        builder: (BuildContext context) => PageView(page, phoneNumber)),
+        builder: (BuildContext context) => PageView(page, prefs)),
   );
 }
 
-void openTag(String tag, BuildContext context) {
+void openTag(String tag, SharedPreferences prefs, BuildContext context) {
+  sendToLog('נפתחה הקטגוריה "$tag"', prefs);
   Navigator.push(
     context,
     MaterialPageRoute<void>(
@@ -259,7 +284,7 @@ final Image whatsAppImage = Image.memory(base64Decode(whatsappImageData),
     height: whatsAppImageSize, width: whatsAppImageSize);
 
 WidgetSpan buildLinkComponent(String text, String linkToOpen,
-        String phoneNumber, BuildContext context) =>
+        SharedPreferences prefs, BuildContext context) =>
     WidgetSpan(
         child: InkWell(
       child: Text(
@@ -270,11 +295,11 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen,
           fontSize: searchResultFontSize,
         ),
       ),
-      onTap: () => openUrlOrPage(linkToOpen, phoneNumber, context),
+      onTap: () => openUrlOrPage(linkToOpen, prefs, context),
     ));
 
 List<InlineSpan> linkify(
-    String text, String phoneNumber, BuildContext context) {
+    String text, SharedPreferences prefs, BuildContext context) {
   final List<InlineSpan> list = <InlineSpan>[];
   final List<String> lines = text.split('\n');
   if (lines.length > previewMaxLines) {
@@ -299,42 +324,42 @@ List<InlineSpan> linkify(
   if (anchorMatch != null) {
     if (anchorMatch.group(2).trim().isNotEmpty) {
       list.add(buildLinkComponent(
-          anchorMatch.group(2), anchorMatch.group(1), phoneNumber, context));
+          anchorMatch.group(2), anchorMatch.group(1), prefs, context));
     }
   } else if (linkText.contains(urlPatternRE)) {
-    list.add(buildLinkComponent(linkText, linkText, phoneNumber, null));
+    list.add(buildLinkComponent(linkText, linkText, prefs, null));
   } else if (linkText.contains(emailPatternRE)) {
-    list.add(
-        buildLinkComponent(linkText, 'mailto:$linkText', phoneNumber, null));
+    list.add(buildLinkComponent(linkText, 'mailto:$linkText', prefs, null));
   } else if (linkText.contains(phonePatternRE)) {
     if (linkText.startsWith('05')) {
       list.add(WidgetSpan(
           child: InkWell(
         child: whatsAppImage,
-        onTap: () => openUrl(whatsappUrl(linkText)),
+        onTap: () => openUrl(whatsappUrl(linkText), prefs),
       )));
     }
-    list.add(buildLinkComponent(
-        linkText, phoneNumberUrl(linkText), phoneNumber, null));
+    list.add(
+        buildLinkComponent(linkText, phoneNumberUrl(linkText), prefs, null));
   } else {
+    sendToLog('בעייה בבניית קישור עבור "$linkText"', prefs);
     throw 'Unexpected match: $linkText';
   }
 
-  list.addAll(linkify(
-      text.substring(match.start + linkText.length), phoneNumber, context));
+  list.addAll(
+      linkify(text.substring(match.start + linkText.length), prefs, context));
 
   return list;
 }
 
 class PageItem extends StatelessWidget {
-  const PageItem({Key key, this.page, this.phoneNumber}) : super(key: key);
+  const PageItem({Key key, this.page, this.prefs}) : super(key: key);
 
   final Page page;
-  final String phoneNumber;
+  final SharedPreferences prefs;
 
   TextSpan buildLines(BuildContext context) {
     final String text = getPageInnerText(page, leaveAnchors: true);
-    final List<InlineSpan> lines = linkify(text, phoneNumber, context);
+    final List<InlineSpan> lines = linkify(text, prefs, context);
 
     if (lines.isNotEmpty && lines[lines.length - 1] is TextSpan) {
       final TextSpan textSpan = lines[lines.length - 1];
@@ -364,7 +389,7 @@ class PageItem extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ),
             ),
-            tagsList(page.tags,
+            tagsList(page.tags, prefs,
                 filled: false, openTag: openTag, context: context),
             Padding(
               padding: const EdgeInsets.only(top: 2, bottom: 20),
@@ -373,7 +398,7 @@ class PageItem extends StatelessWidget {
             )
           ],
         ),
-        onTap: () => openPage(page, phoneNumber, context),
+        onTap: () => openPage(page, prefs, context),
       );
 }
 
@@ -436,7 +461,7 @@ String phoneNumberMatcher(Match match) =>
     '<a href="${phoneNumberUrl(match.group(1))}">${match.group(1)}</a>${match.group(2)}';
 
 class PageHTMLProcessor {
-  PageHTMLProcessor(this.page)
+  PageHTMLProcessor(this.page, this.prefs)
       : html = page.dummyPage == true
             ? page.html
             : page.html
@@ -498,6 +523,7 @@ class PageHTMLProcessor {
   }
 
   Page page;
+  SharedPreferences prefs;
   String html;
   List<PageDataValue> dataValues;
   List<PageDataValue> phoneValues;
@@ -537,6 +563,7 @@ class PageHTMLProcessor {
         .toList(growable: false);
     if (addressValues.isNotEmpty) {
       if (addressValues.length > 1) {
+        sendToLog('יותר מכתובת אחת נמצאה בדף ${page.title}', prefs);
         throw 'More than one address in ${page.title}';
       }
 
@@ -585,18 +612,17 @@ class PageHTMLProcessor {
 }
 
 class PageView extends StatefulWidget {
-  const PageView(this.page, this.phoneNumber) : super();
+  const PageView(this.page, this.prefs) : super();
 
   final Page page;
-  final String phoneNumber;
+  final SharedPreferences prefs;
 
   @override
-  PageViewState createState() => PageViewState(page, phoneNumber);
+  PageViewState createState() => PageViewState(page, prefs);
 }
 
 class PageViewState extends State<PageView> {
-  PageViewState(this.page, this.phoneNumber)
-      : html = PageHTMLProcessor(page).html {
+  PageViewState(this.page, this.prefs) : html = PageHTMLProcessor(page, prefs).html {
     openPageViews.add(this);
   }
 
@@ -607,12 +633,12 @@ class PageViewState extends State<PageView> {
   }
 
   final Page page;
-  final String phoneNumber;
+  final SharedPreferences prefs;
   String html;
   WebViewController webViewController;
 
   void checkForHtmlChanges() {
-    final String newHtml = PageHTMLProcessor(page).html;
+    final String newHtml = PageHTMLProcessor(page, prefs).html;
     if (html != newHtml) {
       html = newHtml;
       webViewController.loadUrl(getDataUrlForHtml());
@@ -626,7 +652,7 @@ class PageViewState extends State<PageView> {
         return;
 
       case 'openPageInBrowser':
-        openUrl('${page.url}#auth:$phoneNumber');
+        openUrl('${page.url}#auth:${getPhoneNumber(prefs)}', prefs);
         return;
     }
   }
@@ -646,11 +672,11 @@ class PageViewState extends State<PageView> {
     final String pageUrlBase =
         RegExp(r'https:\/\/[^\/]+\/').firstMatch(page.url ?? '')?.group(0);
     if (pageUrlBase != null && navigation.url.startsWith(pageUrlBase)) {
-      openUrlOrPage(navigation.url, phoneNumber, context);
+      openUrlOrPage(navigation.url, prefs, context);
     } else if (navigation.url.startsWith('action:addUser?')) {
       addContact(navigation.url);
     } else {
-      openUrl(navigation.url);
+      openUrl(navigation.url, prefs);
     }
 
     return NavigationDecision.prevent;
@@ -689,6 +715,7 @@ class PageViewState extends State<PageView> {
       }
     }
 
+    sendToLog('בוצעה בקשה להוספת איש קשר "$url"', prefs);
     NativeContactDialog.addContact(contact);
   }
 
@@ -730,7 +757,7 @@ class PageViewState extends State<PageView> {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(right: 6),
-                child: tagsList(page.tags,
+                child: tagsList(page.tags, prefs,
                     filled: false, openTag: openTag, context: context),
               ),
               Expanded(
@@ -800,6 +827,7 @@ class _MainState extends State<Main> {
         showError('הורדת הנתונים נכשלה.', _responseError);
       }
     } catch (e) {
+      sendToLog('טעינת הנתונים נכשלה "${e.toString()}"', _prefs);
       _fetchError = e;
       showError('טעינת הנתונים נכשלה.', e);
     }
@@ -864,7 +892,7 @@ class _MainState extends State<Main> {
       SharedPreferences.getInstance().then((SharedPreferences prefs) {
         setState(() {
           _prefs = prefs;
-          _phoneNumber = _prefs.getString('validationNumber');
+          _phoneNumber = getPhoneNumber(_prefs);
           _isUserVerified = _phoneNumber?.isNotEmpty;
         });
       });
@@ -882,7 +910,7 @@ class _MainState extends State<Main> {
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
       setState(() {
         _prefs = prefs;
-        _phoneNumber = _prefs.getString('validationNumber') ?? '';
+        _phoneNumber = getPhoneNumber(_prefs) ?? '';
         if (_phoneNumber?.isEmpty ?? true) {
           fetchData();
         } else {
@@ -1002,8 +1030,12 @@ class _MainState extends State<Main> {
   }
 
   void handleSearchChanged() {
+    if (_searchDebounce?.isActive ?? false) {
+      _searchDebounce.cancel();
+    }
+
     final String searchString = _searchTextController.text.trim();
-    if (searchString == _searchString && _openedTag != null) {
+    if (searchString == _searchString) {
       return;
     }
 
@@ -1075,6 +1107,10 @@ class _MainState extends State<Main> {
       }
     }
 
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      sendToLog('בוצע חיפוש של "$searchString" וחזרו ${result.length} תוצאות', _prefs);
+    });
+
     setState(() {
       _searchResults = result;
       _tagsSearchResults = tagsResult;
@@ -1087,7 +1123,7 @@ class _MainState extends State<Main> {
             onPressed: () async {
               const String url =
                   'mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם';
-              await openUrl(url);
+              await openUrl(url, _prefs);
             },
             label: const Text('משוב'),
             icon: const Icon(Icons.send),
@@ -1184,6 +1220,7 @@ class _MainState extends State<Main> {
             'הורדת העדכון נכשלה.', 'Status Code is ${response.statusCode}');
       }
     } catch (e) {
+      sendToLog('טעינת העדכון נכשלה "${e.toString()}"', _prefs);
       showError('טעינת העדכון נכשלה', e);
     }
   }
@@ -1218,14 +1255,15 @@ class _MainState extends State<Main> {
     return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          tagsList(<String>[_openedTag], filled: true, context: context),
+          tagsList(<String>[_openedTag], _prefs,
+              filled: true, context: context),
           Text(' (${_searchResults.length} דפים בקטגוריה)',
               style: const TextStyle(fontSize: 18)),
         ]);
   }
 
   Future<void> openAboutPage() async =>
-      openPage(await getAboutPage(), _phoneNumber, context);
+      openPage(await getAboutPage(), _prefs, context);
 
   Widget buildSearchContent() {
     if ((_searchString.isEmpty && _openedTag == null) ||
@@ -1270,11 +1308,10 @@ class _MainState extends State<Main> {
     } else {
       return ListView(
         children: <Widget>[
-          tagsList(_tagsSearchResults,
+          tagsList(_tagsSearchResults, _prefs,
               filled: true, openTag: openTag, context: context),
           ..._searchResults
-              .map<PageItem>((Page page) =>
-                  PageItem(page: page, phoneNumber: _phoneNumber))
+              .map<PageItem>((Page page) => PageItem(page: page, prefs: _prefs))
               .toList(growable: false)
         ],
       );
@@ -1401,11 +1438,11 @@ class _MainState extends State<Main> {
       case 'openInBrowser':
         final String suffix = '#auth:$_phoneNumber';
         if (_openedTag != null) {
-          openUrl('$siteUrl/tag/$_openedTag$suffix');
+          openUrl('$siteUrl/tag/$_openedTag$suffix', _prefs);
         } else if (_searchString.isNotEmpty) {
-          openUrl('$siteUrl/search/$_searchString$suffix');
+          openUrl('$siteUrl/search/$_searchString$suffix', _prefs);
         } else {
-          openUrl('$siteUrl$suffix');
+          openUrl('$siteUrl$suffix', _prefs);
         }
         return;
 
@@ -1450,7 +1487,7 @@ class _MainState extends State<Main> {
         isWarning: true,
         actionLabel: 'פרטים',
         actionHandler: () =>
-            openPage(getErrorPage(title, error), _phoneNumber, context));
+            openPage(getErrorPage(title, error), _prefs, context));
   }
 
   void showInSnackBar(String value,

@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Widget tagsList(
-  List<String> tags, {
+  List<String> tags,
+  SharedPreferences prefs, {
   @required bool filled,
-  void Function(String tag, BuildContext context) openTag,
+  void Function(String tag, SharedPreferences prefs, BuildContext context)
+      openTag,
   @required BuildContext context,
 }) {
   return Wrap(
     children: (tags ?? <String>[])
         .map((String tag) => tagChip(tag,
             filled: filled,
-            onTap: openTag == null ? null : () => openTag(tag, context)))
+            onTap: openTag == null ? null : () => openTag(tag, prefs, context)))
         .toList(),
   );
 }
