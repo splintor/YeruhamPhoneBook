@@ -622,7 +622,8 @@ class PageView extends StatefulWidget {
 }
 
 class PageViewState extends State<PageView> {
-  PageViewState(this.page, this.prefs) : html = PageHTMLProcessor(page, prefs).html {
+  PageViewState(this.page, this.prefs)
+      : html = PageHTMLProcessor(page, prefs).html {
     openPageViews.add(this);
   }
 
@@ -992,6 +993,19 @@ class _MainState extends State<Main> {
       ..addAll(parseToWords(s.substring(nextPos + 1)));
   }
 
+  String searchable(String s) {
+    return s
+        .toLowerCase()
+        .replaceAll('-', '')
+        .replaceAll('"', '')
+        .replaceAll("'", '')
+        .replaceAll('ם', 'מ')
+        .replaceAll('ן', 'נ')
+        .replaceAll('ץ', 'צ')
+        .replaceAll('ף', 'פ')
+        .replaceAll('ך', 'כ');
+  }
+
   bool isPageMatchWord(Page page, String word) {
     if (page.dummyPage == true) {
       return false;
@@ -1001,13 +1015,16 @@ class _MainState extends State<Main> {
       final RegExp re = RegExp(word.substring(2));
       return page.title.contains(re) ||
           page.text.contains(re) ||
-          page.text.replaceAll('-', '').contains(re);
+          searchable(page.text).contains(re);
     }
 
-    return page.title.toLowerCase().contains(word) ||
-        page.text.toLowerCase().contains(word) ||
-        (word.contains(RegExp(r'^[\d-]*$')) &&
-            page.text.replaceAll('-', '').contains(word.replaceAll('-', '')));
+    final String searchableWord = searchable(word);
+
+    return searchableWord.isNotEmpty &&
+        (searchable(page.title).contains(searchableWord) ||
+            searchable(page.text).contains(searchableWord) ||
+            (page.tags != null &&
+                page.tags.any((String t) => t.contains(word))));
   }
 
   int compareSearchIndexes(String s1, String s2) {
@@ -1108,7 +1125,8 @@ class _MainState extends State<Main> {
     }
 
     _searchDebounce = Timer(const Duration(milliseconds: 500), () {
-      sendToLog('בוצע חיפוש של "$searchString" וחזרו ${result.length} תוצאות', _prefs);
+      sendToLog('בוצע חיפוש של "$searchString" וחזרו ${result.length} תוצאות',
+          _prefs);
     });
 
     setState(() {
