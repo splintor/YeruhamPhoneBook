@@ -722,9 +722,12 @@ class PageViewState extends State<PageView> {
 
   FloatingActionButton getShareButton() {
     return FloatingActionButton.extended(
-      onPressed: () => Share.share(
-          '${page.title}\n${getPageInnerText(page, leaveAnchors: false)}',
-          subject: page.title),
+      onPressed: () {
+        sendToLog('שותף הדף "${page.title}"', prefs);
+        Share.share(
+            '${page.title}\n${getPageInnerText(page, leaveAnchors: false)}',
+            subject: page.title);
+      },
       label: const Text('שתף'),
       icon: const Icon(Icons.share),
     );
