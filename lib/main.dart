@@ -1076,6 +1076,9 @@ class _MainState extends State<Main> {
     }
 
     if (searchString == newPagesKeyword) {
+      sendToLog(
+          'בוצע חיפוש של "$searchString" וחזרו ${(_updatedPages ?? <Page>[]).length} תוצאות',
+          _prefs);
       setState(() => _searchResults = _updatedPages ?? <Page>[]);
       return;
     }
