@@ -464,25 +464,28 @@ class PageHTMLProcessor {
   PageHTMLProcessor(this.page, this.prefs)
       : html = page.dummyPage == true
             ? page.html
-            : page.html
-                .replaceFirst(
-                    '<table', '<table width="100%" style="font-size: 1.2em;"')
-                .replaceAll('font-size:10pt', '')
-                .replaceAll('background-color:transparent', '')
-                .replaceAll(" href='/", " href='$siteUrl/")
-                .replaceAll(' href="/', ' href="$siteUrl/')
-                .replaceAll(RegExp(r'\s*</a>'), '</a>')
-                .replaceAll(styleURLRE, '')
-                .replaceAll(specialCharsRE, '')
-                .replaceAllMapped(
-                    spanElementRE, (Match match) => match.group(1))
-                .replaceAll(twitterImgRE, twitterDataImg)
-                .replaceAll(facebookImgRE, facebookDataImg)
-                .replaceAll(instagramImgRE, instagramDataImg)
-                .replaceAll(facebookAltRE, '')
-                .replaceAllMapped(phoneNumberRE, phoneNumberMatcher)
-                .replaceAllMapped(prefixStarPhoneNumberRE, phoneNumberMatcher)
-                .replaceAllMapped(suffixStarPhoneNumberRE, phoneNumberMatcher) {
+            : '<div style="transform: scale(2); transform-origin: top right">' +
+                page.html
+                    .replaceFirst('<table', '<table width="100%"')
+                    .replaceAll('font-size:10pt', '')
+                    .replaceAll('background-color:transparent', '')
+                    .replaceAll(" href='/", " href='$siteUrl/")
+                    .replaceAll(' href="/', ' href="$siteUrl/')
+                    .replaceAll(RegExp(r'\s*</a>'), '</a>')
+                    .replaceAll(styleURLRE, '')
+                    .replaceAll(specialCharsRE, '')
+                    .replaceAllMapped(
+                        spanElementRE, (Match match) => match.group(1))
+                    .replaceAll(twitterImgRE, twitterDataImg)
+                    .replaceAll(facebookImgRE, facebookDataImg)
+                    .replaceAll(instagramImgRE, instagramDataImg)
+                    .replaceAll(facebookAltRE, '')
+                    .replaceAllMapped(phoneNumberRE, phoneNumberMatcher)
+                    .replaceAllMapped(
+                        prefixStarPhoneNumberRE, phoneNumberMatcher)
+                    .replaceAllMapped(
+                        suffixStarPhoneNumberRE, phoneNumberMatcher) +
+                '</div>' {
     final String htmlForDataValue = html
         .replaceAll('<br/>', '</div><div>')
         .replaceAll(RegExp(r'<p(\s+[^>]+)*>'), '<div>')
