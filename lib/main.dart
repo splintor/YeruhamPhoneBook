@@ -1052,10 +1052,6 @@ class _MainState extends State<Main> {
   }
 
   void handleSearchChanged() {
-    if (_searchDebounce?.isActive ?? false) {
-      _searchDebounce.cancel();
-    }
-
     final String searchString = _searchTextController.text.trim();
     if (searchString == _searchString) {
       return;
@@ -1127,6 +1123,10 @@ class _MainState extends State<Main> {
           );
         });
       }
+    }
+
+    if (_searchDebounce?.isActive ?? false) {
+      _searchDebounce.cancel();
     }
 
     _searchDebounce = Timer(const Duration(milliseconds: 500), () {
