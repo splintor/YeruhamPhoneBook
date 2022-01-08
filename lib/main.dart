@@ -159,6 +159,37 @@ Future<void> openUrlOrPage(
   }
 }
 
+String normalizedNumber(String number) {
+  return number.replaceAll(RegExp(r'\D'), '');
+}
+
+Page getNumberPage(String number) {
+  if (number?.isEmpty ?? true) {
+    return null;
+  }
+
+  if (pages == null) {
+    return null;
+  }
+
+  number = normalizedNumber(number);
+
+  if (number.length < 9) {
+    return null;
+  }
+
+  if ((number.startsWith('05') || number.startsWith('07')) &&
+      number.length < 10) {
+    return null;
+  }
+
+  return pages.firstWhere(
+          (Page page) =>
+      page.isDeleted != true &&
+          page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number),
+      orElse: () => null);
+}
+
 String getPhoneNumber(SharedPreferences prefs) {
   return prefs.getString('validationNumber');
 }
@@ -171,7 +202,7 @@ Future<http.Response> sendToLog(String text, SharedPreferences prefs) {
 
   final Uri url = Uri.https(siteDomain, '/api/writeToLog');
   final String phoneNumber = getPhoneNumber(prefs);
-  final String username = prefs.getString('validationName');
+  final String username = getNumberPage(phoneNumber)?.title;
   final String logSuffix = ' ע"י $username ($phoneNumber)';
 
   return http.post(url,
@@ -861,37 +892,6 @@ class _MainState extends State<Main> {
     tags = tagsSet.toList();
   }
 
-  String normalizedNumber(String number) {
-    return number.replaceAll(RegExp(r'\D'), '');
-  }
-
-  Page getNumberPage(String number) {
-    if (number?.isEmpty ?? true) {
-      return null;
-    }
-
-    if (pages == null) {
-      return null;
-    }
-
-    number = normalizedNumber(number);
-
-    if (number.length < 9) {
-      return null;
-    }
-
-    if ((number.startsWith('05') || number.startsWith('07')) &&
-        number.length < 10) {
-      return null;
-    }
-
-    return pages.firstWhere(
-        (Page page) =>
-            page.isDeleted != true &&
-            page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number),
-        orElse: () => null);
-  }
-
   @override
   void initState() {
     super.initState();
@@ -974,7 +974,6 @@ class _MainState extends State<Main> {
     final Page page = getNumberPage(_phoneNumber);
     if (page != null) {
       _prefs.setString('validationNumber', normalizedNumber(_phoneNumber));
-      _prefs.setString('validationName', page.title);
 
       setState(() {
         _isUserVerified = true;
