@@ -1428,7 +1428,7 @@ class _MainState extends State<Main> {
                   : () => checkPhoneNumber(),
               child: const Text('כניסה', style: TextStyle(fontSize: 24.0)),
               style: ElevatedButton.styleFrom(
-                  primary: Colors.deepPurpleAccent,
+                  backgroundColor: Colors.deepPurpleAccent,
                   shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(30.0))),
                   padding: const EdgeInsets.all(16)),
