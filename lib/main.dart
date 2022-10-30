@@ -693,6 +693,7 @@ class PageViewState extends State<PageView> {
     }
   }
 
+  // todo: consider add wrapping using https://stackoverflow.com/a/58827074/46635
   String getDataUrlForHtml() => Uri.dataFromString(html,
           mimeType: 'text/html', encoding: Encoding.getByName('UTF-8'))
       .toString();
