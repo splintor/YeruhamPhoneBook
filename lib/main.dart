@@ -1249,8 +1249,8 @@ class _MainState extends State<Main> {
                 actionHandler: updatedPages.isEmpty
                     ? null
                     : () => setState(() {
-                          _searchTextController.text = newPagesKeyword;
                           _searchResults = _updatedPages = updatedPages;
+                          _searchTextController.text = newPagesKeyword;
                         }));
           }
         });

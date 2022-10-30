@@ -1,5 +1,4 @@
 - 1800 numbers are not linked properly (see מעיינות הדרום)
-- Clicking #חדשים logs 0 found
 - Make pages word wrap 
 - Consider showing more info in search results (like Add User icon)
 - Scroll pages to the right on open (המועצה)
