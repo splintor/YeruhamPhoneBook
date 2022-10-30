@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:native_contact_dialog/native_contact_dialog.dart';
 import 'package:package_info/package_info.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
@@ -130,6 +129,21 @@ class Main extends StatefulWidget {
 
   @override
   _MainState createState() => _MainState(openedTag);
+}
+
+
+void showInSnackBar(BuildContext context, String value,
+    {bool isWarning = false, String actionLabel, Function actionHandler}) {
+  final SnackBarAction action = actionLabel == null
+      ? null
+      : SnackBarAction(
+      label: actionLabel,
+      onPressed: actionHandler,
+      textColor: Colors.blue);
+  final Text content =
+  Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
+  ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(action: action, content: content));
 }
 
 Future<void> openUrl(String url, SharedPreferences prefs) async {
@@ -492,6 +506,37 @@ String phoneNumberUrl(String phoneNumber) =>
 String phoneNumberMatcher(Match match) =>
     '<a href="${phoneNumberUrl(match.group(1))}">${match.group(1)}</a>${match.group(2)}';
 
+void updateAllPageViews() {
+  for (PageViewState pageView in openPageViews) {
+    pageView.checkForHtmlChanges();
+  }
+}
+
+Future<void> loadContacts() async {
+  if (await Permission.contacts.request().isGranted) {
+    contactPermissionWasGranted = true;
+    loadPhoneContacts();
+  }
+}
+
+Future<void> loadPhoneContacts() async {
+  if (!contactPermissionWasGranted) {
+    return;
+  }
+
+  final Iterable<contacts_plugin.Contact> contacts =
+  await contacts_plugin.ContactsService.getContacts(
+      withThumbnails: false);
+
+  contactPhones = Set<String>.from(contacts.expand<String>(
+          (contacts_plugin.Contact contact) => contact.phones.map(
+              (contacts_plugin.Item item) => item.value
+              .replaceAll(RegExp(r'[- ()]'), '')
+              .replaceAll('+972', '0'))));
+
+  updateAllPageViews();
+}
+
 class PageHTMLProcessor {
   PageHTMLProcessor(this.page, this.prefs)
       : html = page.dummyPage == true
@@ -704,14 +749,14 @@ class PageViewState extends State<PageView> {
   Future<void> onPageFinished(String url) => webViewController
       .runJavascript('document.body.scrollLeft = document.body.scrollWidth');
 
-  NavigationDecision onWebViewNavigation(
-      NavigationRequest navigation, BuildContext context) {
+  Future<NavigationDecision> onWebViewNavigation(
+      NavigationRequest navigation, BuildContext context) async {
     final String pageUrlBase =
-        RegExp(r'https:\/\/[^\/]+\/').firstMatch(page.url ?? '')?.group(0);
+        RegExp(r'https://[^/]+/').firstMatch(page.url ?? '')?.group(0);
     if (pageUrlBase != null && navigation.url.startsWith(pageUrlBase)) {
       openUrlOrPage(navigation.url, prefs, context);
     } else if (navigation.url.startsWith('action:addUser?')) {
-      addContact(navigation.url);
+      await addContact(context, navigation.url);
     } else {
       openUrl(navigation.url, prefs);
     }
@@ -719,9 +764,9 @@ class PageViewState extends State<PageView> {
     return NavigationDecision.prevent;
   }
 
-  void addContact(String url) {
+  Future<void> addContact(BuildContext context, String url) async {
     final String queryString = Uri.decodeQueryComponent(url.split('?')[1]);
-    final Contact contact = Contact();
+    final contacts_plugin.Contact contact = contacts_plugin.Contact();
     for (List<String> keyValue
         in queryString.split('&').map((String v) => v.split('='))) {
       final String value = keyValue[1];
@@ -735,25 +780,29 @@ class PageViewState extends State<PageView> {
           break;
 
         case 'address':
-          contact.postalAddresses = <PostalAddress>[
-            PostalAddress(label: 'בית', street: value)
+          contact.postalAddresses = <contacts_plugin.PostalAddress>[
+            contacts_plugin.PostalAddress(label: 'בית', street: value)
           ];
           break;
 
         case 'phones':
-          contact.phones = value.split(',').map((String v) =>
-              Item(label: v.startsWith('05') ? 'mobile' : 'home', value: v));
+         contact.phones = value.split(',').map((String v) =>
+             contacts_plugin.Item(label: v.startsWith('05') ? 'mobile' : 'home', value: v)).toList(growable: false);
           break;
 
         case 'emails':
           contact.emails =
-              value.split(',').map((String v) => Item(label: 'home', value: v));
+              value.split(',').map((String v) => contacts_plugin.Item(label: 'home', value: v)).toList(growable: false);
           break;
       }
     }
 
     sendToLog('בוצעה בקשה להוספת איש קשר "$url"', prefs);
-    NativeContactDialog.addContact(contact);
+    await contacts_plugin.ContactsService.addContact(contact);
+    await loadContacts();
+    showInSnackBar(context, 'איש קשר "${contact.givenName} ${contact.familyName}" נוסף לאנשי הקשר',
+        actionLabel: 'הצג',
+        actionHandler: () => contacts_plugin.ContactsService.openExistingContact(contact));
   }
 
   FloatingActionButton getShareButton() {
@@ -806,7 +855,7 @@ class PageViewState extends State<PageView> {
                 initialUrl: getDataUrlForHtml(),
                 onWebViewCreated: onWebViewCreated,
                 onPageFinished: onPageFinished,
-                navigationDelegate: (NavigationRequest navigation) =>
+                navigationDelegate: (NavigationRequest navigation) async =>
                     onWebViewNavigation(navigation, context),
               ))
             ]),
@@ -939,37 +988,6 @@ class _MainState extends State<Main> {
 
     WidgetsBinding.instance
         .addObserver(LifecycleEventHandler(() => loadPhoneContacts()));
-  }
-
-  Future<void> loadContacts() async {
-    if (await Permission.contacts.request().isGranted) {
-      contactPermissionWasGranted = true;
-      loadPhoneContacts();
-    }
-  }
-
-  Future<void> loadPhoneContacts() async {
-    if (!contactPermissionWasGranted) {
-      return;
-    }
-
-    final Iterable<contacts_plugin.Contact> contacts =
-        await contacts_plugin.ContactsService.getContacts(
-            withThumbnails: false);
-
-    contactPhones = Set<String>.from(contacts.expand<String>(
-        (contacts_plugin.Contact contact) => contact.phones.map(
-            (contacts_plugin.Item item) => item.value
-                .replaceAll(RegExp(r'[- ()]'), '')
-                .replaceAll('+972', '0'))));
-
-    updateAllPageViews();
-  }
-
-  void updateAllPageViews() {
-    for (PageViewState pageView in openPageViews) {
-      pageView.checkForHtmlChanges();
-    }
   }
 
   void checkPhoneNumber() {
@@ -1198,7 +1216,7 @@ class _MainState extends State<Main> {
 
   Future<void> checkForUpdates({bool forceUpdate}) async {
     if (forceUpdate) {
-      showInSnackBar('בודק אם יש עדכונים...');
+      showInSnackBar(context, 'בודק אם יש עדכונים...');
     }
     try {
       final int currentPatchLevel = _prefs.getInt('patchLevel') ?? 0;
@@ -1226,7 +1244,7 @@ class _MainState extends State<Main> {
           getTagsFromPages();
           setLastUpdateDate(jsonData);
           if (forceUpdate || updatedPages.isNotEmpty) {
-            showInSnackBar(getUpdateStatus(updatedPages.length),
+            showInSnackBar(context, getUpdateStatus(updatedPages.length),
                 actionLabel: updatedPages.isEmpty ? null : 'הצג',
                 actionHandler: updatedPages.isEmpty
                     ? null
@@ -1511,25 +1529,11 @@ class _MainState extends State<Main> {
   }
 
   void showError(String title, Object error) {
-    showInSnackBar(title,
+    showInSnackBar(context, title,
         isWarning: true,
         actionLabel: 'פרטים',
         actionHandler: () =>
             openPage(getErrorPage(title, error), _prefs, context));
-  }
-
-  void showInSnackBar(String value,
-      {bool isWarning = false, String actionLabel, Function actionHandler}) {
-    final SnackBarAction action = actionLabel == null
-        ? null
-        : SnackBarAction(
-            label: actionLabel,
-            onPressed: actionHandler,
-            textColor: Colors.blue);
-    final Text content =
-        Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(action: action, content: content));
   }
 }
 
