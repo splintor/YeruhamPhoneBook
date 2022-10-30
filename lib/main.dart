@@ -134,8 +134,9 @@ class Main extends StatefulWidget {
 
 Future<void> openUrl(String url, SharedPreferences prefs) async {
   sendToLog('נפתחה הכתובת "$url"', prefs);
-  if (await canLaunch(url)) {
-    await launch(url);
+  final Uri uri = Uri.parse(url);
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri);
   } else {
     sendToLog('פתיחת הכתובת "$url" נכשלה', prefs);
     throw 'Could not launch $url';
