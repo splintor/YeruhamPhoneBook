@@ -187,7 +187,7 @@ Page getNumberPage(String number) {
   return pages.firstWhere(
           (Page page) =>
       page.isDeleted != true &&
-          page.text.replaceAll(RegExp(r'[-\.]'), '').contains(number),
+          page.text.replaceAll(RegExp(r'[-.]'), '').contains(number),
       orElse: () => null);
 }
 
@@ -250,7 +250,7 @@ Future<Page> getAboutPage() async {
   int phones = 0;
   for (Page page in pages.where(isPageSearchable)) {
     mails += RegExp(r'\S+@\S+').allMatches(page.text).length;
-    phones += RegExp(r'[^>=\/\d-][\d-]{8,}').allMatches(page.text).length;
+    phones += RegExp(r'[^>=/\d-][\d-]{8,}').allMatches(page.text).length;
   }
 
   PackageInfo packageInfo;
@@ -472,7 +472,7 @@ String getPageInnerText(Page page, {bool leaveAnchors}) =>
 final RegExp styleURLRE = RegExp(r" ?style=';*'");
 final RegExp specialCharsRE = RegExp(r'[\u2000-\u2BFF]');
 final RegExp spanElementRE = RegExp(r'<span>([^<]*)</span>');
-final RegExp facebookAltRE = RegExp(r"alt='https:\/\/www.facebook.com[^']*'");
+final RegExp facebookAltRE = RegExp(r"alt='https://www.facebook.com[^']*'");
 final RegExp phoneNumberRE = RegExp(r'([\d-+]{8,})([^"/\d])');
 final RegExp prefixStarPhoneNumberRE = RegExp(r'(\*\d{3,})([^"])');
 final RegExp suffixStarPhoneNumberRE = RegExp(r'(\d{3,}\*)([^"])');
