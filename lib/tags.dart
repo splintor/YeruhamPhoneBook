@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Widget tagsList(
-  List<String> tags,
+  List<String>? tags,
   SharedPreferences prefs, {
-  @required bool filled,
-  void Function(String tag, SharedPreferences prefs, BuildContext context)
+  required bool filled,
+  void Function(String tag, SharedPreferences prefs, BuildContext context)?
       openTag,
-  @required BuildContext context,
+  required BuildContext context,
 }) {
   return Wrap(
     children: (tags ?? <String>[])
@@ -20,8 +20,8 @@ Widget tagsList(
 
 Widget tagChip(
   String text, {
-  GestureTapCallback onTap,
-  bool filled,
+  GestureTapCallback? onTap,
+  bool filled = false,
 }) {
   final bool isPublic = text == 'ציבורי';
   final Color tagColor = isPublic ? Colors.green : const Color(0xFF5F1B68);
