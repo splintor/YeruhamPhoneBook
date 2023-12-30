@@ -222,7 +222,7 @@ Future<http.Response> sendToLog(String text, SharedPreferences prefs) {
 
   return http.post(url,
       headers: headers,
-      body: jsonEncode(<String, String>{'text': 'א: ' + text + logSuffix}));
+      body: jsonEncode(<String, String>{'text': 'A: ' + text + logSuffix}));
 }
 
 void openPage(Page page, SharedPreferences prefs, BuildContext context) {
