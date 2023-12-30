@@ -17,7 +17,7 @@ environment:
   sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
-  contacts_service: ^0.6.1
+  contacts_service: ^0.6.3
   flutter:
     sdk: flutter
   flutter_localizations:

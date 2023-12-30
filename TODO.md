@@ -2,6 +2,8 @@
 - Web: Log links clicks from web
 - Log: try to better indicate who is logged in
 - Log: Log from what page a link was clicked
+- App: Show bigger whatsapp and add contact icons in page view
+- App: Check adding contact
 - App: Show all icons in search results, not only when opening the page- Consider showing more info in search results (like Add User icon)
 - Scroll pages to the right on open (המועצה)
 - Send BI events (https://moz.com/blog/absolute-beginners-guide-to-google-analytics) - maybe use the apps engine URL we are already sending?
