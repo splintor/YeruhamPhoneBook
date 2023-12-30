@@ -214,6 +214,7 @@ Future<http.Response> sendToLog(String text, SharedPreferences prefs) {
   final String phoneNumber = getPhoneNumber(prefs);
   final String? username = getNumberPage(phoneNumber)?.title;
   final String logSuffix = ' ע"י $username ($phoneNumber)';
+  stderr.writeln('sendToLog: $text');
 
   return http.post(url,
       headers: headers,
@@ -935,7 +936,6 @@ class _MainState extends State<Main> {
       }
     } catch (e) {
       sendToLog('טעינת הנתונים נכשלה "${e.toString()}"', _prefs);
-      stderr.writeln('Error: $e');
       _fetchError = e is Exception ? e : Exception(e);
       showError('טעינת הנתונים נכשלה.', e);
     }
