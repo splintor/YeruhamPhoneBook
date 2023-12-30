@@ -316,7 +316,7 @@ const String urlPattern = 'http[^\'">]+';
 final RegExp urlPatternRE = RegExp(urlPattern, caseSensitive: false);
 const String emailPattern = r'\S+@\S+';
 final RegExp emailPatternRE = RegExp(emailPattern, caseSensitive: false);
-const String phonePattern = r'(0[\d-]{8,})|(\*\d{3,})|(\d{3,}\*)';
+const String phonePattern = r'([01][\d-]{8,})|(\*\d{3,})|(\d{3,}\*)';
 final RegExp phonePatternRE = RegExp(phonePattern, caseSensitive: false);
 final RegExp linkRegExp = RegExp(
     '($anchorPattern)|($urlPattern)|($emailPattern)|$phonePattern',
