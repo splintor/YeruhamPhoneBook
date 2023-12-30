@@ -64,7 +64,9 @@ class Page {
         _id = page['_id'],
         title = page['title'],
         text = stripHtmlTags(page['html']),
-        tags = (page['tags'] as List<dynamic>?)?.map((dynamic tag) => tag as String).toList(),
+        tags = (page['tags'] as List<dynamic>?)
+            ?.map((dynamic tag) => tag as String)
+            .toList(),
         html = page['html'],
         isDeleted = page['isDeleted'] ?? false,
         dummyPage = page['dummyPage'] ?? false;
@@ -131,17 +133,18 @@ class Main extends StatefulWidget {
   _MainState createState() => _MainState(openedTag);
 }
 
-
 void showInSnackBar(BuildContext context, String value,
-    {bool isWarning = false, String? actionLabel, VoidCallback? actionHandler }) {
+    {bool isWarning = false,
+    String? actionLabel,
+    VoidCallback? actionHandler}) {
   final SnackBarAction? action = actionLabel == null
       ? null
       : SnackBarAction(
-      label: actionLabel,
-      onPressed: actionHandler ?? () {},
-      textColor: Colors.blue);
+          label: actionLabel,
+          onPressed: actionHandler ?? () {},
+          textColor: Colors.blue);
   final Text content =
-  Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
+      Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
   ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(action: action, content: content));
 }
@@ -192,10 +195,9 @@ Page? getNumberPage(String number) {
     return null;
   }
 
-  return pages.firstWhereOrNull(
-          (Page page) =>
+  return pages.firstWhereOrNull((Page page) =>
       page.isDeleted != true &&
-          page.text.replaceAll(RegExp(r'[-.]'), '').contains(number));
+      page.text.replaceAll(RegExp(r'[-.]'), '').contains(number));
 }
 
 String getPhoneNumber(SharedPreferences prefs) {
@@ -445,9 +447,12 @@ class PageDataValue {
   PageDataValue(RegExpMatch match)
       : label = match.group(1)?.trim() ?? '',
         htmlValue = match.group(2) ?? '',
-        innerText =
-            RegExp(r'>([^<]+)<').firstMatch(match.group(2) ?? '')?.group(1)?.trim() ??
-                match.group(2)?.trim() ?? '';
+        innerText = RegExp(r'>([^<]+)<')
+                .firstMatch(match.group(2) ?? '')
+                ?.group(1)
+                ?.trim() ??
+            match.group(2)?.trim() ??
+            '';
 
   String label;
   String htmlValue;
@@ -492,9 +497,8 @@ final RegExp suffixStar = RegExp(r'(\d*)\*');
 
 String phoneNumberUrl(String phoneNumber) =>
     'tel:' +
-    phoneNumber
-        .replaceAll(phoneNumberNonDigitsRE, '')
-        .replaceFirstMapped(suffixStar, (Match match) => '*' + (match.group(1) ?? ''));
+    phoneNumber.replaceAll(phoneNumberNonDigitsRE, '').replaceFirstMapped(
+        suffixStar, (Match match) => '*' + (match.group(1) ?? ''));
 
 String phoneNumberMatcher(Match match) =>
     '<a href="${phoneNumberUrl(match.group(1) ?? '')}">${match.group(1)}</a>${match.group(2) ?? ''}';
@@ -518,14 +522,14 @@ Future<void> loadPhoneContacts() async {
   }
 
   final Iterable<contacts_plugin.Contact> contacts =
-  await contacts_plugin.ContactsService.getContacts(
-      withThumbnails: false);
+      await contacts_plugin.ContactsService.getContacts(withThumbnails: false);
 
   contactPhones = Set<String>.from(contacts.expand<String>(
-          (contacts_plugin.Contact contact) => (contact.phones ?? <contacts_plugin.Item>[]).map(
+      (contacts_plugin.Contact contact) =>
+          (contact.phones ?? <contacts_plugin.Item>[]).map(
               (contacts_plugin.Item item) => (item.value ?? '')
-              .replaceAll(RegExp(r'[- ()]'), '')
-              .replaceAll('+972', '0'))));
+                  .replaceAll(RegExp(r'[- ()]'), '')
+                  .replaceAll('+972', '0'))));
 
   updateAllPageViews();
 }
@@ -606,7 +610,8 @@ class PageHTMLProcessor {
       dataValues.any((PageDataValue v) => v.label == label);
 
   PageDataValue? getValueForLabel(String label, {bool mustBePhone = false}) {
-    final PageDataValue? dataValue = dataValues.firstWhereOrNull((PageDataValue v) => v.label == label);
+    final PageDataValue? dataValue =
+        dataValues.firstWhereOrNull((PageDataValue v) => v.label == label);
     if (mustBePhone && dataValue != null && !dataValue.isPhoneValue()) {
       print('Unexpected phone value: ${dataValue.innerText}');
     }
@@ -614,7 +619,8 @@ class PageHTMLProcessor {
     return dataValue;
   }
 
-  bool inContact(String phoneNumber) => contactPhones?.contains(phoneNumber) ?? false;
+  bool inContact(String phoneNumber) =>
+      contactPhones?.contains(phoneNumber) ?? false;
 
   void appendAddContactLink(PageDataValue dataValue,
       {String? givenName, String? familyName, PageDataValue? homePhone}) {
@@ -723,9 +729,8 @@ class PageViewState extends State<PageView> {
             // Update loading bar.
           },
           // onPageStarted: (String url) {},
-          onPageFinished: (String _url) =>
-              webViewController.runJavaScript(
-                  'document.body.scrollLeft = document.body.scrollWidth'),
+          onPageFinished: (String _url) => webViewController.runJavaScript(
+              'document.body.scrollLeft = document.body.scrollWidth'),
           // onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) =>
               onWebViewNavigation(request, context),
@@ -793,13 +798,18 @@ class PageViewState extends State<PageView> {
           break;
 
         case 'phones':
-         contact.phones = value.split(',').map((String v) =>
-             contacts_plugin.Item(label: v.startsWith('05') ? 'mobile' : 'home', value: v)).toList(growable: false);
+          contact.phones = value
+              .split(',')
+              .map((String v) => contacts_plugin.Item(
+                  label: v.startsWith('05') ? 'mobile' : 'home', value: v))
+              .toList(growable: false);
           break;
 
         case 'emails':
-          contact.emails =
-              value.split(',').map((String v) => contacts_plugin.Item(label: 'home', value: v)).toList(growable: false);
+          contact.emails = value
+              .split(',')
+              .map((String v) => contacts_plugin.Item(label: 'home', value: v))
+              .toList(growable: false);
           break;
       }
     }
@@ -807,9 +817,11 @@ class PageViewState extends State<PageView> {
     sendToLog('בוצעה בקשה להוספת איש קשר "$url"', prefs);
     await contacts_plugin.ContactsService.addContact(contact);
     await loadContacts();
-    showInSnackBar(context, 'איש קשר "${contact.givenName} ${contact.familyName}" נוסף לאנשי הקשר',
+    showInSnackBar(context,
+        'איש קשר "${contact.givenName} ${contact.familyName}" נוסף לאנשי הקשר',
         actionLabel: 'הצג',
-        actionHandler: () => contacts_plugin.ContactsService.openExistingContact(contact));
+        actionHandler: () =>
+            contacts_plugin.ContactsService.openExistingContact(contact));
   }
 
   FloatingActionButton getShareButton() {
@@ -1325,7 +1337,7 @@ class _MainState extends State<Main> {
         _searchString != newPagesKeyword &&
         _openedTag == null) {
       return null;
-        } else if (searchResultsLength() == 0 && _tagsSearchResults.isEmpty) {
+    } else if (searchResultsLength() == 0 && _tagsSearchResults.isEmpty) {
       return Align(
         alignment: Alignment.topRight,
         child: Text.rich(
@@ -1343,8 +1355,10 @@ class _MainState extends State<Main> {
           tagsList(_tagsSearchResults, _prefs,
               filled: true, openTag: openTag, context: context),
           ..._searchResults
-              ?.map<PageItem>((Page page) => PageItem(page: page, prefs: _prefs))
-              .toList(growable: false) ?? <Widget>[]
+                  ?.map<PageItem>(
+                      (Page page) => PageItem(page: page, prefs: _prefs))
+                  .toList(growable: false) ??
+              <Widget>[]
         ],
       );
     }
