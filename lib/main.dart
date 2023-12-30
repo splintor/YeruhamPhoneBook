@@ -894,7 +894,7 @@ class _MainState extends State<Main> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late SharedPreferences _prefs;
   List<Page>? _searchResults;
-  late List<String> _tagsSearchResults;
+  List<String>? _tagsSearchResults;
   List<Page>? _updatedPages;
   Timer? _searchOverflowTimer;
   bool _isUserVerified = false;
@@ -1114,9 +1114,15 @@ class _MainState extends State<Main> {
     }
 
     if (searchString == newPagesKeyword) {
-      sendToLog(
-          'בוצע חיפוש של "$searchString" וחזרו ${(_updatedPages ?? <Page>[]).length} תוצאות',
-          _prefs);
+      final newItemsCount = _updatedPages?.length ?? 0;
+      if (newItemsCount == 1) {
+        sendToLog(
+            'בוצע חיפוש של "$searchString" וחזרה תוצאה אחת (${_updatedPages!.first.title})',
+            _prefs);
+      } else {
+        sendToLog('בוצע חיפוש של "$searchString" וחזרו $newItemsCount תוצאות',
+            _prefs);
+      }
       setState(() => _searchResults = _updatedPages ?? <Page>[]);
       return;
     }
@@ -1168,8 +1174,14 @@ class _MainState extends State<Main> {
     }
 
     _searchDebounce = Timer(const Duration(milliseconds: 500), () {
-      sendToLog('בוצע חיפוש של "$searchString" וחזרו ${result.length} תוצאות',
-          _prefs);
+      if (result.length == 1) {
+        sendToLog(
+            'בוצע חיפוש של "$searchString" וחזרה תוצאה אחת (${result.first.title}) ',
+            _prefs);
+      } else {
+        sendToLog('בוצע חיפוש של "$searchString" וחזרו ${result.length} תוצאות',
+            _prefs);
+      }
     });
 
     setState(() {
@@ -1336,7 +1348,8 @@ class _MainState extends State<Main> {
         _searchString != newPagesKeyword &&
         _openedTag == null) {
       return null;
-    } else if (searchResultsLength() == 0 && _tagsSearchResults.isEmpty) {
+    } else if (searchResultsLength() == 0 &&
+        (_tagsSearchResults?.isEmpty ?? true)) {
       return Align(
         alignment: Alignment.topRight,
         child: Text.rich(
