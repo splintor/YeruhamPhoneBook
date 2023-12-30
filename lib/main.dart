@@ -868,11 +868,10 @@ class PageViewState extends State<PageView> {
                 child: tagsList(page.tags, prefs,
                     filled: false, openTag: openTag, context: context),
               ),
-              Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                child: WebViewWidget(controller: webViewController, layoutDirection: ui.TextDirection.rtl)
-              )
+              Expanded(
+                  child: WebViewWidget(
+                      controller: webViewController,
+                      layoutDirection: ui.TextDirection.rtl))
             ]),
         floatingActionButton: getShareButton(),
       );
