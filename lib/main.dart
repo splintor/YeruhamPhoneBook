@@ -196,8 +196,12 @@ Page? getNumberPage(String number) {
   }
 
   return pages.firstWhereOrNull((Page page) =>
-      page.isDeleted != true &&
-      page.text.replaceAll(RegExp(r'[-.]'), '').contains(number));
+          !(page.tags?.contains('ציבורי') ?? false) &&
+          page.isDeleted != true &&
+          page.text.replaceAll(RegExp(r'[-.]'), '').contains(number)) ??
+      pages.firstWhereOrNull((Page page) =>
+          page.isDeleted != true &&
+          page.text.replaceAll(RegExp(r'[-.]'), '').contains(number));
 }
 
 String getPhoneNumber(SharedPreferences prefs) {
