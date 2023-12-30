@@ -485,7 +485,7 @@ final RegExp styleURLRE = RegExp(r" ?style=';*'");
 final RegExp specialCharsRE = RegExp(r'[\u2000-\u2BFF]');
 final RegExp spanElementRE = RegExp(r'<span>([^<]*)</span>');
 final RegExp facebookAltRE = RegExp(r"alt='https://www.facebook.com[^']*'");
-final RegExp phoneNumberRE = RegExp(r'([\d-+]{8,})([^"/\d])');
+final RegExp phoneNumberRE = RegExp(r'([\d-+]{8,})([^"/\w])');
 final RegExp prefixStarPhoneNumberRE = RegExp(r'(\*\d{3,})([^"])');
 final RegExp suffixStarPhoneNumberRE = RegExp(r'(\d{3,}\*)([^"])');
 final RegExp phoneNumberNonDigitsRE = RegExp(r'[-+]+');
