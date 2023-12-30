@@ -538,7 +538,7 @@ class PageHTMLProcessor {
   PageHTMLProcessor(this.page, this.prefs)
       : html = page.dummyPage == true
             ? page.html
-            : '<div style="transform: scale(2); transform-origin: top right">' +
+            : '<div style="font-size: 3em">' +
                 page.html
                     .replaceFirst('<table', '<table width="100%"')
                     .replaceAll('font-size:10pt', '')

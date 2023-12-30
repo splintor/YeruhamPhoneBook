@@ -1,5 +1,4 @@
 - 1800 numbers are not linked properly (see מעיינות הדרום)
-- Make pages word wrap
 - Web: Try to search page when non-existing deep link is opened
 - Web: Log links clicks from web
 - Log: try to better indicate who is logged in
