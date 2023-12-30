@@ -14,7 +14,7 @@ description: A Flutter mobile application to provide easy and fast access to [Ye
 version: 3.2.12+300212
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
   contacts_service: ^0.6.1
