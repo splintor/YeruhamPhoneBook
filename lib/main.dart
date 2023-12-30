@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
+import 'package:collection/collection.dart';
 import 'package:contacts_service/contacts_service.dart' as contacts_plugin;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,8 +22,8 @@ import 'httpsCertificates.dart';
 import 'icons.dart';
 import 'secret.dart';
 
-List<Page> pages;
-List<String> tags;
+List<Page> pages = <Page>[];
+List<String> tags = <String>[];
 const String siteDomain = 'yeruham-phone-book.vercel.app';
 const String siteUrl = 'https://$siteDomain';
 final List<PageViewState> openPageViews = <PageViewState>[];
@@ -30,7 +32,7 @@ const int patchLevel = 2;
 final int startOfTime = DateTime(1900, 12, 1).millisecondsSinceEpoch;
 
 bool contactPermissionWasGranted = false;
-Set<String> contactPhones;
+Set<String>? contactPhones;
 
 void main() {
   HttpOverrides.global = AcceptAllHttpOverrides();
@@ -46,7 +48,7 @@ const TextStyle tagTitleStyle = TextStyle(fontSize: 22);
 const double searchResultFontSize = 20;
 const double whatsAppImageSize = 28;
 const String newPagesKeyword = '#חדשים';
-Timer _searchDebounce;
+Timer? _searchDebounce;
 
 // https://stackoverflow.com/a/67241469/46635
 String stripHtmlTags(String text) {
@@ -62,24 +64,22 @@ class Page {
         _id = page['_id'],
         title = page['title'],
         text = stripHtmlTags(page['html']),
-        tags = (page['tags'] as List<dynamic>)
-            ?.map((dynamic tag) => tag as String)
-            ?.toList(),
+        tags = (page['tags'] as List<dynamic>?)?.map((dynamic tag) => tag as String).toList(),
         html = page['html'],
-        isDeleted = page['isDeleted'],
-        dummyPage = page['dummyPage'];
+        isDeleted = page['isDeleted'] ?? false,
+        dummyPage = page['dummyPage'] ?? false;
 
   dynamic toJson() => page;
 
-  Map<String, dynamic> page;
-  String _id;
-  String url;
-  String title;
-  String text;
-  List<String> tags;
-  String html;
-  bool isDeleted;
-  bool dummyPage;
+  Map<String, dynamic> page = <String, dynamic>{};
+  String? _id;
+  String? url;
+  String title = '';
+  String text = '';
+  List<String>? tags;
+  String html = '';
+  bool isDeleted = false;
+  bool dummyPage = false;
 }
 
 bool isPageSearchable(Page page) =>
@@ -123,9 +123,9 @@ class YeruhamPhonebookApp extends StatelessWidget {
 }
 
 class Main extends StatefulWidget {
-  const Main({Key key, this.openedTag}) : super(key: key);
+  const Main({super.key, this.openedTag});
 
-  final String openedTag;
+  final String? openedTag;
 
   @override
   _MainState createState() => _MainState(openedTag);
@@ -133,12 +133,12 @@ class Main extends StatefulWidget {
 
 
 void showInSnackBar(BuildContext context, String value,
-    {bool isWarning = false, String actionLabel, Function actionHandler}) {
-  final SnackBarAction action = actionLabel == null
+    {bool isWarning = false, String? actionLabel, VoidCallback? actionHandler }) {
+  final SnackBarAction? action = actionLabel == null
       ? null
       : SnackBarAction(
       label: actionLabel,
-      onPressed: actionHandler,
+      onPressed: actionHandler ?? () {},
       textColor: Colors.blue);
   final Text content =
   Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
@@ -164,9 +164,7 @@ Future<void> openUrlOrPage(
       .replaceAll(' ', '_')
       .replaceAll('"', '%22')
       .replaceAll(RegExp(r'^/'), '$siteUrl/');
-  final Page page = context == null
-      ? null
-      : pages.firstWhere((Page p) => p.url == urlToUse, orElse: () => null);
+  final Page? page = pages.firstWhereOrNull((Page p) => p.url == urlToUse);
   if (page == null) {
     openUrl(url, prefs);
   } else {
@@ -178,12 +176,8 @@ String normalizedNumber(String number) {
   return number.replaceAll(RegExp(r'\D'), '');
 }
 
-Page getNumberPage(String number) {
-  if (number?.isEmpty ?? true) {
-    return null;
-  }
-
-  if (pages == null) {
+Page? getNumberPage(String number) {
+  if (number.isEmpty || pages.isEmpty) {
     return null;
   }
 
@@ -198,15 +192,14 @@ Page getNumberPage(String number) {
     return null;
   }
 
-  return pages.firstWhere(
+  return pages.firstWhereOrNull(
           (Page page) =>
       page.isDeleted != true &&
-          page.text.replaceAll(RegExp(r'[-.]'), '').contains(number),
-      orElse: () => null);
+          page.text.replaceAll(RegExp(r'[-.]'), '').contains(number));
 }
 
 String getPhoneNumber(SharedPreferences prefs) {
-  return prefs.getString('validationNumber');
+  return prefs.getString('validationNumber') ?? 'No validation number found';
 }
 
 Future<http.Response> sendToLog(String text, SharedPreferences prefs) {
@@ -217,7 +210,7 @@ Future<http.Response> sendToLog(String text, SharedPreferences prefs) {
 
   final Uri url = Uri.https(siteDomain, '/api/writeToLog');
   final String phoneNumber = getPhoneNumber(prefs);
-  final String username = getNumberPage(phoneNumber)?.title;
+  final String? username = getNumberPage(phoneNumber)?.title;
   final String logSuffix = ' ע"י $username ($phoneNumber)';
 
   return http.post(url,
@@ -351,7 +344,7 @@ List<InlineSpan> linkify(
   if (lines.length > previewMaxLines) {
     text = lines.sublist(0, previewMaxLines - 1).join('\n');
   }
-  final RegExpMatch match = linkRegExp.firstMatch(text);
+  final RegExpMatch? match = linkRegExp.firstMatch(text);
   if (match == null) {
     text = text.trim();
     if (text.isNotEmpty && !text.contains('מילות חיפוש')) {
@@ -365,17 +358,17 @@ List<InlineSpan> linkify(
     list.add(TextSpan(text: text.substring(0, match.start)));
   }
 
-  final String linkText = match.group(0);
-  final RegExpMatch anchorMatch = anchorPatternRE.firstMatch(linkText);
+  final String linkText = match.group(0)!;
+  final RegExpMatch? anchorMatch = anchorPatternRE.firstMatch(linkText);
   if (anchorMatch != null) {
-    if (anchorMatch.group(2).trim().isNotEmpty) {
+    if (anchorMatch.group(2)?.trim().isNotEmpty ?? false) {
       list.add(buildLinkComponent(
-          anchorMatch.group(2), anchorMatch.group(1), prefs, context));
+          anchorMatch.group(2)!, anchorMatch.group(1)!, prefs, context));
     }
   } else if (linkText.contains(urlPatternRE)) {
-    list.add(buildLinkComponent(linkText, linkText, prefs, null));
+    list.add(buildLinkComponent(linkText, linkText, prefs, context));
   } else if (linkText.contains(emailPatternRE)) {
-    list.add(buildLinkComponent(linkText, 'mailto:$linkText', prefs, null));
+    list.add(buildLinkComponent(linkText, 'mailto:$linkText', prefs, context));
   } else if (linkText.contains(phonePatternRE)) {
     if (linkText.startsWith('05')) {
       list.add(WidgetSpan(
@@ -385,7 +378,7 @@ List<InlineSpan> linkify(
       )));
     }
     list.add(
-        buildLinkComponent(linkText, phoneNumberUrl(linkText), prefs, null));
+        buildLinkComponent(linkText, phoneNumberUrl(linkText), prefs, context));
   } else {
     sendToLog('בעייה בבניית קישור עבור "$linkText"', prefs);
     throw 'Unexpected match: $linkText';
@@ -398,7 +391,7 @@ List<InlineSpan> linkify(
 }
 
 class PageItem extends StatelessWidget {
-  const PageItem({Key key, this.page, this.prefs}) : super(key: key);
+  const PageItem({super.key, required this.page, required this.prefs});
 
   final Page page;
   final SharedPreferences prefs;
@@ -408,8 +401,8 @@ class PageItem extends StatelessWidget {
     final List<InlineSpan> lines = linkify(text, prefs, context);
 
     if (lines.isNotEmpty && lines[lines.length - 1] is TextSpan) {
-      final TextSpan textSpan = lines[lines.length - 1];
-      if (textSpan.text.trim().isEmpty) {
+      final TextSpan textSpan = lines[lines.length - 1] as TextSpan;
+      if (textSpan.text?.trim().isEmpty ?? true) {
         lines.removeLast();
       }
     }
@@ -450,11 +443,11 @@ class PageItem extends StatelessWidget {
 
 class PageDataValue {
   PageDataValue(RegExpMatch match)
-      : label = match.group(1).trim(),
-        htmlValue = match.group(2),
+      : label = match.group(1)?.trim() ?? '',
+        htmlValue = match.group(2) ?? '',
         innerText =
-            RegExp(r'>([^<]+)<').firstMatch(match.group(2))?.group(1)?.trim() ??
-                match.group(2).trim();
+            RegExp(r'>([^<]+)<').firstMatch(match.group(2) ?? '')?.group(1)?.trim() ??
+                match.group(2)?.trim() ?? '';
 
   String label;
   String htmlValue;
@@ -463,7 +456,7 @@ class PageDataValue {
   bool isPhoneValue() => innerText.contains(RegExp(r'^\*?[\d+-]{8,}\*?$'));
 
   String phoneValue() =>
-      isPhoneValue() ? innerText.replaceAll(RegExp(r'[\s-+=]'), '') : null;
+      isPhoneValue() ? innerText.replaceAll(RegExp(r'[\s-+=]'), '') : '';
 
   String toUrlPart() => isPhoneValue() ? phoneValue() : innerText;
 }
@@ -474,7 +467,7 @@ final RegExp anyTagRE = RegExp(r'<[^>]*>');
 final RegExp anyTagButAnchorRE = RegExp(r'<[^aA/][^>]*>|</[^aA][^>]*>');
 final RegExp multipleNewLinesRE = RegExp(r'(\s*\n)+');
 
-String getPageInnerText(Page page, {bool leaveAnchors}) =>
+String getPageInnerText(Page page, {bool leaveAnchors = false}) =>
     replaceEmail(page.html
         .replaceAll(RegExp(r'\n\s*'), ' ')
         .replaceAll(newLineTagsRE, '\n')
@@ -501,10 +494,10 @@ String phoneNumberUrl(String phoneNumber) =>
     'tel:' +
     phoneNumber
         .replaceAll(phoneNumberNonDigitsRE, '')
-        .replaceFirstMapped(suffixStar, (Match match) => '*' + match.group(1));
+        .replaceFirstMapped(suffixStar, (Match match) => '*' + (match.group(1) ?? ''));
 
 String phoneNumberMatcher(Match match) =>
-    '<a href="${phoneNumberUrl(match.group(1))}">${match.group(1)}</a>${match.group(2)}';
+    '<a href="${phoneNumberUrl(match.group(1) ?? '')}">${match.group(1)}</a>${match.group(2) ?? ''}';
 
 void updateAllPageViews() {
   for (PageViewState pageView in openPageViews) {
@@ -529,8 +522,8 @@ Future<void> loadPhoneContacts() async {
       withThumbnails: false);
 
   contactPhones = Set<String>.from(contacts.expand<String>(
-          (contacts_plugin.Contact contact) => contact.phones.map(
-              (contacts_plugin.Item item) => item.value
+          (contacts_plugin.Contact contact) => (contact.phones ?? <contacts_plugin.Item>[]).map(
+              (contacts_plugin.Item item) => (item.value ?? '')
               .replaceAll(RegExp(r'[- ()]'), '')
               .replaceAll('+972', '0'))));
 
@@ -552,7 +545,7 @@ class PageHTMLProcessor {
                     .replaceAll(styleURLRE, '')
                     .replaceAll(specialCharsRE, '')
                     .replaceAllMapped(
-                        spanElementRE, (Match match) => match.group(1))
+                        spanElementRE, (Match match) => match.group(1) ?? '')
                     .replaceAll(twitterImgRE, twitterDataImg)
                     .replaceAll(facebookImgRE, facebookDataImg)
                     .replaceAll(instagramImgRE, instagramDataImg)
@@ -579,7 +572,7 @@ class PageHTMLProcessor {
         .where((PageDataValue v) => v.label.contains(mailTitleRE))
         .toList(growable: false);
 
-    final PageDataValue homeValue =
+    final PageDataValue? homeValue =
         getValueForLabel('טלפון', mustBePhone: true);
     for (PageDataValue v in phoneValues) {
       if (!inContact(v.phoneValue())) {
@@ -592,7 +585,7 @@ class PageHTMLProcessor {
     html = html.replaceAllMapped(
         mobilePhoneTitleRE,
         (Match match) =>
-            '${match.group(0)}&nbsp;${whatsAppLink(match.group(1))}');
+            '${match.group(0)}&nbsp;${whatsAppLink(match.group(1) ?? '')}');
 
     html = replaceEmail(html);
     html = replacePToDiv(html);
@@ -604,17 +597,16 @@ class PageHTMLProcessor {
 
   Page page;
   SharedPreferences prefs;
-  String html;
-  List<PageDataValue> dataValues;
-  List<PageDataValue> phoneValues;
-  List<PageDataValue> mailValues;
+  late String html;
+  late List<PageDataValue> dataValues;
+  late List<PageDataValue> phoneValues;
+  late List<PageDataValue> mailValues;
 
   bool hasLabel(String label) =>
       dataValues.any((PageDataValue v) => v.label == label);
 
-  PageDataValue getValueForLabel(String label, {bool mustBePhone = false}) {
-    final PageDataValue dataValue = dataValues
-        .firstWhere((PageDataValue v) => v.label == label, orElse: () => null);
+  PageDataValue? getValueForLabel(String label, {bool mustBePhone = false}) {
+    final PageDataValue? dataValue = dataValues.firstWhereOrNull((PageDataValue v) => v.label == label);
     if (mustBePhone && dataValue != null && !dataValue.isPhoneValue()) {
       print('Unexpected phone value: ${dataValue.innerText}');
     }
@@ -622,11 +614,10 @@ class PageHTMLProcessor {
     return dataValue;
   }
 
-  bool inContact(String phoneNumber) =>
-      contactPhones != null && contactPhones.contains(phoneNumber);
+  bool inContact(String phoneNumber) => contactPhones?.contains(phoneNumber) ?? false;
 
   void appendAddContactLink(PageDataValue dataValue,
-      {String givenName, String familyName, PageDataValue homePhone}) {
+      {String? givenName, String? familyName, PageDataValue? homePhone}) {
     givenName ??= getPageGivenName();
     familyName ??= getPageFamilyName();
     String phones = dataValue.toUrlPart();
@@ -651,7 +642,7 @@ class PageHTMLProcessor {
     }
 
     if (mailValues.isNotEmpty) {
-      String emails;
+      String? emails;
       if (mailValues.length == 1 ||
           phoneValues.length == 1 ||
           (phoneValues.length == 2 && homePhone != null)) {
@@ -716,20 +707,45 @@ class PageViewState extends State<PageView> {
   final Page page;
   final SharedPreferences prefs;
   String html;
-  WebViewController webViewController;
+
+  late WebViewController webViewController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      // ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            // Update loading bar.
+          },
+          // onPageStarted: (String url) {},
+          onPageFinished: (String _url) =>
+              webViewController.runJavaScript(
+                  'document.body.scrollLeft = document.body.scrollWidth'),
+          // onWebResourceError: (WebResourceError error) {},
+          onNavigationRequest: (NavigationRequest request) =>
+              onWebViewNavigation(request, context),
+        ),
+      )
+      ..loadHtmlString(processHTML());
+  }
 
   void checkForHtmlChanges() {
     final String newHtml = PageHTMLProcessor(page, prefs).html;
     if (html != newHtml) {
       html = newHtml;
-      webViewController.loadUrl(getDataUrlForHtml());
+      webViewController.loadHtmlString(processHTML());
     }
   }
 
   void onMenuSelected(String itemValue) {
     switch (itemValue) {
       case 'copyPageUrl':
-        Clipboard.setData(ClipboardData(text: page.url));
+        Clipboard.setData(ClipboardData(text: page.url!));
         return;
 
       case 'openPageInBrowser':
@@ -738,27 +754,18 @@ class PageViewState extends State<PageView> {
     }
   }
 
-  // todo: consider add wrapping using https://stackoverflow.com/a/58827074/46635
-  String getDataUrlForHtml() => Uri.dataFromString(html,
-          mimeType: 'text/html', encoding: Encoding.getByName('UTF-8'))
-      .toString();
-
-  void onWebViewCreated(WebViewController controller) =>
-      webViewController = controller;
-
-  Future<void> onPageFinished(String url) => webViewController
-      .runJavascript('document.body.scrollLeft = document.body.scrollWidth');
+  String processHTML() => '<p style="word-wrap: break-word;">$html</p>';
 
   Future<NavigationDecision> onWebViewNavigation(
-      NavigationRequest navigation, BuildContext context) async {
+      NavigationRequest request, BuildContext context) async {
     final String pageUrlBase =
-        RegExp(r'https://[^/]+/').firstMatch(page.url ?? '')?.group(0);
-    if (pageUrlBase != null && navigation.url.startsWith(pageUrlBase)) {
-      openUrlOrPage(navigation.url, prefs, context);
-    } else if (navigation.url.startsWith('action:addUser?')) {
-      await addContact(context, navigation.url);
+        RegExp(r'https://[^/]+/').firstMatch(page.url ?? '')?.group(0) ?? '';
+    if (request.url.startsWith(pageUrlBase)) {
+      openUrlOrPage(request.url, prefs, context);
+    } else if (request.url.startsWith('action:addUser?')) {
+      await addContact(context, request.url);
     } else {
-      openUrl(navigation.url, prefs);
+      openUrl(request.url, prefs);
     }
 
     return NavigationDecision.prevent;
@@ -849,15 +856,11 @@ class PageViewState extends State<PageView> {
                 child: tagsList(page.tags, prefs,
                     filled: false, openTag: openTag, context: context),
               ),
-              Expanded(
-                  child: WebView(
-                javascriptMode: JavascriptMode.unrestricted,
-                initialUrl: getDataUrlForHtml(),
-                onWebViewCreated: onWebViewCreated,
-                onPageFinished: onPageFinished,
-                navigationDelegate: (NavigationRequest navigation) async =>
-                    onWebViewNavigation(navigation, context),
-              ))
+              Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: WebViewWidget(controller: webViewController, layoutDirection: ui.TextDirection.rtl)
+              )
             ]),
         floatingActionButton: getShareButton(),
       );
@@ -870,28 +873,32 @@ class _MainState extends State<Main> {
           .where((Page page) =>
               isPageSearchable(page) &&
               page.tags != null &&
-              page.tags.contains(_openedTag))
+              page.tags!.contains(_openedTag))
           .toList(growable: false);
-      _searchResults.sort((Page a, Page b) => a.title.compareTo(b.title));
+      _searchResults!.sort((Page a, Page b) => a.title.compareTo(b.title));
     }
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  SharedPreferences _prefs;
-  List<Page> _searchResults;
-  List<String> _tagsSearchResults;
-  List<Page> _updatedPages;
-  Timer _searchOverflowTimer;
+  late SharedPreferences _prefs;
+  List<Page>? _searchResults;
+  late List<String> _tagsSearchResults;
+  List<Page>? _updatedPages;
+  Timer? _searchOverflowTimer;
   bool _isUserVerified = false;
   final TextEditingController _phoneNumberController = TextEditingController();
   String _phoneNumber = '';
-  Exception _fetchError;
-  String _responseError;
+  Exception? _fetchError;
+  String? _responseError;
   bool _reloadingData = false;
   bool _parsingPages = false;
   final TextEditingController _searchTextController = TextEditingController();
   String _searchString = '';
-  String _openedTag;
+  String? _openedTag;
+
+  int searchResultsLength() {
+    return _searchResults?.length ?? 0;
+  }
 
   Future<void> fetchData() async {
     try {
@@ -913,11 +920,12 @@ class _MainState extends State<Main> {
       } else {
         _responseError =
             'Server returned an error: ${response.statusCode} ${response.body}';
-        showError('הורדת הנתונים נכשלה.', _responseError);
+        showError('הורדת הנתונים נכשלה.', _responseError!);
       }
     } catch (e) {
       sendToLog('טעינת הנתונים נכשלה "${e.toString()}"', _prefs);
-      _fetchError = e;
+      stderr.writeln('Error: $e');
+      _fetchError = e is Exception ? e : Exception(e);
       showError('טעינת הנתונים נכשלה.', e);
     }
 
@@ -925,7 +933,7 @@ class _MainState extends State<Main> {
     _parsingPages = false;
   }
 
-  List<Page> parseData(dynamic jsonData, {@required bool growable}) {
+  List<Page> parseData(dynamic jsonData, {required bool growable}) {
     final List<Map<String, dynamic>> dynamicPages =
         jsonData['pages'].cast<Map<String, dynamic>>();
     return dynamicPages
@@ -937,7 +945,7 @@ class _MainState extends State<Main> {
     final Set<String> tagsSet = <String>{};
     for (Page p in pages) {
       if (p.tags != null) {
-        tagsSet.addAll(p.tags);
+        tagsSet.addAll(p.tags!);
       }
     }
     tags = tagsSet.toList();
@@ -951,7 +959,7 @@ class _MainState extends State<Main> {
         setState(() {
           _prefs = prefs;
           _phoneNumber = getPhoneNumber(_prefs);
-          _isUserVerified = _phoneNumber?.isNotEmpty;
+          _isUserVerified = _phoneNumber.isNotEmpty;
         });
       });
 
@@ -968,12 +976,12 @@ class _MainState extends State<Main> {
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
       setState(() {
         _prefs = prefs;
-        _phoneNumber = getPhoneNumber(_prefs) ?? '';
-        if (_phoneNumber?.isEmpty ?? true) {
+        _phoneNumber = getPhoneNumber(_prefs);
+        if (_phoneNumber.isEmpty) {
           fetchData();
         } else {
           try {
-            final String dataString = _prefs.getString('data');
+            final String dataString = _prefs.getString('data') ?? '';
             pages = parseData(json.decode(dataString), growable: true);
             getTagsFromPages();
             _isUserVerified = true;
@@ -991,7 +999,7 @@ class _MainState extends State<Main> {
   }
 
   void checkPhoneNumber() {
-    final Page page = getNumberPage(_phoneNumber);
+    final Page? page = getNumberPage(_phoneNumber);
     if (page != null) {
       _prefs.setString('validationNumber', normalizedNumber(_phoneNumber));
 
@@ -1048,8 +1056,7 @@ class _MainState extends State<Main> {
     return searchableWord.isNotEmpty &&
         (searchable(page.title).contains(searchableWord) ||
             searchable(page.text).contains(searchableWord) ||
-            (page.tags != null &&
-                page.tags.any((String t) => t.contains(word))));
+            (page.tags?.any((String t) => t.contains(word)) ?? false));
   }
 
   int compareSearchIndexes(String s1, String s2) {
@@ -1133,12 +1140,9 @@ class _MainState extends State<Main> {
 
     if (result.length > searchResultsLimit) {
       if (_searchOverflowTimer != null ||
-          _searchResults == null ||
-          _searchResults.length <= searchResultsLimit) {
+          searchResultsLength() <= searchResultsLimit) {
         setState(() {
-          if (_searchOverflowTimer != null) {
-            _searchOverflowTimer.cancel();
-          }
+          _searchOverflowTimer?.cancel();
 
           _searchOverflowTimer = Timer(
             searchOverflowDuration,
@@ -1149,7 +1153,7 @@ class _MainState extends State<Main> {
     }
 
     if (_searchDebounce?.isActive ?? false) {
-      _searchDebounce.cancel();
+      _searchDebounce?.cancel();
     }
 
     _searchDebounce = Timer(const Duration(milliseconds: 500), () {
@@ -1163,8 +1167,8 @@ class _MainState extends State<Main> {
     });
   }
 
-  FloatingActionButton getFeedbackButton() {
-    return _searchString.isEmpty || _searchResults == null
+  FloatingActionButton? getFeedbackButton() {
+    return _searchString.isEmpty
         ? FloatingActionButton.extended(
             onPressed: () async {
               const String url =
@@ -1179,7 +1183,7 @@ class _MainState extends State<Main> {
 
   int getLastUpdateDate() {
     try {
-      return _prefs.getInt('lastUpdateDate');
+      return _prefs.getInt('lastUpdateDate') ?? 0;
     } catch (e) {
       return 0;
     }
@@ -1214,7 +1218,7 @@ class _MainState extends State<Main> {
     }
   }
 
-  Future<void> checkForUpdates({bool forceUpdate}) async {
+  Future<void> checkForUpdates({bool forceUpdate = false}) async {
     if (forceUpdate) {
       showInSnackBar(context, 'בודק אם יש עדכונים...');
     }
@@ -1301,9 +1305,9 @@ class _MainState extends State<Main> {
     return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          tagsList(<String>[_openedTag], _prefs,
+          tagsList(<String>[_openedTag ?? ''], _prefs,
               filled: true, context: context),
-          Text(' (${_searchResults.length} דפים בקטגוריה)',
+          Text(' (${searchResultsLength()} דפים בקטגוריה)',
               style: const TextStyle(fontSize: 18)),
         ]);
   }
@@ -1311,35 +1315,17 @@ class _MainState extends State<Main> {
   Future<void> openAboutPage() async =>
       openPage(await getAboutPage(), _prefs, context);
 
-  Widget buildSearchContent() {
-    if ((_searchString.isEmpty && _openedTag == null) ||
-        _searchResults == null) {
+  Widget? buildSearchContent() {
+    if (_searchString.isEmpty && _openedTag == null) {
       return GestureDetector(
         onTap: openAboutPage,
         child: Image.asset('./assets/round_irus.png'),
       );
-    } else if (_searchResults.length > searchResultsLimit &&
+    } else if (searchResultsLength() > searchResultsLimit &&
         _searchString != newPagesKeyword &&
         _openedTag == null) {
-      if (_searchOverflowTimer == null) {
-        return Align(
-          alignment: Alignment.topRight,
-          child: Text.rich(
-              TextSpan(style: emptyListMessageStyle, children: <TextSpan>[
-            const TextSpan(text: 'נמצאו '),
-            TextSpan(
-              text: _searchResults.length.toString(),
-              style: const TextStyle(color: Colors.blueAccent),
-            ),
-            const TextSpan(
-                text:
-                    ' תוצאות מתאימות. יש לצמצם את התוצאות ע"י הוספת עוד מילות חיפוש.'),
-          ])),
-        );
-      } else {
-        return null;
-      }
-    } else if (_searchResults.isEmpty && _tagsSearchResults.isEmpty) {
+      return null;
+        } else if (searchResultsLength() == 0 && _tagsSearchResults.isEmpty) {
       return Align(
         alignment: Alignment.topRight,
         child: Text.rich(
@@ -1357,8 +1343,8 @@ class _MainState extends State<Main> {
           tagsList(_tagsSearchResults, _prefs,
               filled: true, openTag: openTag, context: context),
           ..._searchResults
-              .map<PageItem>((Page page) => PageItem(page: page, prefs: _prefs))
-              .toList(growable: false)
+              ?.map<PageItem>((Page page) => PageItem(page: page, prefs: _prefs))
+              .toList(growable: false) ?? <Widget>[]
         ],
       );
     }
@@ -1438,20 +1424,16 @@ class _MainState extends State<Main> {
         ]);
   }
 
-  String getMainWidgetText() {
+  String? getMainWidgetText() {
     if (_fetchError != null) {
       return 'אויש, הטעינה נכשלה. :(';
     }
 
     if (_responseError != null) {
-      return 'אויש, ההורדה נכשלה! ' + _responseError;
+      return 'אויש, ההורדה נכשלה! ' + _responseError!;
     }
 
-    if (_prefs == null) {
-      return 'טוען את ספר הטלפונים...';
-    }
-
-    if (pages == null) {
+    if (pages.isEmpty) {
       if (_reloadingData) {
         return 'טוען דפים מחדש...';
       }
@@ -1467,7 +1449,7 @@ class _MainState extends State<Main> {
   }
 
   Widget buildMainWidget() {
-    final String mainWidgetText = getMainWidgetText();
+    final String? mainWidgetText = getMainWidgetText();
     return mainWidgetText != null
         ? Center(child: Text(mainWidgetText))
         : _isUserVerified
