@@ -279,10 +279,10 @@ Future<Page> getAboutPage() async {
   const String helpUrl = '$siteUrl/help';
 
   return Page()
-    ..title = 'אפליקצית ספר הטלפונים של ירוחם'
+    ..title = 'אפליקציית ספר הטלפונים של ירוחם'
     ..dummyPage = true
     ..html =
-        '''<table width="100%" style="font-size: 1.2em;"><tbody><tr><td><div dir='rtl'>
+        '''<table width="100%" style="font-size: 3em;"><tbody><tr><td><div dir='rtl'>
         האפליקציה נכתבה ב<a href="https://github.com/splintor/YeruhamPhoneBook">קוד פתוח</a>
          על-ידי שמוליק פלינט
         (<a href="mailto:splintor@gmail.com">splintor@gmail.com</a>&nbsp;${whatsAppLink('0523843115')})
