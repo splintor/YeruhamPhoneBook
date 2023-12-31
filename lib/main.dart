@@ -150,8 +150,22 @@ void showInSnackBar(BuildContext context, String value,
       .showSnackBar(SnackBar(action: action, content: content));
 }
 
-Future<void> openUrl(String url, SharedPreferences prefs) async {
-  sendToLog('נפתחה הכתובת "$url"', prefs);
+String pageLogSuffix(Page? sourcePage) {
+  final Page? fromPage = sourcePage ?? openPageViews.lastOrNull?.page;
+  if (fromPage != null) {
+    if (openPageViews.isEmpty) {
+      return ' מתוך תוצאת החיפוש ${fromPage.title}';
+    } else {
+      return ' מתוך הדף ${fromPage.title}';
+    }
+  } else {
+    return '';
+  }
+}
+
+Future<void> openUrl(
+    String url, Page? sourcePage, SharedPreferences prefs) async {
+  sendToLog('נפתחה הכתובת "$url"${pageLogSuffix(sourcePage)}', prefs);
   final Uri uri = Uri.parse(url);
   if (await canLaunchUrl(uri)) {
     await launchUrl(uri);
@@ -161,8 +175,8 @@ Future<void> openUrl(String url, SharedPreferences prefs) async {
   }
 }
 
-Future<void> openUrlOrPage(
-    String url, SharedPreferences prefs, BuildContext context) async {
+Future<void> openUrlOrPage(String url, Page sourcePage, SharedPreferences prefs,
+    BuildContext context) async {
   String urlToUse = url.contains('%') ? Uri.decodeFull(url) : url;
   urlToUse = urlToUse
       .replaceAll(' ', '_')
@@ -170,9 +184,9 @@ Future<void> openUrlOrPage(
       .replaceAll(RegExp(r'^/'), '$siteUrl/');
   final Page? page = pages.firstWhereOrNull((Page p) => p.url == urlToUse);
   if (page == null) {
-    openUrl(url, prefs);
+    openUrl(url, sourcePage, prefs);
   } else {
-    openPage(page, prefs, context);
+    openPage(page, sourcePage, prefs, context);
   }
 }
 
@@ -226,8 +240,9 @@ Future<http.Response> sendToLog(String text, SharedPreferences prefs) {
       body: jsonEncode(<String, String>{'text': 'A: ' + text + logSuffix}));
 }
 
-void openPage(Page page, SharedPreferences prefs, BuildContext context) {
-  sendToLog('נפתח הדף "${page.title}"', prefs);
+void openPage(Page page, Page? sourcePage, SharedPreferences prefs,
+    BuildContext context) {
+  sendToLog('נפתח הדף "${page.title}"${pageLogSuffix(sourcePage)}', prefs);
   Navigator.push(
     context,
     MaterialPageRoute<void>(
@@ -235,8 +250,9 @@ void openPage(Page page, SharedPreferences prefs, BuildContext context) {
   );
 }
 
-void openTag(String tag, SharedPreferences prefs, BuildContext context) {
-  sendToLog('נפתחה הקטגוריה "$tag"', prefs);
+void openTag(String tag, Page? sourcePage, SharedPreferences prefs,
+    BuildContext context) {
+  sendToLog('נפתחה הקטגוריה "$tag"${pageLogSuffix(sourcePage)}', prefs);
   Navigator.push(
     context,
     MaterialPageRoute<void>(
@@ -329,7 +345,7 @@ final RegExp linkRegExp = RegExp(
 final Image whatsAppImage = Image.memory(base64Decode(whatsappImageData),
     height: whatsAppImageSize, width: whatsAppImageSize);
 
-WidgetSpan buildLinkComponent(String text, String linkToOpen,
+WidgetSpan buildLinkComponent(String text, String linkToOpen, Page sourcePage,
         SharedPreferences prefs, BuildContext context) =>
     WidgetSpan(
         child: InkWell(
@@ -341,11 +357,11 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen,
           fontSize: searchResultFontSize,
         ),
       ),
-      onTap: () => openUrlOrPage(linkToOpen, prefs, context),
+      onTap: () => openUrlOrPage(linkToOpen, sourcePage, prefs, context),
     ));
 
-List<InlineSpan> linkify(
-    String text, SharedPreferences prefs, BuildContext context) {
+List<InlineSpan> linkify(String text, Page sourcePage, SharedPreferences prefs,
+    BuildContext context) {
   final List<InlineSpan> list = <InlineSpan>[];
   final List<String> lines = text.split('\n');
   if (lines.length > previewMaxLines) {
@@ -369,30 +385,32 @@ List<InlineSpan> linkify(
   final RegExpMatch? anchorMatch = anchorPatternRE.firstMatch(linkText);
   if (anchorMatch != null) {
     if (anchorMatch.group(2)?.trim().isNotEmpty ?? false) {
-      list.add(buildLinkComponent(
-          anchorMatch.group(2)!, anchorMatch.group(1)!, prefs, context));
+      list.add(buildLinkComponent(anchorMatch.group(2)!, anchorMatch.group(1)!,
+          sourcePage, prefs, context));
     }
   } else if (linkText.contains(urlPatternRE)) {
-    list.add(buildLinkComponent(linkText, linkText, prefs, context));
+    list.add(
+        buildLinkComponent(linkText, linkText, sourcePage, prefs, context));
   } else if (linkText.contains(emailPatternRE)) {
-    list.add(buildLinkComponent(linkText, 'mailto:$linkText', prefs, context));
+    list.add(buildLinkComponent(
+        linkText, 'mailto:$linkText', sourcePage, prefs, context));
   } else if (linkText.contains(phonePatternRE)) {
     if (linkText.startsWith('05')) {
       list.add(WidgetSpan(
           child: InkWell(
         child: whatsAppImage,
-        onTap: () => openUrl(whatsappUrl(linkText), prefs),
+        onTap: () => openUrl(whatsappUrl(linkText), sourcePage, prefs),
       )));
     }
-    list.add(
-        buildLinkComponent(linkText, phoneNumberUrl(linkText), prefs, context));
+    list.add(buildLinkComponent(
+        linkText, phoneNumberUrl(linkText), sourcePage, prefs, context));
   } else {
     sendToLog('בעייה בבניית קישור עבור "$linkText"', prefs);
     throw 'Unexpected match: $linkText';
   }
 
-  list.addAll(
-      linkify(text.substring(match.start + linkText.length), prefs, context));
+  list.addAll(linkify(text.substring(match.start + linkText.length), sourcePage,
+      prefs, context));
 
   return list;
 }
@@ -405,7 +423,7 @@ class PageItem extends StatelessWidget {
 
   TextSpan buildLines(BuildContext context) {
     final String text = getPageInnerText(page, leaveAnchors: true);
-    final List<InlineSpan> lines = linkify(text, prefs, context);
+    final List<InlineSpan> lines = linkify(text, page, prefs, context);
 
     if (lines.isNotEmpty && lines[lines.length - 1] is TextSpan) {
       final TextSpan textSpan = lines[lines.length - 1] as TextSpan;
@@ -435,7 +453,7 @@ class PageItem extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ),
             ),
-            tagsList(page.tags, prefs,
+            tagsList(page.tags, page, prefs,
                 filled: false, openTag: openTag, context: context),
             Padding(
               padding: const EdgeInsets.only(top: 2, bottom: 20),
@@ -444,7 +462,7 @@ class PageItem extends StatelessWidget {
             )
           ],
         ),
-        onTap: () => openPage(page, prefs, context),
+        onTap: () => openPage(page, null, prefs, context),
       );
 }
 
@@ -759,7 +777,7 @@ class PageViewState extends State<PageView> {
         return;
 
       case 'openPageInBrowser':
-        openUrl('${page.url}#auth:${getPhoneNumber(prefs)}', prefs);
+        openUrl('${page.url}#auth:${getPhoneNumber(prefs)}', page, prefs);
         return;
     }
   }
@@ -771,11 +789,11 @@ class PageViewState extends State<PageView> {
     final String pageUrlBase =
         RegExp(r'https://[^/]+/').firstMatch(page.url ?? '')?.group(0) ?? '';
     if (request.url.startsWith(pageUrlBase)) {
-      openUrlOrPage(request.url, prefs, context);
+      openUrlOrPage(request.url, page, prefs, context);
     } else if (request.url.startsWith('action:addUser?')) {
       await addContact(context, request.url);
     } else {
-      openUrl(request.url, prefs);
+      openUrl(request.url, page, prefs);
     }
 
     return NavigationDecision.prevent;
@@ -870,7 +888,7 @@ class PageViewState extends State<PageView> {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(right: 6),
-                child: tagsList(page.tags, prefs,
+                child: tagsList(page.tags, page, prefs,
                     filled: false, openTag: openTag, context: context),
               ),
               Expanded(
@@ -1200,7 +1218,7 @@ class _MainState extends State<Main> {
             onPressed: () async {
               const String url =
                   'mailto:splintor@gmail.com?subject=ספר הטלפונים של ירוחם';
-              await openUrl(url, _prefs);
+              await openUrl(url, null, _prefs);
             },
             label: const Text('משוב'),
             icon: const Icon(Icons.send),
@@ -1332,7 +1350,7 @@ class _MainState extends State<Main> {
     return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          tagsList(<String>[_openedTag ?? ''], _prefs,
+          tagsList(<String>[_openedTag ?? ''], null, _prefs,
               filled: true, context: context),
           Text(' (${searchResultsLength()} דפים בקטגוריה)',
               style: const TextStyle(fontSize: 18)),
@@ -1340,7 +1358,7 @@ class _MainState extends State<Main> {
   }
 
   Future<void> openAboutPage() async =>
-      openPage(await getAboutPage(), _prefs, context);
+      openPage(await getAboutPage(), null, _prefs, context);
 
   Widget? buildSearchContent() {
     if (_searchString.isEmpty && _openedTag == null) {
@@ -1368,7 +1386,7 @@ class _MainState extends State<Main> {
     } else {
       return ListView(
         children: <Widget>[
-          tagsList(_tagsSearchResults, _prefs,
+          tagsList(_tagsSearchResults, null, _prefs,
               filled: true, openTag: openTag, context: context),
           ..._searchResults
                   ?.map<PageItem>(
@@ -1496,11 +1514,11 @@ class _MainState extends State<Main> {
       case 'openInBrowser':
         final String suffix = '#auth:$_phoneNumber';
         if (_openedTag != null) {
-          openUrl('$siteUrl/tag/$_openedTag$suffix', _prefs);
+          openUrl('$siteUrl/tag/$_openedTag$suffix', null, _prefs);
         } else if (_searchString.isNotEmpty) {
-          openUrl('$siteUrl/search/$_searchString$suffix', _prefs);
+          openUrl('$siteUrl/search/$_searchString$suffix', null, _prefs);
         } else {
-          openUrl('$siteUrl$suffix', _prefs);
+          openUrl('$siteUrl$suffix', null, _prefs);
         }
         return;
 
@@ -1545,7 +1563,7 @@ class _MainState extends State<Main> {
         isWarning: true,
         actionLabel: 'פרטים',
         actionHandler: () =>
-            openPage(getErrorPage(title, error), _prefs, context));
+            openPage(getErrorPage(title, error), null, _prefs, context));
   }
 }
 
