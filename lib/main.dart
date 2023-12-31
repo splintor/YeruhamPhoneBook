@@ -47,6 +47,7 @@ const TextStyle emptyListMessageStyle = TextStyle(fontSize: 20);
 const TextStyle tagTitleStyle = TextStyle(fontSize: 22);
 const double searchResultFontSize = 20;
 const double whatsAppImageSize = 28;
+const double whatsAppImageWebSize = 72;
 const String newPagesKeyword = '#חדשים';
 Timer? _searchDebounce;
 
@@ -256,7 +257,7 @@ String whatsappUrl(String phone) =>
     'whatsapp://send?phone=${phone.replaceAll('-', '').replaceFirst('0', '+972')}';
 
 String whatsAppLink(String phone) =>
-    '<a href="${whatsappUrl(phone)}"><img width="$whatsAppImageSize" alt="WhatsApp" height="$whatsAppImageSize" style="top: 8px; position: relative;" src="data:image/jpeg;base64,$whatsappImageData"></a>';
+    '<a href="${whatsappUrl(phone)}"><img width="$whatsAppImageWebSize" alt="WhatsApp" height="$whatsAppImageWebSize" style="top: 18px; position: relative;" src="data:image/jpeg;base64,$whatsappImageData"></a>';
 
 Future<Page> getAboutPage() async {
   final Future<PackageInfo> packageInfoPromise = PackageInfo.fromPlatform();
@@ -285,8 +286,7 @@ Future<Page> getAboutPage() async {
   return Page()
     ..title = 'אפליקציית ספר הטלפונים של ירוחם'
     ..dummyPage = true
-    ..html =
-        '''<table width="100%" style="font-size: 3em;"><tbody><tr><td><div dir='rtl'>
+    ..html = '''<table style="font-size: 3em;"><tbody><tr><td><div dir='rtl'>
         האפליקציה נכתבה ב<a href="https://github.com/splintor/YeruhamPhoneBook">קוד פתוח</a>
          על-ידי שמוליק פלינט
         (<a href="mailto:splintor@gmail.com">splintor@gmail.com</a>&nbsp;${whatsAppLink('0523843115')})
@@ -677,7 +677,7 @@ class PageHTMLProcessor {
         htmlValue +
             '''
                 <a href="$url" style="position: relative; top: 9px; right: 7px; text-decoration: none; color: purple;">
-                  <svg width="32px" height="32px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="72px" height="72px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="none" stroke-width="1" fill="purple">
                       <path d="M17,17 L17,20 L16,20 L16,17 L13,17 L13,16 L16,16 L16,13 L17,13 L17,16 L20,16 L20,17 L17,17 Z M12,20 L7,20 C6.44771525,20 6,19.5522847 6,19 L6,17 C6,14.4353804 7.60905341,12.2465753 9.87270435,11.3880407 C8.74765126,10.68015 8,9.42738667 8,8 C8,5.790861 9.790861,4 12,4 C14.209139,4 16,5.790861 16,8 C16,9.42738667 15.2523487,10.68015 14.1272957,11.3880407 C13.8392195,11.573004 13.4634542,11.7769904 13,12 L13,10.829 C14.165,10.417 15,9.307 15,8 C15,6.343 13.657,5 12,5 C10.343,5 9,6.343 9,8 C9,9.307 9.835,10.417 11,10.829 L11,12.1 C8.718,12.564 7,14.581 7,17 L7,19 L12,19 L12,20 Z"></path>
                     </g>'
