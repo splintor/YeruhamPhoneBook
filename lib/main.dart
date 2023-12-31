@@ -730,12 +730,12 @@ class PageViewState extends State<PageView> {
       // ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
-          onProgress: (int progress) {
-            // Update loading bar.
-          },
+          // onProgress: (int progress) {
+          //   // Update loading bar.
+          // },
           // onPageStarted: (String url) {},
-          onPageFinished: (String _url) => webViewController.runJavaScript(
-              'document.body.scrollLeft = document.body.scrollWidth'),
+          // onPageFinished: (String _url) => webViewController.runJavaScript(
+          //     'document.body.scrollLeft = document.body.scrollWidth'),
           // onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) =>
               onWebViewNavigation(request, context),
@@ -1118,7 +1118,7 @@ class _MainState extends State<Main> {
     }
 
     if (searchString == newPagesKeyword) {
-      final newItemsCount = _updatedPages?.length ?? 0;
+      final int newItemsCount = _updatedPages?.length ?? 0;
       if (newItemsCount == 1) {
         sendToLog(
             'בוצע חיפוש של "$searchString" וחזרה תוצאה אחת (${_updatedPages!.first.title})',
