@@ -154,9 +154,9 @@ String pageLogSuffix(Page? sourcePage) {
   final Page? fromPage = sourcePage ?? openPageViews.lastOrNull?.page;
   if (fromPage != null) {
     if (openPageViews.isEmpty) {
-      return ' מתוך תוצאת החיפוש ${fromPage.title}';
+      return ' מתוך תוצאת החיפוש "${fromPage.title}"';
     } else {
-      return ' מתוך הדף ${fromPage.title}';
+      return ' מתוך הדף "${fromPage.title}"';
     }
   } else {
     return '';
