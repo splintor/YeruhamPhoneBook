@@ -3,9 +3,7 @@
 - Log: try to better indicate who is logged in
 - App: Show bigger whatsapp and add contact icons in page view
 - App: Check adding contact
-- App: Show all icons in search results, not only when opening the page- Consider showing more info
-  in search results (like Add User icon)
-- Scroll pages to the right on open (המועצה)
+- App: Show all icons in search results, not only when opening the page
 - Send BI events (https://moz.com/blog/absolute-beginners-guide-to-google-analytics) - maybe use the
   apps engine URL we are already sending?
 - Make PageView work on iOS (https://github.com/flutter/flutter/issues/19030#issuecomment-437534853)
