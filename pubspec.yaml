@@ -23,9 +23,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   http:
-  package_info: ^2.0.2
+  package_info_plus: ^6.0.0
   permission_handler: ^11.1.0
-  share: ^2.0.4
+  share_plus: ^8.0.2
   shared_preferences:
   url_launcher: ^6.0.21
   webview_flutter: ^4.4.2
