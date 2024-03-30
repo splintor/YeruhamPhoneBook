@@ -35,9 +35,6 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
-    lintOptions {
-        disable 'InvalidPackage'
-    }
 
     defaultConfig {
         applicationId "com.splintor.yeruhamphonebook"
@@ -68,6 +65,10 @@ android {
     }
 
     ndkVersion "23.0.7599858"
+    namespace 'com.splintor.yeruhamphonebook'
+    lint {
+        disable 'InvalidPackage'
+    }
 }
 
 flutter {
