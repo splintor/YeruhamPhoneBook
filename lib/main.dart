@@ -889,14 +889,17 @@ class PageViewState extends State<PageView> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.only(right: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: tagsList(page.tags, page, prefs,
                     filled: false, openTag: openTag, context: context),
               ),
               Expanded(
-                  child: WebViewWidget(
-                      controller: webViewController,
-                      layoutDirection: ui.TextDirection.rtl))
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15.0, horizontal: 10.0),
+                      child: WebViewWidget(
+                          controller: webViewController,
+                          layoutDirection: ui.TextDirection.rtl)))
             ]),
         floatingActionButton: getShareButton(),
       );
