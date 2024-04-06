@@ -32,7 +32,7 @@ const int patchLevel = 2;
 final int startOfTime = DateTime(1900, 12, 1).millisecondsSinceEpoch;
 
 bool contactPermissionWasGranted = false;
-Set<String>? contactPhones;
+Map<String, contacts_plugin.Contact>? contactPhones;
 
 void main() {
   HttpOverrides.global = AcceptAllHttpOverrides();
@@ -146,10 +146,8 @@ void showInSnackBar(BuildContext context, String value,
           textColor: Colors.blue);
   final Text content =
       Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      action: action,
-      content: content,
-      duration: const Duration(milliseconds: 10000)));
+  ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(action: action, content: content));
 }
 
 String pageLogSuffix(Page? sourcePage) {
@@ -225,16 +223,16 @@ String getPhoneNumber(SharedPreferences prefs) {
   return prefs.getString('validationNumber') ?? 'No validation number found';
 }
 
-Future<http.Response> sendToLog(String text, SharedPreferences prefs) {
+Future<http.Response> sendToLog(String text, SharedPreferences? prefs) {
   const Map<String, String> headers = <String, String>{
     'cookie': DataAuthCookie,
     'content-type': 'application/json',
   };
 
   final Uri url = Uri.https(siteDomain, '/api/writeToLog');
-  final String phoneNumber = getPhoneNumber(prefs);
+  final String phoneNumber = prefs == null ? '' : getPhoneNumber(prefs);
   final String? username = getNumberPage(phoneNumber)?.title;
-  final String logSuffix = ' ע"י $username ($phoneNumber)';
+  final String logSuffix = prefs == null ? '' : ' ע"י $username ($phoneNumber)';
   stderr.writeln('sendToLog: $text');
 
   return http.post(url,
@@ -537,26 +535,35 @@ void updateAllPageViews() {
 Future<void> loadContacts() async {
   if (await Permission.contacts.request().isGranted) {
     contactPermissionWasGranted = true;
-    loadPhoneContacts();
+    await loadPhoneContacts();
   }
 }
 
 Future<void> loadPhoneContacts() async {
-  if (!contactPermissionWasGranted) {
-    return;
+  try {
+    if (!contactPermissionWasGranted) {
+      return;
+    }
+
+    final Iterable<contacts_plugin.Contact> contacts =
+        await contacts_plugin.ContactsService.getContacts(
+            withThumbnails: false);
+
+    contactPhones = <String, contacts_plugin.Contact>{};
+    for (contacts_plugin.Contact contact in contacts) {
+      contactPhones!.addEntries((contact.phones ?? <contacts_plugin.Item>[])
+          .map((contacts_plugin.Item item) =>
+              MapEntry<String, contacts_plugin.Contact>(
+                  (item.value ?? '')
+                      .replaceAll(RegExp(r'[- ()]'), '')
+                      .replaceAll('+972', '0'),
+                  contact)));
+    }
+
+    updateAllPageViews();
+  } catch (e) {
+    sendToLog('create contactPhones failed: "${e.toString()}"', null);
   }
-
-  final Iterable<contacts_plugin.Contact> contacts =
-      await contacts_plugin.ContactsService.getContacts(withThumbnails: false);
-
-  contactPhones = Set<String>.from(contacts.expand<String>(
-      (contacts_plugin.Contact contact) =>
-          (contact.phones ?? <contacts_plugin.Item>[]).map(
-              (contacts_plugin.Item item) => (item.value ?? '')
-                  .replaceAll(RegExp(r'[- ()]'), '')
-                  .replaceAll('+972', '0'))));
-
-  updateAllPageViews();
 }
 
 class PageHTMLProcessor {
@@ -645,7 +652,7 @@ class PageHTMLProcessor {
   }
 
   bool inContact(String phoneNumber) =>
-      contactPhones?.contains(phoneNumber) ?? false;
+      contactPhones?.containsKey(phoneNumber) ?? false;
 
   void appendAddContactLink(PageDataValue dataValue,
       {String? givenName, String? familyName, PageDataValue? homePhone}) {
@@ -802,51 +809,68 @@ class PageViewState extends State<PageView> {
   }
 
   Future<void> addContact(BuildContext context, String url) async {
-    final String queryString = Uri.decodeQueryComponent(url.split('?')[1]);
-    final contacts_plugin.Contact contact = contacts_plugin.Contact();
-    for (List<String> keyValue
-        in queryString.split('&').map((String v) => v.split('='))) {
-      final String value = keyValue[1];
-      switch (keyValue[0]) {
-        case 'givenName':
-          contact.givenName = value;
-          break;
+    try {
+      final String queryString = Uri.decodeQueryComponent(url.split('?')[1]);
+      final contacts_plugin.Contact contact = contacts_plugin.Contact();
+      for (List<String> keyValue
+          in queryString.split('&').map((String v) => v.split('='))) {
+        final String value = keyValue[1];
+        switch (keyValue[0]) {
+          case 'givenName':
+            contact.givenName = value;
+            break;
 
-        case 'familyName':
-          contact.familyName = value;
-          break;
+          case 'familyName':
+            contact.familyName = value;
+            break;
 
-        case 'address':
-          contact.postalAddresses = <contacts_plugin.PostalAddress>[
-            contacts_plugin.PostalAddress(label: 'בית', street: value)
-          ];
-          break;
+          case 'address':
+            contact.postalAddresses = <contacts_plugin.PostalAddress>[
+              contacts_plugin.PostalAddress(label: 'בית', street: value)
+            ];
+            break;
 
-        case 'phones':
-          contact.phones = value
-              .split(',')
-              .map((String v) => contacts_plugin.Item(
-                  label: v.startsWith('05') ? 'mobile' : 'home', value: v))
-              .toList(growable: false);
-          break;
+          case 'phones':
+            contact.phones = value
+                .split(',')
+                .map((String v) => contacts_plugin.Item(
+                    label: v.startsWith('05') ? 'mobile' : 'home', value: v))
+                .toList(growable: false);
+            break;
 
-        case 'emails':
-          contact.emails = value
-              .split(',')
-              .map((String v) => contacts_plugin.Item(label: 'home', value: v))
-              .toList(growable: false);
-          break;
+          case 'emails':
+            contact.emails = value
+                .split(',')
+                .map(
+                    (String v) => contacts_plugin.Item(label: 'home', value: v))
+                .toList(growable: false);
+            break;
+        }
       }
-    }
 
-    sendToLog('בוצעה בקשה להוספת איש קשר "$url"', prefs);
-    await contacts_plugin.ContactsService.addContact(contact);
-    await loadContacts();
-    showInSnackBar(context,
-        'איש קשר "${contact.givenName} ${contact.familyName}" נוסף לאנשי הקשר',
-        actionLabel: 'הצג',
-        actionHandler: () =>
-            contacts_plugin.ContactsService.openExistingContact(contact));
+      sendToLog('בוצעה בקשה להוספת איש קשר "$url"', prefs);
+      await contacts_plugin.ContactsService.addContact(contact);
+      await loadContacts();
+      final contacts_plugin.Contact? newContact = contactPhones == null
+          ? null
+          : contactPhones![contact.phones?.last.value ?? ''];
+      showInSnackBar(context,
+          'איש קשר "${contact.givenName} ${contact.familyName}" נוסף לאנשי הקשר',
+          actionLabel: newContact == null ? null : 'הצג', actionHandler: () {
+        try {
+          sendToLog(
+              'הוצג איש הקשר "${contact.givenName} ${contact.familyName}"',
+              prefs);
+          contacts_plugin.ContactsService.openExistingContact(newContact!);
+        } catch (e) {
+          sendToLog('הצגת איש קשר נכשלה "${e.toString()}"', prefs);
+          showInSnackBar(context, 'הצגת איש הקשר נכשלה', isWarning: true);
+        }
+      });
+    } catch (e) {
+      sendToLog('הוספת איש קשר נכשלה "${e.toString()}"', prefs);
+      showInSnackBar(context, 'הוספת איש הקשר נכשלה', isWarning: true);
+    }
   }
 
   FloatingActionButton getShareButton() {
