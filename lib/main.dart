@@ -146,8 +146,10 @@ void showInSnackBar(BuildContext context, String value,
           textColor: Colors.blue);
   final Text content =
       Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
-  ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(action: action, content: content));
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      action: action,
+      content: content,
+      duration: const Duration(milliseconds: 10000)));
 }
 
 String pageLogSuffix(Page? sourcePage) {
