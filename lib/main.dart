@@ -1489,7 +1489,8 @@ class _MainState extends State<Main> {
               onPressed: getNumberPage(_phoneNumber) == null
                   ? null
                   : () => checkPhoneNumber(),
-              child: const Text('כניסה', style: TextStyle(fontSize: 24.0)),
+              child: const Text('כניסה',
+                  style: TextStyle(fontSize: 24.0, color: Colors.white)),
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurpleAccent,
                   shape: const RoundedRectangleBorder(
