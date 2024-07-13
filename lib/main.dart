@@ -113,10 +113,7 @@ class YeruhamPhonebookApp extends StatelessWidget {
         },
       )),
       home: const Main(),
-      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const <Locale>[
         hebrewLocale,
       ],
