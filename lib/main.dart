@@ -898,8 +898,12 @@ class PageViewState extends State<PageView> {
                       itemBuilder: (BuildContext context) =>
                           <PopupMenuItem<String>>[
                             const PopupMenuItem<String>(
+                              value: 'about',
+                              child: Text('אודות'),
+                            ),
+                            const PopupMenuItem<String>(
                               value: 'copyPageUrl',
-                              child: Text('העתק את כתובת הדף'),
+                              child: Text('העתק קישור'),
                             ),
                             const PopupMenuItem<String>(
                               value: 'openPageInBrowser',
@@ -1535,10 +1539,25 @@ class _MainState extends State<Main> {
             : buildValidationView();
   }
 
+  void copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+  }
+
   Future<void> onMenuSelected(String itemValue) async {
     switch (itemValue) {
       case 'about':
         openAboutPage();
+        return;
+
+      case 'copyUrl':
+        if (_openedTag != null) {
+          copyToClipboard('$siteUrl/tag/$_openedTag');
+        } else if (_searchString.isNotEmpty) {
+          copyToClipboard('$siteUrl/search/$_searchString');
+        } else {
+          copyToClipboard('$siteUrl');
+        }
+
         return;
 
       case 'openInBrowser':
@@ -1571,6 +1590,10 @@ class _MainState extends State<Main> {
                     const PopupMenuItem<String>(
                       value: 'about',
                       child: Text('אודות'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'copyUrl',
+                      child: Text('העתק קישור'),
                     ),
                     const PopupMenuItem<String>(
                       value: 'openInBrowser',
