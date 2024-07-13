@@ -1,7 +1,7 @@
 - Web: Try to search page when non-existing deep link is opened
 - Web: Log links clicks from web
 - Log: try to better indicate who is logged in
-- App: Show bigger whatsapp and add contact icons in page view
+- App: Show bigger whatsapp in list view
 - App: Check adding contact
 - App: Show all icons in search results, not only when opening the page
 - Send BI events (https://moz.com/blog/absolute-beginners-guide-to-google-analytics) - maybe use the

@@ -34,6 +34,9 @@ final int startOfTime = DateTime(1900, 12, 1).millisecondsSinceEpoch;
 bool contactPermissionWasGranted = false;
 Map<String, contacts_plugin.Contact>? contactPhones;
 
+bool inContacts(String phoneNumber) =>
+    contactPhones?.containsKey(phoneNumber) ?? false;
+
 void main() {
   HttpOverrides.global = AcceptAllHttpOverrides();
   runApp(YeruhamPhonebookApp());
@@ -47,6 +50,7 @@ const TextStyle emptyListMessageStyle = TextStyle(fontSize: 20);
 const TextStyle tagTitleStyle = TextStyle(fontSize: 22);
 const double searchResultFontSize = 20;
 const double whatsAppImageSize = 28;
+const double addContactImageSize = 28;
 const double whatsAppImageWebSize = 72;
 const String newPagesKeyword = '#חדשים';
 Timer? _searchDebounce;
@@ -145,6 +149,70 @@ void showInSnackBar(BuildContext context, String value,
       Text(value, style: TextStyle(color: isWarning ? Colors.red : null));
   ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(action: action, content: content));
+}
+
+Future<void> addContact(
+    BuildContext context, String url, SharedPreferences prefs) async {
+  try {
+    final String queryString = Uri.decodeQueryComponent(url.split('?')[1]);
+    final contacts_plugin.Contact contact = contacts_plugin.Contact();
+    for (List<String> keyValue
+        in queryString.split('&').map((String v) => v.split('='))) {
+      final String value = keyValue[1];
+      switch (keyValue[0]) {
+        case 'givenName':
+          contact.givenName = value;
+          break;
+
+        case 'familyName':
+          contact.familyName = value;
+          break;
+
+        case 'address':
+          contact.postalAddresses = <contacts_plugin.PostalAddress>[
+            contacts_plugin.PostalAddress(label: 'בית', street: value)
+          ];
+          break;
+
+        case 'phones':
+          contact.phones = value
+              .split(',')
+              .map((String v) => contacts_plugin.Item(
+                  label: v.startsWith('05') ? 'mobile' : 'home', value: v))
+              .toList(growable: false);
+          break;
+
+        case 'emails':
+          contact.emails = value
+              .split(',')
+              .map((String v) => contacts_plugin.Item(label: 'home', value: v))
+              .toList(growable: false);
+          break;
+      }
+    }
+
+    sendToLog('בוצעה בקשה להוספת איש קשר "$url"', prefs);
+    await contacts_plugin.ContactsService.addContact(contact);
+    await loadContacts();
+    final contacts_plugin.Contact? newContact = contactPhones == null
+        ? null
+        : contactPhones![contact.phones?.last.value ?? ''];
+    showInSnackBar(context,
+        'איש קשר "${contact.givenName} ${contact.familyName}" נוסף לאנשי הקשר',
+        actionLabel: newContact == null ? null : 'הצג', actionHandler: () {
+      try {
+        sendToLog('הוצג איש הקשר "${contact.givenName} ${contact.familyName}"',
+            prefs);
+        contacts_plugin.ContactsService.openExistingContact(newContact!);
+      } catch (e) {
+        sendToLog('הצגת איש קשר נכשלה "${e.toString()}"', prefs);
+        showInSnackBar(context, 'הצגת איש הקשר נכשלה', isWarning: true);
+      }
+    });
+  } catch (e) {
+    sendToLog('הוספת איש קשר נכשלה "${e.toString()}"', prefs);
+    showInSnackBar(context, 'הוספת איש הקשר נכשלה', isWarning: true);
+  }
 }
 
 String pageLogSuffix(Page? sourcePage) {
@@ -341,6 +409,8 @@ final RegExp linkRegExp = RegExp(
     caseSensitive: false);
 final Image whatsAppImage = Image.memory(base64Decode(whatsappImageData),
     height: whatsAppImageSize, width: whatsAppImageSize);
+final Image addContactImage = Image.memory(base64Decode(addContactImageData),
+    height: addContactImageSize, width: addContactImageSize);
 
 WidgetSpan buildLinkComponent(String text, String linkToOpen, Page sourcePage,
         SharedPreferences prefs, BuildContext context) =>
@@ -392,6 +462,13 @@ List<InlineSpan> linkify(String text, Page sourcePage, SharedPreferences prefs,
     list.add(buildLinkComponent(
         linkText, 'mailto:$linkText', sourcePage, prefs, context));
   } else if (linkText.contains(phonePatternRE)) {
+    if (!inContacts(linkText)) {
+      list.add(WidgetSpan(
+          child: InkWell(
+        child: addContactImage,
+        onTap: () => addContact(context, 'phone=$linkText', prefs),
+      )));
+    }
     if (linkText.startsWith('05')) {
       list.add(WidgetSpan(
           child: InkWell(
@@ -608,7 +685,7 @@ class PageHTMLProcessor {
     final PageDataValue? homeValue =
         getValueForLabel('טלפון', mustBePhone: true);
     for (PageDataValue v in phoneValues) {
-      if (!inContact(v.phoneValue())) {
+      if (!inContacts(v.phoneValue())) {
         appendAddContactLink(v,
             givenName: v.label.contains(phoneTitleRE) ? null : v.label,
             homePhone: homeValue);
@@ -648,9 +725,6 @@ class PageHTMLProcessor {
     return dataValue;
   }
 
-  bool inContact(String phoneNumber) =>
-      contactPhones?.containsKey(phoneNumber) ?? false;
-
   void appendAddContactLink(PageDataValue dataValue,
       {String? givenName, String? familyName, PageDataValue? homePhone}) {
     givenName ??= getPageGivenName();
@@ -658,7 +732,7 @@ class PageHTMLProcessor {
     String phones = dataValue.toUrlPart();
     if (homePhone != null &&
         homePhone != dataValue &&
-        !inContact(homePhone.phoneValue())) {
+        !inContacts(homePhone.phoneValue())) {
       phones += ',' + homePhone.toUrlPart();
     }
 
@@ -797,77 +871,12 @@ class PageViewState extends State<PageView> {
     if (request.url.startsWith(pageUrlBase)) {
       openUrlOrPage(request.url, page, prefs, context);
     } else if (request.url.startsWith('action:addUser?')) {
-      await addContact(context, request.url);
+      await addContact(context, request.url, prefs);
     } else {
       openUrl(request.url, page, prefs);
     }
 
     return NavigationDecision.prevent;
-  }
-
-  Future<void> addContact(BuildContext context, String url) async {
-    try {
-      final String queryString = Uri.decodeQueryComponent(url.split('?')[1]);
-      final contacts_plugin.Contact contact = contacts_plugin.Contact();
-      for (List<String> keyValue
-          in queryString.split('&').map((String v) => v.split('='))) {
-        final String value = keyValue[1];
-        switch (keyValue[0]) {
-          case 'givenName':
-            contact.givenName = value;
-            break;
-
-          case 'familyName':
-            contact.familyName = value;
-            break;
-
-          case 'address':
-            contact.postalAddresses = <contacts_plugin.PostalAddress>[
-              contacts_plugin.PostalAddress(label: 'בית', street: value)
-            ];
-            break;
-
-          case 'phones':
-            contact.phones = value
-                .split(',')
-                .map((String v) => contacts_plugin.Item(
-                    label: v.startsWith('05') ? 'mobile' : 'home', value: v))
-                .toList(growable: false);
-            break;
-
-          case 'emails':
-            contact.emails = value
-                .split(',')
-                .map(
-                    (String v) => contacts_plugin.Item(label: 'home', value: v))
-                .toList(growable: false);
-            break;
-        }
-      }
-
-      sendToLog('בוצעה בקשה להוספת איש קשר "$url"', prefs);
-      await contacts_plugin.ContactsService.addContact(contact);
-      await loadContacts();
-      final contacts_plugin.Contact? newContact = contactPhones == null
-          ? null
-          : contactPhones![contact.phones?.last.value ?? ''];
-      showInSnackBar(context,
-          'איש קשר "${contact.givenName} ${contact.familyName}" נוסף לאנשי הקשר',
-          actionLabel: newContact == null ? null : 'הצג', actionHandler: () {
-        try {
-          sendToLog(
-              'הוצג איש הקשר "${contact.givenName} ${contact.familyName}"',
-              prefs);
-          contacts_plugin.ContactsService.openExistingContact(newContact!);
-        } catch (e) {
-          sendToLog('הצגת איש קשר נכשלה "${e.toString()}"', prefs);
-          showInSnackBar(context, 'הצגת איש הקשר נכשלה', isWarning: true);
-        }
-      });
-    } catch (e) {
-      sendToLog('הוספת איש קשר נכשלה "${e.toString()}"', prefs);
-      showInSnackBar(context, 'הוספת איש הקשר נכשלה', isWarning: true);
-    }
   }
 
   FloatingActionButton getShareButton() {
