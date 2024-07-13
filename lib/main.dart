@@ -219,8 +219,8 @@ Page? getNumberPage(String number) {
           page.text.replaceAll(RegExp(r'[-.]'), '').contains(number));
 }
 
-String getPhoneNumber(SharedPreferences prefs) {
-  return prefs.getString('validationNumber') ?? 'No validation number found';
+String? getPhoneNumber(SharedPreferences prefs) {
+  return prefs.getString('validationNumber');
 }
 
 Future<http.Response> sendToLog(String text, SharedPreferences? prefs) {
@@ -230,7 +230,7 @@ Future<http.Response> sendToLog(String text, SharedPreferences? prefs) {
   };
 
   final Uri url = Uri.https(siteDomain, '/api/writeToLog');
-  final String phoneNumber = prefs == null ? '' : getPhoneNumber(prefs);
+  final String phoneNumber = prefs == null ? '' : getPhoneNumber(prefs) ?? 'No validation number found';
   final String? username = getNumberPage(phoneNumber)?.title;
   final String logSuffix = prefs == null ? '' : ' ע"י $username ($phoneNumber)';
   stderr.writeln('sendToLog: $text');
@@ -950,7 +950,7 @@ class _MainState extends State<Main> {
   Timer? _searchOverflowTimer;
   bool _isUserVerified = false;
   final TextEditingController _phoneNumberController = TextEditingController();
-  String _phoneNumber = '';
+  String? _phoneNumber;
   Exception? _fetchError;
   String? _responseError;
   bool _reloadingData = false;
@@ -1021,7 +1021,7 @@ class _MainState extends State<Main> {
         setState(() {
           _prefs = prefs;
           _phoneNumber = getPhoneNumber(_prefs);
-          _isUserVerified = _phoneNumber.isNotEmpty;
+          _isUserVerified = _phoneNumber != null;
         });
       });
 
@@ -1039,7 +1039,7 @@ class _MainState extends State<Main> {
       setState(() {
         _prefs = prefs;
         _phoneNumber = getPhoneNumber(_prefs);
-        if (_phoneNumber.isEmpty) {
+        if (_phoneNumber == null) {
           fetchData();
         } else {
           try {
@@ -1061,9 +1061,9 @@ class _MainState extends State<Main> {
   }
 
   void checkPhoneNumber() {
-    final Page? page = getNumberPage(_phoneNumber);
+    final Page? page = getNumberPage(_phoneNumber ?? '');
     if (page != null) {
-      _prefs.setString('validationNumber', normalizedNumber(_phoneNumber));
+      _prefs.setString('validationNumber', normalizedNumber(_phoneNumber ?? ''));
 
       setState(() {
         _isUserVerified = true;
@@ -1272,7 +1272,7 @@ class _MainState extends State<Main> {
       'UpdatedAfter':
           DateTime.fromMillisecondsSinceEpoch(lastUpdateDate, isUtc: true)
               .toIso8601String(),
-      'RequestedBy': _phoneNumber
+      'RequestedBy': _phoneNumber ?? 'Unknown user'
     });
 
     return http.get(url, headers: headers);
@@ -1474,7 +1474,7 @@ class _MainState extends State<Main> {
                 onSubmitted: (String value) => checkPhoneNumber(),
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.phone),
-                  suffixIcon: _phoneNumber.isEmpty
+                  suffixIcon: _phoneNumber == null
                       ? null
                       : IconButton(
                           icon: const Icon(Icons.clear),
@@ -1486,7 +1486,7 @@ class _MainState extends State<Main> {
           ),
           Container(
             child: ElevatedButton(
-              onPressed: getNumberPage(_phoneNumber) == null
+              onPressed: getNumberPage(_phoneNumber ?? '') == null
                   ? null
                   : () => checkPhoneNumber(),
               child: const Text('כניסה',
