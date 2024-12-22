@@ -396,6 +396,12 @@ final Image whatsAppImage = Image.memory(base64Decode(whatsappImageData),
 final Image addContactImage = Image.memory(base64Decode(addContactImageData),
     height: addContactImageSize, width: addContactImageSize);
 
+String getPageFamilyName(Page page) => page.title.split(RegExp(r'\s')).last;
+
+String getPageGivenName(Page page) => page.title
+    .substring(0, page.title.length - getPageFamilyName(page).length)
+    .trim();
+
 WidgetSpan buildLinkComponent(String text, String linkToOpen, Page sourcePage,
         SharedPreferences prefs, BuildContext context) =>
     WidgetSpan(
@@ -412,7 +418,7 @@ WidgetSpan buildLinkComponent(String text, String linkToOpen, Page sourcePage,
     ));
 
 List<InlineSpan> linkify(String text, Page sourcePage, SharedPreferences prefs,
-    BuildContext context) {
+    BuildContext context, String emails) {
   final List<InlineSpan> list = <InlineSpan>[];
   final List<String> lines = text.split('\n');
   if (lines.length > previewMaxLines) {
@@ -432,10 +438,15 @@ List<InlineSpan> linkify(String text, Page sourcePage, SharedPreferences prefs,
     list.add(TextSpan(text: text.substring(0, match.start)));
   }
 
+  String itemEmails = emails;
   final String linkText = match.group(0)!;
   final RegExpMatch? anchorMatch = anchorPatternRE.firstMatch(linkText);
   if (anchorMatch != null) {
     if (anchorMatch.group(2)?.trim().isNotEmpty ?? false) {
+      if (anchorMatch.group(1)?.startsWith('mailto:') ?? false) {
+        if (itemEmails.isNotEmpty) itemEmails += ',';
+        itemEmails += anchorMatch.group(2)!.trim();
+      }
       list.add(buildLinkComponent(anchorMatch.group(2)!, anchorMatch.group(1)!,
           sourcePage, prefs, context));
     }
@@ -443,14 +454,26 @@ List<InlineSpan> linkify(String text, Page sourcePage, SharedPreferences prefs,
     list.add(
         buildLinkComponent(linkText, linkText, sourcePage, prefs, context));
   } else if (linkText.contains(emailPatternRE)) {
+    if (itemEmails.isNotEmpty) itemEmails += ',';
+    itemEmails += linkText.trim();
     list.add(buildLinkComponent(
         linkText, 'mailto:$linkText', sourcePage, prefs, context));
   } else if (linkText.contains(phonePatternRE)) {
     if (!inContacts(linkText)) {
+      String label = text.split(':')[0].trim();
+      String givenName = label.contains(phoneTitleRE) ? getPageGivenName(sourcePage) : label;
+      String familyName = getPageFamilyName(sourcePage);
+      String dummyUrl =
+          'addUser?givenName=${Uri.encodeQueryComponent(givenName)}&familyName=${Uri.encodeQueryComponent(familyName)}&phones=$linkText';
+
+      if (emails.isNotEmpty) {
+        dummyUrl += '&emails=${Uri.encodeQueryComponent(emails)}';
+      }
+
       list.add(WidgetSpan(
           child: InkWell(
         child: addContactImage,
-        onTap: () => addContact(context, 'phone=$linkText', prefs),
+        onTap: () => addContact(context, dummyUrl, prefs),
       )));
     }
     if (linkText.startsWith('05')) {
@@ -468,7 +491,7 @@ List<InlineSpan> linkify(String text, Page sourcePage, SharedPreferences prefs,
   }
 
   list.addAll(linkify(text.substring(match.start + linkText.length), sourcePage,
-      prefs, context));
+      prefs, context, itemEmails));
 
   return list;
 }
@@ -481,7 +504,7 @@ class PageItem extends StatelessWidget {
 
   TextSpan buildLines(BuildContext context) {
     final String text = getPageInnerText(page, leaveAnchors: true);
-    final List<InlineSpan> lines = linkify(text, page, prefs, context);
+    final List<InlineSpan> lines = linkify(text, page, prefs, context, '');
 
     if (lines.isNotEmpty && lines[lines.length - 1] is TextSpan) {
       final TextSpan textSpan = lines[lines.length - 1] as TextSpan;
@@ -709,8 +732,8 @@ class PageHTMLProcessor {
 
   void appendAddContactLink(PageDataValue dataValue,
       {String? givenName, String? familyName, PageDataValue? homePhone}) {
-    givenName ??= getPageGivenName();
-    familyName ??= getPageFamilyName();
+    givenName ??= getPageGivenName(page);
+    familyName ??= getPageFamilyName(page);
     String phones = dataValue.toUrlPart();
     if (homePhone != null &&
         homePhone != dataValue &&
@@ -763,12 +786,6 @@ class PageHTMLProcessor {
                 </a>
                 ''');
   }
-
-  String getPageFamilyName() => page.title.split(RegExp(r'\s')).last;
-
-  String getPageGivenName() => page.title
-      .substring(0, page.title.length - getPageFamilyName().length)
-      .trim();
 }
 
 class PageView extends StatefulWidget {
