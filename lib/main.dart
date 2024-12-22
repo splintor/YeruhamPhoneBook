@@ -428,7 +428,7 @@ List<InlineSpan> linkify(String text, Page sourcePage, SharedPreferences prefs,
   if (match == null) {
     text = text.trim();
     if (text.isNotEmpty && !text.contains('מילות חיפוש')) {
-      list.add(TextSpan(text: text));
+      list.add(TextSpan(text: '\n$text'));
     }
 
     return list;
