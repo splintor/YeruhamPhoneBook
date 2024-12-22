@@ -95,6 +95,8 @@ bool isPageSearchable(Page page) =>
 class YeruhamPhonebookApp extends StatelessWidget {
   static const int _primaryColor = 0xFF5F1B68;
 
+  const YeruhamPhonebookApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -284,7 +286,7 @@ Future<http.Response> sendToLog(String text, SharedPreferences? prefs) {
 
   return http.post(url,
       headers: headers,
-      body: jsonEncode(<String, String>{'text': 'A: ' + text + logSuffix}));
+      body: jsonEncode(<String, String>{'text': 'A: $text$logSuffix'}));
 }
 
 void openPage(Page page, Page? sourcePage, SharedPreferences prefs,
@@ -575,9 +577,8 @@ final RegExp mobilePhoneTitleRE = RegExp(r'<a href="tel:05[^>]*>([^<]+)</a>');
 final RegExp suffixStar = RegExp(r'(\d*)\*');
 
 String phoneNumberUrl(String phoneNumber) =>
-    'tel:' +
-    phoneNumber.replaceAll(phoneNumberNonDigitsRE, '').replaceFirstMapped(
-        suffixStar, (Match match) => '*' + (match.group(1) ?? ''));
+    'tel:${phoneNumber.replaceAll(phoneNumberNonDigitsRE, '').replaceFirstMapped(
+        suffixStar, (Match match) => '*${match.group(1) ?? ''}')}';
 
 String phoneNumberMatcher(Match match) =>
     '<a href="${phoneNumberUrl(match.group(1) ?? '')}">${match.group(1)}</a>${match.group(2) ?? ''}';
@@ -627,8 +628,7 @@ class PageHTMLProcessor {
   PageHTMLProcessor(this.page, this.prefs)
       : html = page.dummyPage == true
             ? page.html
-            : '<div style="font-size: 3em">' +
-                page.html
+            : '<div style="font-size: 3em">${page.html
                     .replaceFirst('<table', '<table width="100%"')
                     .replaceAll('font-size:10pt', '')
                     .replaceAll('background-color:transparent', '')
@@ -647,8 +647,7 @@ class PageHTMLProcessor {
                     .replaceAllMapped(
                         prefixStarPhoneNumberRE, phoneNumberMatcher)
                     .replaceAllMapped(
-                        suffixStarPhoneNumberRE, phoneNumberMatcher) +
-                '</div>' {
+                        suffixStarPhoneNumberRE, phoneNumberMatcher)}</div>' {
     final String htmlForDataValue = html
         .replaceAll('<br/>', '</div><div>')
         .replaceAll(RegExp(r'<p(\s+[^>]+)*>'), '<div>')
@@ -716,7 +715,7 @@ class PageHTMLProcessor {
     if (homePhone != null &&
         homePhone != dataValue &&
         !inContacts(homePhone.phoneValue())) {
-      phones += ',' + homePhone.toUrlPart();
+      phones += ',${homePhone.toUrlPart()}';
     }
 
     String url =
@@ -755,9 +754,7 @@ class PageHTMLProcessor {
 
     html = html.replaceFirst(
         htmlValue,
-        htmlValue +
-            '''
-                <a href="$url" style="position: relative; top: 9px; right: 7px; text-decoration: none; color: purple;">
+        '''$htmlValue<a href="$url" style="position: relative; top: 9px; right: 7px; text-decoration: none; color: purple;">
                   <svg width="72px" height="72px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <g stroke="none" stroke-width="1" fill="purple">
                       <path d="M17,17 L17,20 L16,20 L16,17 L13,17 L13,16 L16,16 L16,13 L17,13 L17,16 L20,16 L20,17 L17,17 Z M12,20 L7,20 C6.44771525,20 6,19.5522847 6,19 L6,17 C6,14.4353804 7.60905341,12.2465753 9.87270435,11.3880407 C8.74765126,10.68015 8,9.42738667 8,8 C8,5.790861 9.790861,4 12,4 C14.209139,4 16,5.790861 16,8 C16,9.42738667 15.2523487,10.68015 14.1272957,11.3880407 C13.8392195,11.573004 13.4634542,11.7769904 13,12 L13,10.829 C14.165,10.417 15,9.307 15,8 C15,6.343 13.657,5 12,5 C10.343,5 9,6.343 9,8 C9,9.307 9.835,10.417 11,10.829 L11,12.1 C8.718,12.564 7,14.581 7,17 L7,19 L12,19 L12,20 Z"></path>
@@ -775,7 +772,7 @@ class PageHTMLProcessor {
 }
 
 class PageView extends StatefulWidget {
-  const PageView(this.page, this.prefs) : super();
+  const PageView(this.page, this.prefs, {super.key});
 
   final Page page;
   final SharedPreferences prefs;
@@ -1072,7 +1069,7 @@ class _MainState extends State<Main> {
 
     int nextPos = s.indexOf('"', pos + 1);
     if (nextPos == -1) {
-      s = s + '"';
+      s = '$s"';
       nextPos = s.indexOf('"', pos + 1);
     }
 
@@ -1442,7 +1439,7 @@ class _MainState extends State<Main> {
                                 const Padding(
                                     padding: EdgeInsets.only(bottom: 10.0)),
                                 Expanded(
-                                    child: Container(
+                                    child: SizedBox(
                                         height: 20.0,
                                         child: buildSearchContent()))
                               ],
@@ -1460,6 +1457,7 @@ class _MainState extends State<Main> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               )),
           Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
             child: TextField(
                 controller: _phoneNumberController,
                 keyboardType: TextInputType.phone,
@@ -1475,22 +1473,21 @@ class _MainState extends State<Main> {
                             _phoneNumberController.clear();
                           }),
                 )),
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
           ),
           Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
             child: ElevatedButton(
               onPressed: getNumberPage(_phoneNumber ?? '') == null
                   ? null
                   : () => checkPhoneNumber(),
-              child: const Text('כניסה',
-                  style: TextStyle(fontSize: 24.0, color: Colors.white)),
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurpleAccent,
                   shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(30.0))),
                   padding: const EdgeInsets.all(16)),
+              child: const Text('כניסה',
+                  style: TextStyle(fontSize: 24.0, color: Colors.white)),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
           ),
         ]);
   }
@@ -1501,7 +1498,7 @@ class _MainState extends State<Main> {
     }
 
     if (_responseError != null) {
-      return 'אויש, ההורדה נכשלה! ' + _responseError!;
+      return 'אויש, ההורדה נכשלה! ${_responseError!}';
     }
 
     if (pages.isEmpty) {
@@ -1544,7 +1541,7 @@ class _MainState extends State<Main> {
         } else if (_searchString.isNotEmpty) {
           copyToClipboard('$siteUrl/search/$_searchString');
         } else {
-          copyToClipboard('$siteUrl');
+          copyToClipboard(siteUrl);
         }
 
         return;
