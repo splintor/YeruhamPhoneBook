@@ -32,7 +32,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.splintor.yeruhamphonebook"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "27.2.12479018" // see https://developer.android.com/ndk/downloads for latest version
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
