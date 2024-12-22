@@ -17,7 +17,6 @@ environment:
   sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
-  contacts_service: ^0.6.3
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -31,6 +30,7 @@ dependencies:
   webview_flutter: ^4.4.2
   collection: any
   intl: any
+  flutter_contacts: ^1.1.9+2
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.2

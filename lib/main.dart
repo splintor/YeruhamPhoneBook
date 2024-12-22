@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:collection/collection.dart';
-import 'package:contacts_service/contacts_service.dart' as contacts_plugin;
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -32,7 +32,7 @@ const int patchLevel = 2;
 final int startOfTime = DateTime(1900, 12, 1).millisecondsSinceEpoch;
 
 bool contactPermissionWasGranted = false;
-Map<String, contacts_plugin.Contact>? contactPhones;
+Map<String, Contact>? contactPhones;
 
 bool inContacts(String phoneNumber) =>
     contactPhones?.containsKey(phoneNumber) ?? false;
@@ -155,60 +155,42 @@ Future<void> addContact(
     BuildContext context, String url, SharedPreferences prefs) async {
   try {
     final String queryString = Uri.decodeQueryComponent(url.split('?')[1]);
-    final contacts_plugin.Contact contact = contacts_plugin.Contact();
+    final Contact contact = Contact();
     for (List<String> keyValue
         in queryString.split('&').map((String v) => v.split('='))) {
       final String value = keyValue[1];
       switch (keyValue[0]) {
         case 'givenName':
-          contact.givenName = value;
+          contact.name.first = value;
           break;
 
         case 'familyName':
-          contact.familyName = value;
+          contact.name.last = value;
           break;
 
         case 'address':
-          contact.postalAddresses = <contacts_plugin.PostalAddress>[
-            contacts_plugin.PostalAddress(label: 'בית', street: value)
-          ];
+          contact.addresses = [Address(value)];
           break;
 
         case 'phones':
-          contact.phones = value
-              .split(',')
-              .map((String v) => contacts_plugin.Item(
-                  label: v.startsWith('05') ? 'mobile' : 'home', value: v))
+          contact.phones = value.split(',')
+              .map((String v) => Phone(v,
+                  label: v.startsWith('05') ? PhoneLabel.mobile : PhoneLabel.home))
               .toList(growable: false);
           break;
 
         case 'emails':
           contact.emails = value
               .split(',')
-              .map((String v) => contacts_plugin.Item(label: 'home', value: v))
+              .map((String v) => Email(v))
               .toList(growable: false);
           break;
       }
     }
 
     sendToLog('בוצעה בקשה להוספת איש קשר "$url"', prefs);
-    await contacts_plugin.ContactsService.addContact(contact);
+    await FlutterContacts.openExternalInsert(contact);
     await loadContacts();
-    final contacts_plugin.Contact? newContact = contactPhones == null
-        ? null
-        : contactPhones![contact.phones?.last.value ?? ''];
-    showInSnackBar(context,
-        'איש קשר "${contact.givenName} ${contact.familyName}" נוסף לאנשי הקשר',
-        actionLabel: newContact == null ? null : 'הצג', actionHandler: () {
-      try {
-        sendToLog('הוצג איש הקשר "${contact.givenName} ${contact.familyName}"',
-            prefs);
-        contacts_plugin.ContactsService.openExistingContact(newContact!);
-      } catch (e) {
-        sendToLog('הצגת איש קשר נכשלה "${e.toString()}"', prefs);
-        showInSnackBar(context, 'הצגת איש הקשר נכשלה', isWarning: true);
-      }
-    });
   } catch (e) {
     sendToLog('הוספת איש קשר נכשלה "${e.toString()}"', prefs);
     showInSnackBar(context, 'הוספת איש הקשר נכשלה', isWarning: true);
@@ -619,16 +601,17 @@ Future<void> loadPhoneContacts() async {
       return;
     }
 
-    final Iterable<contacts_plugin.Contact> contacts =
-        await contacts_plugin.ContactsService.getContacts(
-            withThumbnails: false);
+    final Iterable<Contact> contacts =
+        await FlutterContacts.getContacts(
+            withProperties: true,
+            deduplicateProperties: true);
 
-    contactPhones = <String, contacts_plugin.Contact>{};
-    for (contacts_plugin.Contact contact in contacts) {
-      contactPhones!.addEntries((contact.phones ?? <contacts_plugin.Item>[])
-          .map((contacts_plugin.Item item) =>
-              MapEntry<String, contacts_plugin.Contact>(
-                  (item.value ?? '')
+    contactPhones = <String, Contact>{};
+    for (Contact contact in contacts) {
+      contactPhones!.addEntries((contact.phones)
+          .map((Phone phone) =>
+              MapEntry<String, Contact>(
+                  phone.number
                       .replaceAll(RegExp(r'[- ()]'), '')
                       .replaceAll('+972', '0'),
                   contact)));
