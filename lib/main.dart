@@ -191,6 +191,7 @@ Future<void> addContact(
     }
 
     sendToLog('בוצעה בקשה להוספת איש קשר "$url"', prefs);
+    contact.displayName = [contact.name.first, contact.name.last].join(' ').trim();
     await FlutterContacts.openExternalInsert(contact);
     await loadContacts();
   } catch (e) {
@@ -395,6 +396,8 @@ final Image whatsAppImage = Image.memory(base64Decode(whatsappImageData),
     height: whatsAppImageSize, width: whatsAppImageSize);
 final Image addContactImage = Image.memory(base64Decode(addContactImageData),
     height: addContactImageSize, width: addContactImageSize);
+final Image addSmallContactImage = Image.memory(base64Decode(addContactImageData),
+    height: addContactImageSize * .9, width: addContactImageSize * .9);
 
 String getPageFamilyName(Page page) => page.title.split(RegExp(r'\s')).last;
 
@@ -472,7 +475,7 @@ List<InlineSpan> linkify(String text, Page sourcePage, SharedPreferences prefs,
 
       list.add(WidgetSpan(
           child: InkWell(
-        child: addContactImage,
+        child: addSmallContactImage,
         onTap: () => addContact(context, dummyUrl, prefs),
       )));
     }
