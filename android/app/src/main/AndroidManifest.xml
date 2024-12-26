@@ -6,6 +6,8 @@
 
     <!-- Provide required visibility configuration for API level 30 and above -->
     <queries>
+        <package android:name="com.whatsapp"/>
+        <package android:name="com.whatsapp.w4b"/>
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" />
